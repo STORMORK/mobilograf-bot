@@ -243,8 +243,6 @@
       text-align: center;
     }
 
-    /* MODAL */
-
     .modal {
       display: none;
       position: fixed;
@@ -366,7 +364,6 @@
         МОБІЛОГРАФ
       </div>
 
-      <!-- АДМІН КНОПКА -->
       <button
         class="admin-btn"
         id="adminBtn">
@@ -374,11 +371,13 @@
       </button>
 
       <div class="lang">
+
         <button id="langBtn">
           UA ▾
         </button>
 
         <div class="lang-menu" id="langMenu">
+
           <button data-lang="ua">
             Українська
           </button>
@@ -390,7 +389,9 @@
           <button data-lang="en">
             English
           </button>
+
         </div>
+
       </div>
 
     </nav>
@@ -603,11 +604,8 @@
           Готові до зйомки?
         </h2>
 
-        <p
-          style="color:#aaa;margin-bottom:20px;">
-
+        <p style="color:#aaa;margin-bottom:20px;">
           Напишіть мені та обговоримо вашу зйомку.
-
         </p>
 
         <button
@@ -657,9 +655,7 @@
 
 
 <footer>
-
   © 2026 Мобілограф. Усі права захищені.
-
 </footer>
 
 
@@ -1200,7 +1196,48 @@ ${comment || "Не вказано"}`;
       }
     );
 
-</script>
 
-</body>
-</html>
+  /* LOAD CONTENT FROM SUPABASE */
+
+  async function loadSiteContent() {
+
+    try {
+
+      const response =
+        await fetch("/api/site-content.js");
+
+      if (!response.ok) {
+        throw new Error("Не вдалося завантажити дані сайту");
+      }
+
+      const content =
+        await response.json();
+
+      console.log("Дані сайту:", content);
+
+      if (
+        !content ||
+        Object.keys(content).length === 0
+      ) {
+        return;
+      }
+
+
+      /* HERO TITLE */
+
+      if (content.hero_title) {
+
+        document
+          .getElementById("heroTitle")
+          .innerHTML =
+          content.hero_title;
+
+      }
+
+
+      /* HERO TEXT */
+
+      if (content.hero_text) {
+
+        document
+    
