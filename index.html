@@ -323,7 +323,6 @@
     }
 
     @media (max-width: 700px) {
-
       .cards {
         grid-template-columns: 1fr;
       }
@@ -360,9 +359,7 @@
 <body>
 
 <header>
-
   <div class="container">
-
     <nav>
 
       <div class="logo">
@@ -370,7 +367,6 @@
       </div>
 
       <!-- АДМІН КНОПКА -->
-
       <button
         class="admin-btn"
         id="adminBtn">
@@ -378,15 +374,11 @@
       </button>
 
       <div class="lang">
-
         <button id="langBtn">
           UA ▾
         </button>
 
-        <div
-          class="lang-menu"
-          id="langMenu">
-
+        <div class="lang-menu" id="langMenu">
           <button data-lang="ua">
             Українська
           </button>
@@ -398,15 +390,11 @@
           <button data-lang="en">
             English
           </button>
-
         </div>
-
       </div>
 
     </nav>
-
   </div>
-
 </header>
 
 
@@ -813,9 +801,7 @@
 
 <script>
 
-  /* =========================================
-     TELEGRAM
-  ========================================= */
+  /* TELEGRAM */
 
   const tg = window.Telegram.WebApp;
 
@@ -823,186 +809,65 @@
   tg.expand();
 
 
-  /* =========================================
-     ADMIN
-  ========================================= */
+  /* ADMIN */
 
   const ADMIN_ID = "1047945172";
 
   const adminBtn =
     document.getElementById("adminBtn");
 
-
-  function showAdminButton() {
-
-    if (!adminBtn) {
-      return;
-    }
+  if (
+    tg.initDataUnsafe &&
+    tg.initDataUnsafe.user &&
+    String(tg.initDataUnsafe.user.id) === ADMIN_ID
+  ) {
 
     adminBtn.style.display = "block";
 
+    adminBtn.addEventListener("click", function() {
 
-    adminBtn.onclick = function() {
-
-      const initData =
-        tg.initData || "";
-
-
-      if (!initData) {
-
-        alert(
-          "Не вдалося отримати дані Telegram. Відкрийте сайт через Telegram."
-        );
-
-        return;
-      }
-
+      const initData = tg.initData;
 
       window.location.href =
         "/admin.html?initData=" +
         encodeURIComponent(initData);
 
-    };
+    });
 
   }
 
 
-  function checkAdmin() {
-
-    /* Перевірка initDataUnsafe */
-
-    if (
-      tg.initDataUnsafe &&
-      tg.initDataUnsafe.user &&
-      String(tg.initDataUnsafe.user.id) === ADMIN_ID
-    ) {
-
-      showAdminButton();
-
-      return;
-    }
-
-
-    /* Додаткова перевірка initData */
-
-    if (tg.initData) {
-
-      try {
-
-        const params =
-          new URLSearchParams(tg.initData);
-
-        const userData =
-          params.get("user");
-
-
-        if (userData) {
-
-          const user =
-            JSON.parse(userData);
-
-
-          if (
-            String(user.id) === ADMIN_ID
-          ) {
-
-            showAdminButton();
-
-          }
-
-        }
-
-      } catch (error) {
-
-        console.error(
-          "Помилка перевірки адміністратора:",
-          error
-        );
-
-      }
-
-    }
-
-  }
-
-
-  checkAdmin();
-
-  setTimeout(checkAdmin, 500);
-
-  setTimeout(checkAdmin, 1500);
-
-
-  /* =========================================
-     CHAT
-  ========================================= */
+  /* CHAT */
 
   const CHAT_ID = "1047945172";
 
 
-  /* =========================================
-     LANGUAGE
-  ========================================= */
+  /* LANGUAGE */
 
   const translations = {
 
     ua: {
-
-      heroTitle:
-        "Фото та відео,<br>які продають",
-
-      heroText:
-        "Створюю сучасний контент для бізнесу, брендів та особистих сторінок.",
-
-      booking:
-        "Забронювати зйомку",
-
-      portfolio:
-        "Переглянути роботи",
-
-      about:
-        "Що я роблю"
-
+      heroTitle: "Фото та відео,<br>які продають",
+      heroText: "Створюю сучасний контент для бізнесу, брендів та особистих сторінок.",
+      booking: "Забронювати зйомку",
+      portfolio: "Переглянути роботи",
+      about: "Що я роблю"
     },
-
 
     ru: {
-
-      heroTitle:
-        "Фото и видео,<br>которые продают",
-
-      heroText:
-        "Создаю современный контент для бизнеса, брендов и личных страниц.",
-
-      booking:
-        "Забронировать съёмку",
-
-      portfolio:
-        "Посмотреть работы",
-
-      about:
-        "Что я делаю"
-
+      heroTitle: "Фото и видео,<br>которые продают",
+      heroText: "Создаю современный контент для бизнеса, брендов и личных страниц.",
+      booking: "Забронировать съёмку",
+      portfolio: "Посмотреть работы",
+      about: "Что я делаю"
     },
 
-
     en: {
-
-      heroTitle:
-        "Photos & videos<br>that sell",
-
-      heroText:
-        "Creating modern content for businesses, brands and personal pages.",
-
-      booking:
-        "Book a shoot",
-
-      portfolio:
-        "View portfolio",
-
-      about:
-        "What I do"
-
+      heroTitle: "Photos & videos<br>that sell",
+      heroText: "Creating modern content for businesses, brands and personal pages.",
+      booking: "Book a shoot",
+      portfolio: "View portfolio",
+      about: "What I do"
     }
 
   };
@@ -1022,9 +887,7 @@
     "click",
     function() {
 
-      langMenu.classList.toggle(
-        "active"
-      );
+      langMenu.classList.toggle("active");
 
     }
   );
@@ -1040,7 +903,6 @@
 
           currentLang =
             this.dataset.lang;
-
 
           const t =
             translations[currentLang];
@@ -1077,13 +939,10 @@
 
 
           langBtn.textContent =
-            currentLang.toUpperCase() +
-            " ▾";
+            currentLang.toUpperCase() + " ▾";
 
 
-          langMenu.classList.remove(
-            "active"
-          );
+          langMenu.classList.remove("active");
 
         }
       );
@@ -1091,35 +950,23 @@
     });
 
 
-  /* =========================================
-     MODAL
-  ========================================= */
+  /* MODAL */
 
   const modal =
-    document.getElementById(
-      "bookingModal"
-    );
-
+    document.getElementById("bookingModal");
 
   const bookingBtn =
-    document.getElementById(
-      "bookingBtn"
-    );
-
+    document.getElementById("bookingBtn");
 
   const closeModal =
-    document.getElementById(
-      "closeModal"
-    );
+    document.getElementById("closeModal");
 
 
   bookingBtn.addEventListener(
     "click",
     function() {
 
-      modal.classList.add(
-        "active"
-      );
+      modal.classList.add("active");
 
     }
   );
@@ -1129,9 +976,7 @@
     "click",
     function() {
 
-      modal.classList.remove(
-        "active"
-      );
+      modal.classList.remove("active");
 
     }
   );
@@ -1143,9 +988,7 @@
 
       if (e.target === modal) {
 
-        modal.classList.remove(
-          "active"
-        );
+        modal.classList.remove("active");
 
       }
 
@@ -1153,9 +996,7 @@
   );
 
 
-  /* =========================================
-     PORTFOLIO
-  ========================================= */
+  /* PORTFOLIO */
 
   document
     .getElementById("portfolioBtn")
@@ -1164,9 +1005,7 @@
       function() {
 
         const section =
-          document.getElementById(
-            "portfolioSection"
-          );
+          document.getElementById("portfolioSection");
 
 
         section.classList.toggle(
@@ -1190,9 +1029,7 @@
     );
 
 
-  /* =========================================
-     CONTACT
-  ========================================= */
+  /* CONTACT */
 
   document
     .getElementById("contactBtn")
@@ -1201,9 +1038,7 @@
       function() {
 
         const info =
-          document.getElementById(
-            "contactInfo"
-          );
+          document.getElementById("contactInfo");
 
 
         info.style.display =
@@ -1215,9 +1050,7 @@
     );
 
 
-  /* =========================================
-     LOCATION
-  ========================================= */
+  /* LOCATION */
 
   document
     .getElementById("locationBtn")
@@ -1226,9 +1059,7 @@
       function() {
 
         const info =
-          document.getElementById(
-            "locationInfo"
-          );
+          document.getElementById("locationInfo");
 
 
         info.style.display =
@@ -1240,9 +1071,7 @@
     );
 
 
-  /* =========================================
-     BOOKING FORM
-  ========================================= */
+  /* BOOKING FORM */
 
   document
     .getElementById("bookingForm")
@@ -1254,9 +1083,7 @@
 
 
         const message =
-          document.getElementById(
-            "formMessage"
-          );
+          document.getElementById("formMessage");
 
 
         message.style.display =
@@ -1276,4 +1103,104 @@
 
         const phone =
           document
-            .g
+            .getElementById("phone")
+            .value
+            .trim();
+
+
+        const date =
+          document
+            .getElementById("date")
+            .value;
+
+
+        const service =
+          document
+            .getElementById("service")
+            .value;
+
+
+        const comment =
+          document
+            .getElementById("comment")
+            .value
+            .trim();
+
+
+        const text =
+`📸 НОВА ЗАЯВКА
+
+👤 Ім'я: ${name}
+
+📞 Телефон: ${phone}
+
+📅 Дата: ${date}
+
+🎥 Послуга: ${service}
+
+💬 Коментар:
+${comment || "Не вказано"}`;
+
+
+        try {
+
+          const response =
+            await fetch(
+              "/api/send-message.js",
+              {
+                method: "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify({
+                    chatId: CHAT_ID,
+                    text: text
+                  })
+              }
+            );
+
+
+          const result =
+            await response.json();
+
+
+          if (!response.ok) {
+
+            throw new Error(
+              result.error ||
+              "Помилка"
+            );
+
+          }
+
+
+          message.textContent =
+            "✅ Заявку успішно надіслано!";
+
+
+          document
+            .getElementById("bookingForm")
+            .reset();
+
+
+        } catch (error) {
+
+          console.error(error);
+
+
+          message.textContent =
+            "❌ Не вдалося надіслати заявку. Спробуйте ще раз.";
+
+        }
+
+      }
+    );
+
+</script>
+
+</body>
+</html>
