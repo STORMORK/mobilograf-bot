@@ -1,140 +1,197 @@
 <!DOCTYPE html>
 <html lang="uk">
-
 <head>
-
   <meta charset="UTF-8">
-
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+    content="width=device-width, initial-scale=1.0">
 
-  <title>Адмін-панель</title>
+  <title>Адмін — Мобілограф</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
-      margin: 0;
-      padding: 20px;
       font-family: Arial, sans-serif;
-      background: #111;
-      color: #fff;
+      background: #0b0b0d;
+      color: white;
+      min-height: 100vh;
     }
 
     .container {
-      max-width: 600px;
+      width: min(700px, 92%);
       margin: auto;
+      padding: 40px 0;
     }
 
     h1 {
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #999;
       margin-bottom: 25px;
+    }
+
+    .debug {
+      background: #151518;
+      border: 1px solid #29292d;
+      border-radius: 14px;
+      padding: 15px;
+      margin-bottom: 25px;
+      color: #bbb;
+      font-size: 14px;
+    }
+
+    .debug strong {
+      color: white;
+    }
+
+    .field {
+      margin-bottom: 18px;
     }
 
     label {
       display: block;
-      margin: 18px 0 7px;
-      color: #aaa;
+      margin-bottom: 7px;
+      color: #bbb;
     }
 
-    input {
+    input,
+    textarea {
       width: 100%;
-      box-sizing: border-box;
-      padding: 14px;
-      border-radius: 10px;
-      border: 1px solid #333;
-      background: #1d1d1d;
+      background: #151518;
       color: white;
-      font-size: 16px;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 13px;
+      outline: none;
     }
 
-    button {
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #666;
+    }
+
+    .save-btn {
       width: 100%;
-      margin-top: 25px;
       padding: 15px;
       border: 0;
-      border-radius: 10px;
-      background: #fff;
-      color: #000;
+      border-radius: 12px;
+      background: white;
+      color: black;
+      font-weight: 700;
       font-size: 16px;
-      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .save-btn:disabled {
+      opacity: .5;
     }
 
     #status {
-      margin-top: 20px;
-      text-align: center;
-      color: #aaa;
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #151518;
+      color: #bbb;
+      display: none;
     }
-
   </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-  <h1>Адмін-панель</h1>
+  <h1>⚙ Адмін-панель</h1>
 
-  <label>Заголовок</label>
+  <p class="subtitle">
+    Керування інформацією сайту
+  </p>
 
-  <input
-    id="hero_title"
-    type="text"
-  >
+  <!-- ДІАГНОСТИКА -->
+  <div class="debug" id="debug">
+    Перевіряємо Telegram...
+  </div>
 
+  <div class="field">
+    <label>Заголовок</label>
 
-  <label>Текст</label>
+    <input
+      id="hero_title"
+      type="text"
+      placeholder="Фото та відео, які продають">
+  </div>
 
-  <input
-    id="hero_text"
-    type="text"
-  >
+  <div class="field">
+    <label>Текст під заголовком</label>
 
+    <textarea
+      id="hero_text"
+      placeholder="Опис послуг"></textarea>
+  </div>
 
-  <label>Заголовок «Про мене»</label>
+  <div class="field">
+    <label>Заголовок блоку «Що я роблю»</label>
 
-  <input
-    id="about_title"
-    type="text"
-  >
+    <input
+      id="about_title"
+      type="text"
+      placeholder="Що я роблю">
+  </div>
 
+  <div class="field">
+    <label>Телефон</label>
 
-  <label>Телефон</label>
+    <input
+      id="phone"
+      type="text"
+      placeholder="+380...">
+  </div>
 
-  <input
-    id="phone"
-    type="text"
-  >
+  <div class="field">
+    <label>Telegram</label>
 
+    <input
+      id="telegram"
+      type="text"
+      placeholder="@username">
+  </div>
 
-  <label>Telegram</label>
+  <div class="field">
+    <label>Instagram</label>
 
-  <input
-    id="telegram"
-    type="text"
-  >
+    <input
+      id="instagram"
+      type="text"
+      placeholder="@instagram">
+  </div>
 
+  <div class="field">
+    <label>Локація</label>
 
-  <label>Instagram</label>
+    <input
+      id="location"
+      type="text"
+      placeholder="Київ">
+  </div>
 
-  <input
-    id="instagram"
-    type="text"
-  >
-
-
-  <label>Місто / локація</label>
-
-  <input
-    id="location"
-    type="text"
-  >
-
-
-  <button onclick="saveContent()">
+  <button
+    class="save-btn"
+    id="saveBtn"
+    disabled>
     Зберегти зміни
   </button>
 
@@ -145,91 +202,160 @@
 
 <script>
 
+  /* =========================
+     TELEGRAM
+  ========================= */
+
   const tg = window.Telegram.WebApp;
 
   tg.ready();
   tg.expand();
 
 
-  /*
-   * Отримуємо initData.
-   *
-   * Спочатку пробуємо взяти його з URL,
-   * який передав index.html.
-   */
+  /* =========================
+     INIT DATA
+  ========================= */
 
   const params =
-    new URLSearchParams(window.location.search);
+    new URLSearchParams(
+      window.location.search
+    );
 
   const initDataFromUrl =
     params.get("initData");
 
-
   const initData =
     initDataFromUrl ||
-    tg.initData;
+    tg.initData ||
+    "";
 
 
-  /*
-   * Перевірка адміністратора
-   */
+  /* =========================
+     DEBUG
+  ========================= */
+
+  const debug =
+    document.getElementById("debug");
+
+  const saveBtn =
+    document.getElementById("saveBtn");
+
+
+  let telegramUserId = null;
+
+
+  if (!initData) {
+
+    debug.innerHTML =
+      "<strong>❌ initData відсутній</strong><br>" +
+      "Telegram не передав дані авторизації.";
+
+  } else {
+
+    debug.innerHTML =
+      "<strong>✅ initData отримано</strong><br>" +
+      "Довжина даних: " +
+      initData.length +
+      "<br>" +
+      "Перевіряємо права адміністратора...";
+
+  }
+
+
+  /* =========================
+     CHECK ADMIN
+  ========================= */
 
   async function checkAdmin() {
 
+    if (!initData) {
+
+      debug.innerHTML =
+        "<strong>❌ Немає initData</strong><br>" +
+        "Відкрий адмінку саме через кнопку «⚙ Адмін» у Telegram.";
+
+      return false;
+    }
+
+
     try {
 
-      const response = await fetch(
-        "/admin-content.js",
-        {
-          method: "GET",
+      const response =
+        await fetch(
+          "/admin-content.js",
+          {
+            method: "GET",
 
-          headers: {
-            "x-telegram-init-data": initData
+            headers: {
+              "x-telegram-init-data":
+                initData
+            }
           }
+        );
 
-        }
-      );
+
+      const result =
+        await response.json()
+          .catch(() => ({}));
 
 
       if (!response.ok) {
 
-        document.body.innerHTML =
-          "<div style='padding:30px;font-family:Arial;color:white;background:#111;min-height:100vh'>" +
-          "<h2>Доступ заборонено</h2>" +
-          "<p>Telegram не підтвердив права адміністратора.</p>" +
-          "</div>";
+        debug.innerHTML =
+          "<strong>❌ Сервер відхилив Telegram</strong><br>" +
+          "HTTP статус: " +
+          response.status +
+          "<br>" +
+          "Причина: " +
+          (result.error || "Access denied");
 
         return false;
-
       }
 
 
+      telegramUserId =
+        result.userId || null;
+
+
+      debug.innerHTML =
+        "<strong>✅ Адміністратор підтверджений</strong><br>" +
+        "Telegram ID: " +
+        telegramUserId;
+
+
+      saveBtn.disabled = false;
+
+
       return true;
+
 
     } catch (error) {
 
       console.error(error);
 
-      document.body.innerHTML =
-        "<div style='padding:30px;font-family:Arial;color:white;background:#111;min-height:100vh'>" +
-        "<h2>Помилка з'єднання</h2>" +
-        "</div>";
+      debug.innerHTML =
+        "<strong>❌ Помилка з'єднання</strong><br>" +
+        error.message;
 
       return false;
-
     }
 
   }
 
 
-  /*
-   * ЗБЕРЕЖЕННЯ
-   */
+  /* =========================
+     SAVE CONTENT
+  ========================= */
 
   async function saveContent() {
 
     const status =
       document.getElementById("status");
+
+
+    status.style.display =
+      "block";
+
 
     status.textContent =
       "Збереження...";
@@ -238,88 +364,114 @@
     const data = {
 
       hero_title:
-        document.getElementById("hero_title").value,
+        document
+          .getElementById("hero_title")
+          .value,
 
       hero_text:
-        document.getElementById("hero_text").value,
+        document
+          .getElementById("hero_text")
+          .value,
 
       about_title:
-        document.getElementById("about_title").value,
+        document
+          .getElementById("about_title")
+          .value,
 
       phone:
-        document.getElementById("phone").value,
+        document
+          .getElementById("phone")
+          .value,
 
       telegram:
-        document.getElementById("telegram").value,
+        document
+          .getElementById("telegram")
+          .value,
 
       instagram:
-        document.getElementById("instagram").value,
+        document
+          .getElementById("instagram")
+          .value,
 
       location:
-        document.getElementById("location").value
+        document
+          .getElementById("location")
+          .value
 
     };
 
 
     try {
 
-      const response = await fetch(
-        "/admin-content.js",
-        {
-          method: "POST",
+      const response =
+        await fetch(
+          "/admin-content.js",
+          {
+            method: "POST",
 
-          headers: {
+            headers: {
+              "Content-Type":
+                "application/json",
 
-            "Content-Type":
-              "application/json",
+              "x-telegram-init-data":
+                initData
+            },
 
-            "x-telegram-init-data":
-              initData
-
-          },
-
-          body:
-            JSON.stringify(data)
-
-        }
-      );
+            body:
+              JSON.stringify(data)
+          }
+        );
 
 
       const result =
-        await response.json();
+        await response.json()
+          .catch(() => ({}));
 
 
-      if (response.ok) {
-
-        status.textContent =
-          "Зміни збережено ✅";
-
-      } else {
+      if (!response.ok) {
 
         status.textContent =
-          "Помилка: " +
-          (result.error ||
-            "невідома помилка");
+          "❌ Помилка: " +
+          (
+            result.error ||
+            "Невідома помилка"
+          );
 
         console.error(result);
 
+        return;
       }
+
+
+      status.textContent =
+        "✅ Зміни збережено!";
+
 
     } catch (error) {
 
       console.error(error);
 
       status.textContent =
-        "Помилка з'єднання.";
+        "❌ Помилка з'єднання.";
 
     }
 
   }
 
 
-  /*
-   * Перевіряємо доступ
-   */
+  /* =========================
+     BUTTON
+  ========================= */
+
+  saveBtn.addEventListener(
+    "click",
+    saveContent
+  );
+
+
+  /* =========================
+     START
+  ========================= */
 
   checkAdmin();
 
