@@ -826,7 +826,11 @@
 
     adminBtn.addEventListener("click", function() {
 
-      window.location.href = "/admin.html";
+      const initData = tg.initData;
+
+      window.location.href =
+        "/admin.html?initData=" +
+        encodeURIComponent(initData);
 
     });
 
