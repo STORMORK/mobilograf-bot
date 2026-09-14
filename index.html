@@ -243,6 +243,8 @@
       text-align: center;
     }
 
+    /* MODAL */
+
     .modal {
       display: none;
       position: fixed;
@@ -321,6 +323,7 @@
     }
 
     @media (max-width: 700px) {
+
       .cards {
         grid-template-columns: 1fr;
       }
@@ -357,12 +360,16 @@
 <body>
 
 <header>
+
   <div class="container">
+
     <nav>
 
       <div class="logo">
         МОБІЛОГРАФ
       </div>
+
+      <!-- АДМІН КНОПКА -->
 
       <button
         class="admin-btn"
@@ -376,7 +383,9 @@
           UA ▾
         </button>
 
-        <div class="lang-menu" id="langMenu">
+        <div
+          class="lang-menu"
+          id="langMenu">
 
           <button data-lang="ua">
             Українська
@@ -391,10 +400,13 @@
           </button>
 
         </div>
+
       </div>
 
     </nav>
+
   </div>
+
 </header>
 
 
@@ -603,8 +615,11 @@
           Готові до зйомки?
         </h2>
 
-        <p style="color:#aaa;margin-bottom:20px;">
+        <p
+          style="color:#aaa;margin-bottom:20px;">
+
           Напишіть мені та обговоримо вашу зйомку.
+
         </p>
 
         <button
@@ -654,7 +669,9 @@
 
 
 <footer>
+
   © 2026 Мобілограф. Усі права захищені.
+
 </footer>
 
 
@@ -766,7 +783,8 @@
 
         <textarea
           id="comment"
-          placeholder="Розкажіть коротко про вашу ідею"></textarea>
+          placeholder="Розкажіть коротко про вашу ідею">
+        </textarea>
 
       </div>
 
@@ -795,362 +813,339 @@
 
 <script>
 
-/* =========================
-   TELEGRAM
-========================= */
+  /* =========================================
+     TELEGRAM
+  ========================================= */
 
-const tg = window.Telegram.WebApp;
+  const tg = window.Telegram.WebApp;
 
-tg.ready();
-tg.expand();
-
-
-/* =========================
-   ADMIN
-========================= */
-
-const ADMIN_ID = "1047945172";
-
-const adminBtn =
-  document.getElementById("adminBtn");
+  tg.ready();
+  tg.expand();
 
 
-function showAdminButton() {
+  /* =========================================
+     ADMIN
+  ========================================= */
 
-  if (!adminBtn) {
-    return;
+  const ADMIN_ID = "1047945172";
+
+  const adminBtn =
+    document.getElementById("adminBtn");
+
+
+  function showAdminButton() {
+
+    if (!adminBtn) {
+      return;
+    }
+
+    adminBtn.style.display = "block";
+
+
+    adminBtn.onclick = function() {
+
+      const initData =
+        tg.initData || "";
+
+
+      if (!initData) {
+
+        alert(
+          "Не вдалося отримати дані Telegram. Відкрийте сайт через Telegram."
+        );
+
+        return;
+      }
+
+
+      window.location.href =
+        "/admin.html?initData=" +
+        encodeURIComponent(initData);
+
+    };
+
   }
 
-  adminBtn.style.display = "block";
 
-  adminBtn.onclick = function() {
+  function checkAdmin() {
 
-    const initData = tg.initData || "";
+    /* Перевірка initDataUnsafe */
 
-    if (!initData) {
+    if (
+      tg.initDataUnsafe &&
+      tg.initDataUnsafe.user &&
+      String(tg.initDataUnsafe.user.id) === ADMIN_ID
+    ) {
 
-      alert(
-        "Не вдалося отримати дані Telegram. Відкрийте сайт через Telegram."
-      );
+      showAdminButton();
 
       return;
     }
 
-    window.location.href =
-      "/admin.html?initData=" +
-      encodeURIComponent(initData);
 
-  };
+    /* Додаткова перевірка initData */
 
-}
+    if (tg.initData) {
 
+      try {
 
-/*
-  Основна перевірка Telegram
-*/
+        const params =
+          new URLSearchParams(tg.initData);
 
-if (
-  tg.initDataUnsafe &&
-  tg.initDataUnsafe.user &&
-  String(tg.initDataUnsafe.user.id) === ADMIN_ID
-) {
-
-  showAdminButton();
-
-}
+        const userData =
+          params.get("user");
 
 
-/*
-  Додаткова перевірка через initData.
-  Це потрібно, щоб кнопка не зникала,
-  якщо Telegram не встиг заповнити initDataUnsafe.
-*/
+        if (userData) {
 
-if (tg.initData) {
+          const user =
+            JSON.parse(userData);
 
-  try {
 
-    const params =
-      new URLSearchParams(tg.initData);
+          if (
+            String(user.id) === ADMIN_ID
+          ) {
 
-    const userData =
-      params.get("user");
+            showAdminButton();
 
-    if (userData) {
+          }
 
-      const user =
-        JSON.parse(userData);
+        }
 
-      if (
-        String(user.id) === ADMIN_ID
-      ) {
+      } catch (error) {
 
-        showAdminButton();
+        console.error(
+          "Помилка перевірки адміністратора:",
+          error
+        );
 
       }
 
     }
 
-  } catch (error) {
-
-    console.error(
-      "Помилка перевірки адміністратора:",
-      error
-    );
-
   }
 
-}
 
+  checkAdmin();
 
-/* =========================
-   CHAT
-========================= */
+  setTimeout(checkAdmin, 500);
 
-const CHAT_ID = "1047945172";
+  setTimeout(checkAdmin, 1500);
 
 
-/* =========================
-   LANGUAGE
-========================= */
+  /* =========================================
+     CHAT
+  ========================================= */
 
-const translations = {
+  const CHAT_ID = "1047945172";
 
-  ua: {
 
-    heroTitle:
-      "Фото та відео,<br>які продають",
+  /* =========================================
+     LANGUAGE
+  ========================================= */
 
-    heroText:
-      "Створюю сучасний контент для бізнесу, брендів та особистих сторінок.",
+  const translations = {
 
-    booking:
-      "Забронювати зйомку",
+    ua: {
 
-    portfolio:
-      "Переглянути роботи",
+      heroTitle:
+        "Фото та відео,<br>які продають",
 
-    about:
-      "Що я роблю"
+      heroText:
+        "Створюю сучасний контент для бізнесу, брендів та особистих сторінок.",
 
-  },
+      booking:
+        "Забронювати зйомку",
 
+      portfolio:
+        "Переглянути роботи",
 
-  ru: {
+      about:
+        "Що я роблю"
 
-    heroTitle:
-      "Фото и видео,<br>которые продают",
+    },
 
-    heroText:
-      "Создаю современный контент для бизнеса, брендов и личных страниц.",
 
-    booking:
-      "Забронировать съёмку",
+    ru: {
 
-    portfolio:
-      "Посмотреть работы",
+      heroTitle:
+        "Фото и видео,<br>которые продают",
 
-    about:
-      "Что я делаю"
+      heroText:
+        "Создаю современный контент для бизнеса, брендов и личных страниц.",
 
-  },
+      booking:
+        "Забронировать съёмку",
 
+      portfolio:
+        "Посмотреть работы",
 
-  en: {
+      about:
+        "Что я делаю"
 
-    heroTitle:
-      "Photos & videos<br>that sell",
+    },
 
-    heroText:
-      "Creating modern content for businesses, brands and personal pages.",
 
-    booking:
-      "Book a shoot",
+    en: {
 
-    portfolio:
-      "View portfolio",
+      heroTitle:
+        "Photos & videos<br>that sell",
 
-    about:
-      "What I do"
+      heroText:
+        "Creating modern content for businesses, brands and personal pages.",
 
-  }
+      booking:
+        "Book a shoot",
 
-};
+      portfolio:
+        "View portfolio",
 
+      about:
+        "What I do"
 
-let currentLang = "ua";
+    }
 
+  };
 
-const langBtn =
-  document.getElementById("langBtn");
 
-const langMenu =
-  document.getElementById("langMenu");
+  let currentLang = "ua";
 
 
-langBtn.addEventListener(
-  "click",
-  function() {
+  const langBtn =
+    document.getElementById("langBtn");
 
-    langMenu.classList.toggle(
-      "active"
-    );
+  const langMenu =
+    document.getElementById("langMenu");
 
-  }
-);
 
+  langBtn.addEventListener(
+    "click",
+    function() {
 
-document
-  .querySelectorAll("[data-lang]")
-  .forEach(function(button) {
+      langMenu.classList.toggle(
+        "active"
+      );
 
-    button.addEventListener(
-      "click",
-      function() {
-
-        currentLang =
-          this.dataset.lang;
-
-        const t =
-          translations[currentLang];
-
-
-        document
-          .getElementById("heroTitle")
-          .innerHTML =
-          t.heroTitle;
-
-
-        document
-          .getElementById("heroText")
-          .textContent =
-          t.heroText;
-
-
-        document
-          .getElementById("bookingBtn")
-          .textContent =
-          t.booking;
-
-
-        document
-          .getElementById("portfolioBtn")
-          .textContent =
-          t.portfolio;
-
-
-        document
-          .getElementById("aboutTitle")
-          .textContent =
-          t.about;
-
-
-        langBtn.textContent =
-          currentLang.toUpperCase() +
-          " ▾";
-
-
-        langMenu.classList.remove(
-          "active"
-        );
-
-      }
-
-    );
-
-  });
-
-
-/* =========================
-   MODAL
-========================= */
-
-const modal =
-  document.getElementById(
-    "bookingModal"
-  );
-
-const bookingBtn =
-  document.getElementById(
-    "bookingBtn"
-  );
-
-const closeModal =
-  document.getElementById(
-    "closeModal"
+    }
   );
 
 
-bookingBtn.addEventListener(
-  "click",
-  function() {
+  document
+    .querySelectorAll("[data-lang]")
+    .forEach(function(button) {
 
-    modal.classList.add(
-      "active"
+      button.addEventListener(
+        "click",
+        function() {
+
+          currentLang =
+            this.dataset.lang;
+
+
+          const t =
+            translations[currentLang];
+
+
+          document
+            .getElementById("heroTitle")
+            .innerHTML =
+            t.heroTitle;
+
+
+          document
+            .getElementById("heroText")
+            .textContent =
+            t.heroText;
+
+
+          document
+            .getElementById("bookingBtn")
+            .textContent =
+            t.booking;
+
+
+          document
+            .getElementById("portfolioBtn")
+            .textContent =
+            t.portfolio;
+
+
+          document
+            .getElementById("aboutTitle")
+            .textContent =
+            t.about;
+
+
+          langBtn.textContent =
+            currentLang.toUpperCase() +
+            " ▾";
+
+
+          langMenu.classList.remove(
+            "active"
+          );
+
+        }
+      );
+
+    });
+
+
+  /* =========================================
+     MODAL
+  ========================================= */
+
+  const modal =
+    document.getElementById(
+      "bookingModal"
     );
 
-  }
-);
 
-
-closeModal.addEventListener(
-  "click",
-  function() {
-
-    modal.classList.remove(
-      "active"
+  const bookingBtn =
+    document.getElementById(
+      "bookingBtn"
     );
 
-  }
-);
+
+  const closeModal =
+    document.getElementById(
+      "closeModal"
+    );
 
 
-modal.addEventListener(
-  "click",
-  function(e) {
+  bookingBtn.addEventListener(
+    "click",
+    function() {
 
-    if (e.target === modal) {
+      modal.classList.add(
+        "active"
+      );
+
+    }
+  );
+
+
+  closeModal.addEventListener(
+    "click",
+    function() {
 
       modal.classList.remove(
         "active"
       );
 
     }
-
-  }
-);
+  );
 
 
-/* =========================
-   PORTFOLIO
-========================= */
-
-document
-  .getElementById("portfolioBtn")
-  .addEventListener(
+  modal.addEventListener(
     "click",
-    function() {
+    function(e) {
 
-      const section =
-        document.getElementById(
-          "portfolioSection"
+      if (e.target === modal) {
+
+        modal.classList.remove(
+          "active"
         );
-
-
-      section.classList.toggle(
-        "hidden-section"
-      );
-
-
-      if (
-        !section.classList.contains(
-          "hidden-section"
-        )
-      ) {
-
-        section.scrollIntoView({
-          behavior: "smooth"
-        });
 
       }
 
@@ -1158,148 +1153,127 @@ document
   );
 
 
-/* =========================
-   CONTACT
-========================= */
+  /* =========================================
+     PORTFOLIO
+  ========================================= */
 
-document
-  .getElementById("contactBtn")
-  .addEventListener(
-    "click",
-    function() {
+  document
+    .getElementById("portfolioBtn")
+    .addEventListener(
+      "click",
+      function() {
 
-      const info =
-        document.getElementById(
-          "contactInfo"
-        );
-
-
-      info.style.display =
-        info.style.display === "none"
-          ? "block"
-          : "none";
-
-    }
-  );
-
-
-/* =========================
-   LOCATION
-========================= */
-
-document
-  .getElementById("locationBtn")
-  .addEventListener(
-    "click",
-    function() {
-
-      const info =
-        document.getElementById(
-          "locationInfo"
-        );
-
-
-      info.style.display =
-        info.style.display === "none"
-          ? "block"
-          : "none";
-
-    }
-  );
-
-
-/* =========================
-   BOOKING FORM
-========================= */
-
-document
-  .getElementById("bookingForm")
-  .addEventListener(
-    "submit",
-    async function(e) {
-
-      e.preventDefault();
-
-
-      const message =
-        document.getElementById(
-          "formMessage"
-        );
-
-
-      message.style.display =
-        "block";
-
-
-      message.textContent =
-        "Відправляємо заявку...";
-
-
-      const name =
-        document
-          .getElementById("name")
-          .value
-          .trim();
-
-
-      const phone =
-        document
-          .getElementById("phone")
-          .value
-          .trim();
-
-
-      const date =
-        document
-          .getElementById("date")
-          .value;
-
-
-      const service =
-        document
-          .getElementById("service")
-          .value;
-
-
-      const comment =
-        document
-          .getElementById("comment")
-          .value
-          .trim();
-
-
-      const text =
-        `📸 НОВА ЗАЯВКА\n\n` +
-        `👤 Ім'я: ${name}\n` +
-        `📞 Телефон: ${phone}\n` +
-        `📅 Дата: ${date}\n` +
-        `🎥 Послуга: ${service}\n` +
-        `💬 Коментар: ${comment || "Не вказано"}`;
-
-
-      try {
-
-        const response =
-          await fetch(
-            "/api/send-message.js",
-            {
-
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-
-              body:
-                JSON.stringify({
-                  chatId: CHAT_ID,
-                  text: text
-                })
-
-            }
+        const section =
+          document.getElementById(
+            "portfolioSection"
           );
 
 
-        const result =
-          await r
+        section.classList.toggle(
+          "hidden-section"
+        );
+
+
+        if (
+          !section.classList.contains(
+            "hidden-section"
+          )
+        ) {
+
+          section.scrollIntoView({
+            behavior: "smooth"
+          });
+
+        }
+
+      }
+    );
+
+
+  /* =========================================
+     CONTACT
+  ========================================= */
+
+  document
+    .getElementById("contactBtn")
+    .addEventListener(
+      "click",
+      function() {
+
+        const info =
+          document.getElementById(
+            "contactInfo"
+          );
+
+
+        info.style.display =
+          info.style.display === "none"
+            ? "block"
+            : "none";
+
+      }
+    );
+
+
+  /* =========================================
+     LOCATION
+  ========================================= */
+
+  document
+    .getElementById("locationBtn")
+    .addEventListener(
+      "click",
+      function() {
+
+        const info =
+          document.getElementById(
+            "locationInfo"
+          );
+
+
+        info.style.display =
+          info.style.display === "none"
+            ? "block"
+            : "none";
+
+      }
+    );
+
+
+  /* =========================================
+     BOOKING FORM
+  ========================================= */
+
+  document
+    .getElementById("bookingForm")
+    .addEventListener(
+      "submit",
+      async function(e) {
+
+        e.preventDefault();
+
+
+        const message =
+          document.getElementById(
+            "formMessage"
+          );
+
+
+        message.style.display =
+          "block";
+
+
+        message.textContent =
+          "Відправляємо заявку...";
+
+
+        const name =
+          document
+            .getElementById("name")
+            .value
+            .trim();
+
+
+        const phone =
+          document
+            .g
