@@ -1,1125 +1,1011 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#070708">
+  <title>МОБІЛОГРАФ</title>
 
-<title>Мобілограф</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
 
-<style>
-*{box-sizing:border-box}
+    html{
+      scroll-behavior:smooth;
+    }
 
-html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      color:#fff;
+      font-family:Arial,Helvetica,sans-serif;
+      background:#060609;
+      min-height:100vh;
+      overflow-x:hidden;
+    }
 
-body{
-margin:0;
-color:#fff;
-font-family:Arial,Helvetica,sans-serif;
-background:
-radial-gradient(circle at 80% 10%,rgba(120,80,255,.18),transparent 35%),
-radial-gradient(circle at 10% 40%,rgba(0,180,255,.10),transparent 30%),
-#070708;
-min-height:100vh;
-}
+    /* ===== PREMIUM BACKGROUND ===== */
 
-button,input,textarea,select{font:inherit}
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-5;
+      background:
+        radial-gradient(circle at 80% 8%,rgba(132,92,255,.22),transparent 30%),
+        radial-gradient(circle at 5% 35%,rgba(0,195,255,.12),transparent 28%),
+        radial-gradient(circle at 70% 70%,rgba(255,70,180,.08),transparent 28%),
+        #060609;
+    }
 
-button{cursor:pointer}
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      z-index:-4;
+      opacity:.18;
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+      background-size:45px 45px;
+      mask-image:linear-gradient(to bottom,black,transparent 90%);
+    }
 
-.container{
-width:min(1100px,calc(100% - 32px));
-margin:auto;
-}
+    .glow{
+      position:fixed;
+      width:280px;
+      height:280px;
+      border-radius:50%;
+      filter:blur(80px);
+      opacity:.16;
+      z-index:-3;
+      pointer-events:none;
+      animation:floatGlow 10s ease-in-out infinite alternate;
+    }
 
-header{
-position:sticky;
-top:0;
-z-index:100;
-background:rgba(7,7,8,.82);
-backdrop-filter:blur(18px);
-border-bottom:1px solid rgba(255,255,255,.08);
-}
+    .glow.one{
+      background:#7b5cff;
+      top:12%;
+      right:-100px;
+    }
 
-.header-inner{
-min-height:68px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:10px;
-}
+    .glow.two{
+      background:#00bfff;
+      bottom:10%;
+      left:-120px;
+      animation-delay:2s;
+    }
 
-.logo{
-font-size:17px;
-font-weight:900;
-letter-spacing:1px;
-}
+    @keyframes floatGlow{
+      from{
+        transform:translate(0,0) scale(1);
+      }
+      to{
+        transform:translate(-35px,25px) scale(1.15);
+      }
+    }
 
-.header-actions{
-display:flex;
-gap:8px;
-align-items:center;
-}
+    /* ===== HEADER ===== */
 
-.small-btn{
-border:1px solid #333;
-background:#151518;
-color:#fff;
-border-radius:12px;
-padding:10px 13px;
-}
+    header{
+      position:sticky;
+      top:0;
+      z-index:50;
+      padding:14px 16px;
+      background:rgba(6,6,9,.72);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      border-bottom:1px solid rgba(255,255,255,.07);
+    }
 
-#adminButton{
-display:none;
-}
+    .header-inner{
+      max-width:1100px;
+      margin:auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
 
-.hero{
-padding:85px 0 70px;
-}
+    .logo{
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:2px;
+      white-space:nowrap;
+    }
 
-.hero h1{
-max-width:850px;
-margin:0 0 22px;
-font-size:clamp(44px,8vw,86px);
-line-height:.95;
-letter-spacing:-4px;
-}
+    .header-actions{
+      display:flex;
+      align-items:center;
+      gap:7px;
+    }
 
-.hero p{
-max-width:680px;
-color:#aaa;
-font-size:19px;
-line-height:1.55;
-}
+    button{
+      border:0;
+      color:#fff;
+      cursor:pointer;
+      font:inherit;
+    }
 
-.buttons{
-display:flex;
-flex-wrap:wrap;
-gap:12px;
-margin-top:30px;
-}
+    .admin-btn,
+    .lang-btn{
+      padding:9px 11px;
+      border-radius:12px;
+      background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.09);
+      font-size:12px;
+    }
 
-.primary,
-.secondary{
-border-radius:14px;
-padding:15px 20px;
-font-weight:800;
-}
+    .admin-btn{
+      display:none;
+    }
 
-.primary{
-border:0;
-background:#fff;
-color:#000;
-}
+    .lang-wrap{
+      position:relative;
+    }
 
-.secondary{
-border:1px solid #333;
-background:#151515;
-color:#fff;
-}
+    .lang-menu{
+      display:none;
+      position:absolute;
+      right:0;
+      top:45px;
+      width:145px;
+      padding:7px;
+      border-radius:14px;
+      background:rgba(18,18,23,.96);
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:0 15px 45px rgba(0,0,0,.45);
+    }
 
-section{
-padding:65px 0;
-}
+    .lang-menu.show{
+      display:block;
+    }
 
-.section-title{
-font-size:38px;
-margin:0 0 30px;
-}
+    .lang-menu button{
+      width:100%;
+      padding:11px;
+      text-align:left;
+      border-radius:9px;
+      background:transparent;
+      font-size:13px;
+    }
 
-.cards{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:15px;
-}
+    .lang-menu button:hover{
+      background:rgba(255,255,255,.08);
+    }
 
-.card{
-min-height:220px;
-padding:25px;
-border:1px solid #292929;
-border-radius:20px;
-background:rgba(17,17,18,.85);
-}
+    /* ===== MAIN ===== */
 
-.card h3{
-font-size:24px;
-margin-top:0;
-}
+    main{
+      max-width:1100px;
+      margin:auto;
+      padding:0 18px 50px;
+    }
 
-.card p{
-color:#999;
-line-height:1.5;
-}
+    section{
+      padding:75px 0;
+    }
 
-.portfolio{
-display:none;
-}
+    /* ===== HERO ===== */
 
-.portfolio-grid{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:15px;
-}
+    .hero{
+      min-height:calc(100vh - 65px);
+      display:flex;
+      align-items:center;
+      position:relative;
+    }
 
-.portfolio-item{
-min-height:250px;
-border-radius:20px;
-border:1px solid #292929;
-background:linear-gradient(135deg,#202020,#090909);
-display:flex;
-align-items:end;
-padding:22px;
-font-size:20px;
-font-weight:800;
-}
+    .hero-content{
+      width:100%;
+      max-width:760px;
+      position:relative;
+    }
 
-.contacts{
-border-top:1px solid #222;
-}
+    .hero-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.055);
+      border:1px solid rgba(255,255,255,.09);
+      color:#c9c9d3;
+      font-size:11px;
+      margin-bottom:22px;
+      backdrop-filter:blur(10px);
+    }
 
-.contact-box{
-border:1px solid #292929;
-background:#111;
-border-radius:20px;
-padding:25px;
-}
+    .hero-badge span{
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:#70ffb0;
+      box-shadow:0 0 12px #70ffb0;
+    }
 
-.contact-row{
-display:flex;
-flex-wrap:wrap;
-gap:10px;
-margin-top:20px;
-}
+    h1{
+      margin:0;
+      font-size:clamp(42px,11vw,86px);
+      line-height:.95;
+      letter-spacing:-3px;
+      font-weight:800;
+      max-width:850px;
+      background:linear-gradient(135deg,#fff 20%,#bdb7ff 65%,#fff);
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
 
-#contactInfo{
-color:#aaa;
-line-height:1.7;
-}
+    .hero-text{
+      max-width:650px;
+      margin:25px 0 30px;
+      color:#a7a7b2;
+      font-size:17px;
+      line-height:1.65;
+    }
 
-footer{
-border-top:1px solid #222;
-padding:30px 0;
-color:#777;
-font-size:14px;
-}
+    .hero-buttons{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
 
-.modal{
-display:none;
-position:fixed;
-inset:0;
-z-index:1000;
-background:rgba(0,0,0,.78);
-padding:20px;
-overflow-y:auto;
-}
+    .primary-btn{
+      padding:14px 19px;
+      border-radius:14px;
+      background:linear-gradient(135deg,#765cff,#9d6cff);
+      box-shadow:0 10px 35px rgba(120,80,255,.25);
+      font-weight:700;
+      font-size:14px;
+    }
 
-.modal-box{
-max-width:560px;
-margin:45px auto;
-background:#111;
-border:1px solid #333;
-border-radius:22px;
-padding:25px;
-}
+    .primary-btn:active{
+      transform:scale(.97);
+    }
 
-.modal-head{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:10px;
-}
+    .secondary-btn{
+      padding:14px 19px;
+      border-radius:14px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+      font-weight:600;
+      font-size:14px;
+    }
 
-.modal-head h2{
-margin:0;
-}
+    /* ===== TITLES ===== */
 
-.close{
-width:40px;
-height:40px;
-border-radius:10px;
-border:1px solid #333;
-background:#191919;
-color:#fff;
-font-size:22px;
-}
+    .section-label{
+      color:#8f7cff;
+      text-transform:uppercase;
+      letter-spacing:2px;
+      font-size:10px;
+      font-weight:700;
+      margin-bottom:10px;
+    }
 
-.form-group{
-margin-top:16px;
-}
+    h2{
+      margin:0 0 30px;
+      font-size:34px;
+      letter-spacing:-1.2px;
+    }
 
-.form-group label{
-display:block;
-margin-bottom:7px;
-color:#aaa;
-font-size:14px;
-}
+    /* ===== SERVICES ===== */
 
-.form-group input,
-.form-group textarea,
-.form-group select{
-width:100%;
-border:1px solid #333;
-border-radius:12px;
-padding:13px;
-background:#090909;
-color:#fff;
-outline:none;
-}
+    .services-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
 
-.form-group textarea{
-min-height:120px;
-resize:vertical;
-}
+    .service-card{
+      min-height:190px;
+      padding:23px;
+      border-radius:22px;
+      background:linear-gradient(
+        145deg,
+        rgba(255,255,255,.075),
+        rgba(255,255,255,.025)
+      );
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+      transition:.25s;
+    }
 
-.form-message{
-margin-top:15px;
-line-height:1.4;
-}
+    .service-card:hover{
+      transform:translateY(-4px);
+      border-color:rgba(150,125,255,.3);
+    }
 
-.lang-wrap{
-position:relative;
-}
+    .service-icon{
+      font-size:30px;
+      margin-bottom:25px;
+    }
 
-.lang-menu{
-display:none;
-position:absolute;
-right:0;
-top:48px;
-width:120px;
-background:#151515;
-border:1px solid #333;
-border-radius:12px;
-overflow:hidden;
-z-index:200;
-}
+    .service-card h3{
+      margin:0 0 9px;
+      font-size:18px;
+    }
 
-.lang-menu button{
-width:100%;
-padding:11px;
-border:0;
-background:transparent;
-color:#fff;
-text-align:left;
-}
+    .service-card p{
+      margin:0;
+      color:#9696a2;
+      font-size:13px;
+      line-height:1.55;
+    }
 
-@media(max-width:700px){
+    /* ===== PORTFOLIO ===== */
 
-.cards{
-grid-template-columns:1fr;
-}
+    .portfolio{
+      display:none;
+    }
 
-.portfolio-grid{
-grid-template-columns:1fr;
-}
+    .portfolio.show{
+      display:block;
+      animation:fadeIn .35s ease;
+    }
 
-.hero{
-padding-top:55px;
-}
+    @keyframes fadeIn{
+      from{
+        opacity:0;
+        transform:translateY(10px);
+      }
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
+    }
 
-.hero h1{
-letter-spacing:-2px;
-}
+    .portfolio-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
 
-}
-</style>
+    .portfolio-item{
+      min-height:190px;
+      border-radius:20px;
+      padding:20px;
+      display:flex;
+      align-items:flex-end;
+      position:relative;
+      overflow:hidden;
+      background:
+        linear-gradient(135deg,rgba(130,90,255,.25),rgba(0,0,0,.75)),
+        linear-gradient(45deg,#181820,#09090c);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .portfolio-item::before{
+      content:"";
+      position:absolute;
+      width:160px;
+      height:160px;
+      border-radius:50%;
+      right:-50px;
+      top:-50px;
+      background:rgba(150,110,255,.22);
+      filter:blur(30px);
+    }
+
+    .portfolio-item h3{
+      position:relative;
+      z-index:2;
+      margin:0;
+      font-size:18px;
+    }
+
+    /* ===== CONTACTS ===== */
+
+    .contact-box{
+      padding:30px;
+      border-radius:25px;
+      background:
+        radial-gradient(circle at 90% 10%,rgba(125,90,255,.2),transparent 35%),
+        rgba(255,255,255,.045);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .contact-box p{
+      color:#a0a0aa;
+      line-height:1.6;
+      margin:0 0 22px;
+    }
+
+    .contact-buttons{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    /* ===== FOOTER ===== */
+
+    footer{
+      padding:30px 18px 45px;
+      text-align:center;
+      color:#64646e;
+      font-size:11px;
+      border-top:1px solid rgba(255,255,255,.06);
+    }
+
+    /* ===== MODAL ===== */
+
+    .modal{
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:100;
+      background:rgba(0,0,0,.72);
+      backdrop-filter:blur(10px);
+      padding:18px;
+      overflow-y:auto;
+    }
+
+    .modal.show{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .modal-box{
+      width:100%;
+      max-width:520px;
+      padding:24px;
+      border-radius:24px;
+      background:#121217;
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:0 25px 80px rgba(0,0,0,.65);
+      animation:modalIn .25s ease;
+    }
+
+    @keyframes modalIn{
+      from{
+        opacity:0;
+        transform:translateY(20px) scale(.98);
+      }
+      to{
+        opacity:1;
+        transform:none;
+      }
+    }
+
+    .modal-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:22px;
+    }
+
+    .modal-head h2{
+      margin:0;
+      font-size:25px;
+    }
+
+    .close-btn{
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      background:rgba(255,255,255,.07);
+      font-size:20px;
+    }
+
+    .form-group{
+      margin-bottom:14px;
+    }
+
+    .form-group label{
+      display:block;
+      margin-bottom:7px;
+      color:#aaaab4;
+      font-size:12px;
+    }
+
+    input,
+    select,
+    textarea{
+      width:100%;
+      border:1px solid rgba(255,255,255,.09);
+      background:#0b0b0f;
+      color:#fff;
+      border-radius:12px;
+      padding:13px 14px;
+      outline:none;
+      font:inherit;
+      font-size:14px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus{
+      border-color:rgba(130,100,255,.65);
+    }
+
+    textarea{
+      min-height:100px;
+      resize:vertical;
+    }
+
+    .form-submit{
+      width:100%;
+      margin-top:6px;
+      padding:14px;
+      border-radius:13px;
+      background:linear-gradient(135deg,#765cff,#9d6cff);
+      font-weight:700;
+    }
+
+    .form-status{
+      margin-top:13px;
+      text-align:center;
+      font-size:13px;
+      color:#aaaab4;
+      min-height:18px;
+    }
+
+    /* ===== MOBILE ===== */
+
+    @media(max-width:700px){
+
+      section{
+        padding:60px 0;
+      }
+
+      .hero{
+        min-height:calc(100vh - 65px);
+      }
+
+      h1{
+        font-size:48px;
+        letter-spacing:-2.5px;
+      }
+
+      .hero-text{
+        font-size:15px;
+      }
+
+      .services-grid{
+        grid-template-columns:1fr;
+      }
+
+      .service-card{
+        min-height:auto;
+      }
+
+      .portfolio-grid{
+        grid-template-columns:1fr;
+      }
+
+      .portfolio-item{
+        min-height:150px;
+      }
+
+      .contact-box{
+        padding:23px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<header>
-<div class="container header-inner">
+  <div class="glow one"></div>
+  <div class="glow two"></div>
 
-<div class="logo">
-МОБІЛОГРАФ
-</div>
+  <header>
+    <div class="header-inner">
 
-<div class="header-actions">
+      <div class="logo">МОБІЛОГРАФ</div>
 
-<button id="adminButton" class="small-btn">
-⚙ Адмін
-</button>
+      <div class="header-actions">
 
-<div class="lang-wrap">
+        <button class="admin-btn" id="adminBtn">⚙ <span data-i18n="admin">Адмін</span></button>
 
-<button id="langButton" class="small-btn">
-UA ▾
-</button>
+        <div class="lang-wrap">
+          <button class="lang-btn" id="langBtn">UA ▾</button>
 
-<div id="langMenu" class="lang-menu">
+          <div class="lang-menu" id="langMenu">
+            <button data-lang="ua">🇺🇦 Українська</button>
+            <button data-lang="ru">🇷🇺 Русский</button>
+            <button data-lang="en">🇬🇧 English</button>
+          </div>
+        </div>
 
-<button data-lang="ua">Українська</button>
-<button data-lang="ru">Русский</button>
-<button data-lang="en">English</button>
+      </div>
+    </div>
+  </header>
 
-</div>
-</div>
+  <main>
 
-</div>
-</div>
-</header>
+    <!-- HERO -->
+    <section class="hero">
 
+      <div class="hero-content">
 
-<main>
+        <div class="hero-badge">
+          <span></span>
+          <span data-i18n="available">Відкритий до нових зйомок</span>
+        </div>
 
-<section class="hero">
+        <h1 id="heroTitle" data-i18n="heroTitle">
+          Фото та відео, які продають
+        </h1>
 
-<div class="container">
+        <p class="hero-text" id="heroText" data-i18n="heroText">
+          Створюю якісний фото та відеоконтент для бізнесу, брендів і соціальних мереж.
+        </p>
 
-<h1 id="heroTitle">
-Фото та відео, які продають
-</h1>
+        <div class="hero-buttons">
 
-<p id="heroText">
-Створюю якісний фото та відеоконтент для бізнесу,
-брендів і соціальних мереж.
-</p>
+          <button class="primary-btn" id="bookingBtn" data-i18n="order">
+            Замовити зйомку
+          </button>
 
-<div class="buttons">
+          <button class="secondary-btn" id="portfolioBtn" data-i18n="works">
+            Роботи
+          </button>
 
-<button id="bookingButton" class="primary">
-Замовити зйомку
-</button>
+        </div>
 
-<button id="portfolioButton" class="secondary">
-Роботи
-</button>
+      </div>
 
-</div>
+    </section>
 
-</div>
-</section>
 
+    <!-- SERVICES -->
+    <section>
 
-<section>
+      <div class="section-label" data-i18n="servicesLabel">
+        Послуги
+      </div>
 
-<div class="container">
+      <h2 id="servicesTitle" data-i18n="servicesTitle">
+        Що я роблю
+      </h2>
 
-<h2 class="section-title" id="servicesTitle">
-Що я роблю
-</h2>
+      <div class="services-grid">
 
-<div class="cards">
+        <div class="service-card">
 
-<div class="card">
-<h3>📸 Фото</h3>
-<p>
-Предметна, портретна та контентна фотографія
-для бізнесу і соцмереж.
-</p>
-</div>
+          <div class="service-icon">📸</div>
 
-<div class="card">
-<h3>🎥 Відео</h3>
-<p>
-Reels, короткі рекламні відео та відеоконтент
-для Instagram і TikTok.
-</p>
-</div>
+          <h3 data-i18n="photoTitle">
+            Фото
+          </h3>
 
-<div class="card">
-<h3>📱 Контент</h3>
-<p>
-Повний контент для вашого бізнесу:
-фото, відео та готові матеріали.
-</p>
-</div>
+          <p data-i18n="photoText">
+            Предметна, рекламна та lifestyle-фотографія для вашого бізнесу.
+          </p>
 
-</div>
-</div>
-</section>
+        </div>
 
 
-<section id="portfolioSection" class="portfolio">
+        <div class="service-card">
 
-<div class="container">
+          <div class="service-icon">🎥</div>
 
-<h2 class="section-title">
-Роботи
-</h2>
+          <h3 data-i18n="videoTitle">
+            Відео
+          </h3>
 
-<div class="portfolio-grid">
+          <p data-i18n="videoText">
+            Reels, короткі ролики та відео для соціальних мереж.
+          </p>
 
-<div class="portfolio-item">
-Фото для бізнесу
-</div>
+        </div>
 
-<div class="portfolio-item">
-Reels
-</div>
 
-<div class="portfolio-item">
-Контент
-</div>
+        <div class="service-card">
 
-<div class="portfolio-item">
-Реклама
-</div>
+          <div class="service-icon">📱</div>
 
-</div>
+          <h3 data-i18n="contentTitle">
+            Контент
+          </h3>
 
-</div>
-</section>
+          <p data-i18n="contentText">
+            Регулярний контент для Instagram, TikTok та інших платформ.
+          </p>
 
+        </div>
 
-<section class="contacts">
+      </div>
 
-<div class="container">
+    </section>
 
-<div class="contact-box">
 
-<h2 class="section-title">
-Контакти
-</h2>
+    <!-- PORTFOLIO -->
+    <section class="portfolio" id="portfolio">
 
-<div id="contactInfo">
-Готовий обговорити вашу зйомку.
-</div>
+      <div class="section-label" data-i18n="portfolioLabel">
+        Портфоліо
+      </div>
 
-<div class="contact-row">
+      <h2 data-i18n="portfolioTitle">
+        Приклади робіт
+      </h2>
 
-<button id="contactButton" class="primary">
-Зв'язатися
-</button>
+      <div class="portfolio-grid">
 
-<button id="locationButton" class="secondary">
-📍 Локація
-</button>
+        <div class="portfolio-item">
+          <h3 data-i18n="portfolioBusiness">
+            Фото для бізнесу
+          </h3>
+        </div>
 
-</div>
+        <div class="portfolio-item">
+          <h3 data-i18n="portfolioReels">
+            Reels
+          </h3>
+        </div>
 
-</div>
-</div>
-</section>
+        <div class="portfolio-item">
+          <h3 data-i18n="portfolioContent">
+            Контент
+          </h3>
+        </div>
 
-</main>
+        <div class="portfolio-item">
+          <h3 data-i18n="portfolioAds">
+            Реклама
+          </h3>
+        </div>
 
+      </div>
 
-<footer>
+    </section>
 
-<div class="container">
-© 2026 Мобілограф
-</div>
 
-</footer>
+    <!-- CONTACTS -->
+    <section>
 
+      <div class="section-label" data-i18n="contactsLabel">
+        Контакти
+      </div>
 
-<!-- ФОРМА ЗАМОВЛЕННЯ -->
+      <div class="contact-box">
 
-<div id="bookingModal" class="modal">
+        <h2 data-i18n="contactsTitle">
+          Готові обговорити зйомку?
+        </h2>
 
-<div class="modal-box">
+        <p data-i18n="contactsText">
+          Розкажіть про вашу задачу — обговоримо формат, ідею та умови зйомки.
+        </p>
 
-<div class="modal-head">
+        <div class="contact-buttons">
 
-<h2>
-Замовити зйомку
-</h2>
+          <button class="primary-btn" id="contactBtn" data-i18n="contact">
+            Зв'язатися
+          </button>
 
-<button id="closeModal" class="close">
-×
-</button>
+          <button class="secondary-btn" id="locationBtn" data-i18n="location">
+            📍 Локація
+          </button>
 
-</div>
+        </div>
 
+      </div>
 
-<form id="bookingForm">
+    </section>
 
-<div class="form-group">
+  </main>
 
-<label>Ім'я</label>
 
-<input id="name" type="text" required>
+  <footer>
+    © <span id="year"></span> МОБІЛОГРАФ ·
+    <span data-i18n="footer">Фото та відеоконтент</span>
+  </footer>
 
-</div>
 
+  <!-- BOOKING MODAL -->
 
-<div class="form-group">
+  <div class="modal" id="bookingModal">
 
-<label>Телефон</label>
+    <div class="modal-box">
 
-<input id="phone" type="tel" required>
+      <div class="modal-head">
 
-</div>
+        <h2 data-i18n="modalTitle">
+          Замовити зйомку
+        </h2>
 
+        <button class="close-btn" id="closeModal">×</button>
 
-<div class="form-group">
+      </div>
 
-<label>Бажана дата</label>
 
-<input id="date" type="date">
+      <form id="bookingForm">
 
-</div>
+        <div class="form-group">
 
+          <label data-i18n="nameLabel">
+            Ім'я
+          </label>
 
-<div class="form-group">
+          <input
+            type="text"
+            name="name"
+            required
+            data-i18n-placeholder="namePlaceholder"
+            placeholder="Ваше ім'я"
+          >
 
-<label>Послуга</label>
+        </div>
 
-<select id="service">
 
-<option>Фото</option>
-<option>Відео</option>
-<option>Контент</option>
-<option>Інше</option>
+        <div class="form-group">
 
-</select>
+          <label data-i18n="phoneLabel">
+            Телефон
+          </label>
 
-</div>
+          <input
+            type="tel"
+            name="phone"
+            required
+            data-i18n-placeholder="phonePlaceholder"
+            placeholder="+380..."
+          >
 
+        </div>
 
-<div class="form-group">
 
-<label>Коментар</label>
+        <div class="form-group">
 
-<textarea
-id="comment"
-placeholder="Розкажіть коротко про ваше замовлення..."
-></textarea>
+          <label data-i18n="dateLabel">
+            Бажана дата
+          </label>
 
-</div>
+          <input
+            type="date"
+            name="date"
+          >
 
+        </div>
 
-<button
-class="primary"
-type="submit"
-style="width:100%;margin-top:20px;"
->
-Відправити заявку
-</button>
 
+        <div class="form-group">
 
-<div id="formMessage" class="form-message"></div>
+          <label data-i18n="serviceLabel">
+            Послуга
+          </label>
 
-</form>
+          <select name="service">
 
-</div>
-</div>
+            <option value="Фото" data-i18n="optionPhoto">
+              Фото
+            </option>
 
+            <option value="Відео" data-i18n="optionVideo">
+              Відео
+            </option>
 
-<script>
+            <option value="Контент" data-i18n="optionContent">
+              Контент
+            </option>
 
-const tg =
-window.Telegram &&
-window.Telegram.WebApp
-? window.Telegram.WebApp
-: null;
+            <option value="Інше" data-i18n="optionOther">
+              Інше
+            </option>
 
-if(tg){
+          </select>
 
-tg.ready();
-tg.expand();
+        </div>
 
-}
 
+        <div class="form-group">
 
-/* =========================
-   АДМИН
-========================= */
+          <label data-i18n="commentLabel">
+            Коментар
+          </label>
 
-const ADMIN_ID = "1047945172";
+          <textarea
+            name="comment"
+            data-i18n-placeholder="commentPlaceholder"
+            placeholder="Розкажіть коротко про вашу задачу..."
+          ></textarea>
 
-const adminButton =
-document.getElementById("adminButton");
+        </div>
 
-function getTelegramUser(){
 
-if(!tg) return null;
+        <button
+          type="submit"
+          class="form-submit"
+          id="submitBtn"
+          data-i18n="submit"
+        >
+          Відправити заявку
+        </button>
 
-return tg.initDataUnsafe &&
-tg.initDataUnsafe.user
-? tg.initDataUnsafe.user
-: null;
+        <div class="form-status" id="formStatus"></div>
 
-}
+      </form>
 
-const telegramUser =
-getTelegramUser();
+    </div>
 
-if(
-telegramUser &&
-String(telegramUser.id) === ADMIN_ID
-){
+  </div>
 
-adminButton.style.display = "block";
 
-adminButton.addEventListener(
-"click",
-function(){
+  <script>
 
-const initData =
-tg && tg.initData
-? tg.initData
-: "";
+    /* ==============================
+       TELEGRAM
+    ============================== */
 
-if(!initData){
+    const tg = window.Telegram && window.Telegram.WebApp
+      ? window.Telegram.WebApp
+      : null;
 
-alert(
-"Відкрити адмін-панель можна тільки через Telegram."
-);
+    if(tg){
+      tg.ready();
+      tg.expand();
+    }
 
-return;
 
-}
+    /* ==============================
+       LANGUAGE
+    ============================== */
 
+    const translations = {
 
-/*
-Передаємо Telegram initData
-адмін-панелі.
-*/
+      ua: {
 
-const url =
-"/admin.html?initData=" +
-encodeURIComponent(initData);
+        admin:"Адмін",
+        available:"Відкритий до нових зйомок",
 
-window.location.href = url;
+        heroTitle:"Фото та відео, які продають",
+        heroText:"Створюю якісний фото та відеоконтент для бізнесу, брендів і соціальних мереж.",
 
-});
+        order:"Замовити зйомку",
+        works:"Роботи",
 
-}
+        servicesLabel:"Послуги",
+        servicesTitle:"Що я роблю",
 
+        photoTitle:"Фото",
+        photoText:"Предметна, рекламна та lifestyle-фотографія для вашого бізнесу.",
 
-/* =========================
-   ЯЗЫК
-========================= */
+        videoTitle:"Відео",
+        videoText:"Reels, короткі ролики та відео для соціальних мереж.",
 
-const langButton =
-document.getElementById("langButton");
+        contentTitle:"Контент",
+        contentText:"Регулярний контент для Instagram, TikTok та інших платформ.",
 
-const langMenu =
-document.getElementById("langMenu");
+        portfolioLabel:"Портфоліо",
+        portfolioTitle:"Приклади робіт",
 
-langButton.addEventListener(
-"click",
-function(event){
+        portfolioBusiness:"Фото для бізнесу",
+        portfolioReels:"Reels",
+        portfolioContent:"Контент",
+        portfolioAds:"Реклама",
 
-event.stopPropagation();
+        contactsLabel:"Контакти",
+        contactsTitle:"Готові обговорити зйомку?",
+        contactsText:"Розкажіть про вашу задачу — обговоримо формат, ідею та умови зйомки.",
 
-langMenu.style.display =
-langMenu.style.display === "block"
-? "none"
-: "block";
+        contact:"Зв'язатися",
+        location:"📍 Локація",
 
-});
+        footer:"Фото та відеоконтент",
 
-document.addEventListener(
-"click",
-function(){
+        modalTitle:"Замовити зйомку",
 
-langMenu.style.display = "none";
+        nameLabel:"Ім'я",
+        namePlaceholder:"Ваше ім'я",
 
-});
+        phoneLabel:"Телефон",
+        phonePlaceholder:"+380...",
 
+        dateLabel:"Бажана дата",
 
-const translations = {
+        serviceLabel:"Послуга",
+        optionPhoto:"Фото",
+        optionVideo:"Відео",
+        optionContent:"Контент",
+        optionOther:"Інше",
 
-ua:{
-title:"Фото та відео, які продають",
-text:"Створюю якісний фото та відеоконтент для бізнесу, брендів і соціальних мереж.",
-services:"Що я роблю"
-},
-
-ru:{
-title:"Фото и видео, которые продают",
-text:"Создаю качественный фото и видеоконтент для бизнеса, брендов и социальных сетей.",
-services:"Что я делаю"
-},
-
-en:{
-title:"Photos and videos that sell",
-text:"I create high-quality photo and video content for businesses, brands and social media.",
-services:"What I do"
-}
-
-};
-
-
-document
-.querySelectorAll("[data-lang]")
-.forEach(function(button){
-
-button.addEventListener(
-"click",
-function(){
-
-const lang =
-button.dataset.lang;
-
-const data =
-translations[lang];
-
-document.getElementById(
-"heroTitle"
-).textContent = data.title;
-
-document.getElementById(
-"heroText"
-).textContent = data.text;
-
-document.getElementById(
-"servicesTitle"
-).textContent = data.services;
-
-langButton.textContent =
-lang.toUpperCase() + " ▾";
-
-langMenu.style.display = "none";
-
-});
-
-});
-
-
-/* =========================
-   ЗАКАЗ СЪЁМКИ
-========================= */
-
-const modal =
-document.getElementById("bookingModal");
-
-const bookingButton =
-document.getElementById("bookingButton");
-
-const closeModal =
-document.getElementById("closeModal");
-
-bookingButton.addEventListener(
-"click",
-function(){
-
-modal.style.display = "block";
-
-});
-
-
-closeModal.addEventListener(
-"click",
-function(){
-
-modal.style.display = "none";
-
-});
-
-
-modal.addEventListener(
-"click",
-function(event){
-
-if(event.target === modal){
-
-modal.style.display = "none";
-
-}
-
-});
-
-
-/* =========================
-   РАБОТЫ
-========================= */
-
-const portfolioButton =
-document.getElementById("portfolioButton");
-
-const portfolioSection =
-document.getElementById("portfolioSection");
-
-portfolioButton.addEventListener(
-"click",
-function(){
-
-portfolioSection.style.display =
-portfolioSection.style.display === "block"
-? "none"
-: "block";
-
-if(
-portfolioSection.style.display === "block"
-){
-
-portfolioSection.scrollIntoView({
-behavior:"smooth"
-});
-
-}
-
-});
-
-
-/* =========================
-   КОНТАКТЫ
-========================= */
-
-const contactButton =
-document.getElementById("contactButton");
-
-const contactInfo =
-document.getElementById("contactInfo");
-
-contactButton.addEventListener(
-"click",
-function(){
-
-contactInfo.innerHTML =
-"📱 Telegram: @mobilograf<br>" +
-"📞 Телефон: +380 00 000 00 00<br>" +
-"📸 Instagram: @mobilograf";
-
-});
-
-
-/* =========================
-   ЛОКАЦИЯ
-========================= */
-
-const locationButton =
-document.getElementById("locationButton");
-
-locationButton.addEventListener(
-"click",
-function(){
-
-contactInfo.innerHTML =
-"📍 Київ, Україна";
-
-});
-
-
-/* =========================
-   ОТПРАВКА ЗАЯВКИ
-========================= */
-
-const bookingForm =
-document.getElementById("bookingForm");
-
-const formMessage =
-document.getElementById("formMessage");
-
-bookingForm.addEventListener(
-"submit",
-async function(event){
-
-event.preventDefault();
-
-formMessage.textContent =
-"Відправляємо заявку...";
-
-
-const payload = {
-
-name:
-document
-.getElementById("name")
-.value
-.trim(),
-
-phone:
-document
-.getElementById("phone")
-.value
-.trim(),
-
-date:
-document
-.getElementById("date")
-.value,
-
-service:
-document
-.getElementById("service")
-.value,
-
-comment:
-document
-.getElementById("comment")
-.value
-.trim()
-
-};
-
-
-try{
-
-const response =
-await fetch(
-"/api/send-message.js",
-{
-method:"POST",
-
-headers:{
-"Content-Type":
-"application/json"
-},
-
-body:
-JSON.stringify(payload)
-
-}
-);
-
-
-const result =
-await response.json();
-
-
-if(!response.ok){
-
-throw new Error(
-result.error ||
-"Помилка відправлення"
-);
-
-}
-
-
-formMessage.textContent =
-"✅ Заявку успішно відправлено!";
-
-
-bookingForm.reset();
-
-
-setTimeout(
-function(){
-
-modal.style.display = "none";
-
-formMessage.textContent = "";
-
-},
-1800
-);
-
-
-}catch(error){
-
-console.error(error);
-
-formMessage.textContent =
-"❌ Не вдалося відправити заявку. Спробуйте ще раз.";
-
-}
-
-});
-
-
-/* =========================
-   ЗАГРУЗКА ДАННЫХ SUPABASE
-========================= */
-
-async function loadSiteContent(){
-
-try{
-
-const response =
-await fetch(
-"/api/site-content.js",
-{
-method:"GET",
-cache:"no-store"
-}
-);
-
-if(!response.ok) return;
-
-const data =
-await response.json();
-
-
-if(data.hero_title){
-
-document.getElementById(
-"heroTitle"
-).textContent =
-data.hero_title;
-
-}
-
-
-if(data.hero_text){
-
-document.getElementById(
-"heroText"
-).textContent =
-data.hero_text;
-
-}
-
-
-if(data.about_title){
-
-document.getElementById(
-"servicesTitle"
-).textContent =
-data.about_title;
-
-}
-
-
-if(
-data.phone ||
-data.telegram ||
-data.instagram ||
-data.location
-){
-
-let html = "";
-
-if(data.phone){
-
-html +=
-"📞 " +
-data.phone +
-"<br>";
-
-}
-
-if(data.telegram){
-
-html +=
-"📱 " +
-data.telegram +
-"<br>";
-
-}
-
-if(data.instagram){
-
-html +=
-"📸 " +
-data.instagram +
-"<br>";
-
-}
-
-if(data.location){
-
-html +=
-"📍 " +
-data.location;
-
-}
-
-document.getElementById(
-"contactInfo"
-).innerHTML = html;
-
-}
-
-}catch(error){
-
-console.error(
-"Помилка завантаження даних:",
-error
-);
-
-}
-
-}
-
-loadSiteContent();
-
-</script>
-
-</body>
-</html>
+        commentLabel:"Коментар",
+        commentPlaceholder:"Розкажіть коротко про вашу зада
