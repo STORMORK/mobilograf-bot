@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Motion Studio</title>
+
+  <title>Мобілограф — Фото та відеозйомка</title>
 
   <style>
     * {
@@ -14,203 +15,214 @@
 
     body {
       font-family: Arial, sans-serif;
-      background: #0b0b0b;
+      background: #0b0b0d;
       color: #fff;
-      min-height: 100vh;
+      line-height: 1.5;
     }
 
     button,
     input,
     select,
     textarea {
-      font-family: inherit;
+      font: inherit;
     }
 
     button {
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .app {
-      max-width: 480px;
-      margin: 0 auto;
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    /* LANGUAGE */
-
-    .language-switcher {
-      display: flex;
-      justify-content: flex-end;
-      position: relative;
-      z-index: 20;
-      margin-bottom: 12px;
-    }
-
-    .language-button {
-      border: 1px solid #333;
-      background: #151515;
-      color: #fff;
-      border-radius: 12px;
-      padding: 10px 14px;
-      font-size: 13px;
       cursor: pointer;
     }
 
-    .language-menu {
-      display: none;
-      position: absolute;
-      top: 46px;
-      right: 0;
-      width: 155px;
-      background: #181818;
-      border: 1px solid #333;
-      border-radius: 14px;
-      padding: 6px;
-      box-shadow: 0 15px 40px rgba(0,0,0,.5);
+    .container {
+      width: min(1100px, 92%);
+      margin: auto;
     }
 
-    .language-menu.open {
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      background: rgba(10,10,12,.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #222;
+    }
+
+    nav {
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .lang {
+      position: relative;
+    }
+
+    .lang button {
+      background: #17171a;
+      color: white;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 9px 13px;
+    }
+
+    .lang-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 45px;
+      background: #18181b;
+      border: 1px solid #333;
+      border-radius: 10px;
+      overflow: hidden;
+      min-width: 120px;
+    }
+
+    .lang-menu.active {
       display: block;
     }
 
-    .language-menu button {
+    .lang-menu button {
       width: 100%;
-      border: none;
-      background: transparent;
-      color: #fff;
-      padding: 12px;
+      border: 0;
+      border-radius: 0;
       text-align: left;
-      border-radius: 9px;
-      cursor: pointer;
-      font-size: 13px;
+      background: transparent;
+      padding: 10px 14px;
     }
 
-    .language-menu button:active {
-      background: #292929;
+    .lang-menu button:hover {
+      background: #29292d;
     }
-
-    /* HERO */
 
     .hero {
-      min-height: 620px;
-      border-radius: 28px;
-      padding: 28px 22px;
+      min-height: 100vh;
       display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-
+      align-items: center;
       background:
-        linear-gradient(
-          to top,
-          rgba(0,0,0,.92),
-          rgba(0,0,0,.12)
-        ),
-        url("https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=85");
-
-      background-size: cover;
-      background-position: center;
-      overflow: hidden;
+        linear-gradient(90deg, rgba(0,0,0,.9), rgba(0,0,0,.35)),
+        url("https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1600&q=85")
+        center/cover;
     }
 
-    .label {
-      display: inline-block;
-      width: fit-content;
-      padding: 8px 13px;
-      border-radius: 30px;
-      background: rgba(255,255,255,.12);
-      backdrop-filter: blur(10px);
-      font-size: 13px;
-      margin-bottom: 15px;
+    .hero-content {
+      max-width: 700px;
+      padding-top: 70px;
     }
 
-    h1 {
-      font-size: 46px;
+    .hero h1 {
+      font-size: clamp(42px, 10vw, 82px);
       line-height: .95;
-      letter-spacing: -2px;
-      margin-bottom: 16px;
-    }
-
-    .description {
-      color: #d0d0d0;
-      font-size: 16px;
-      line-height: 1.5;
       margin-bottom: 25px;
     }
 
-    .buttons {
-      display: grid;
-      gap: 10px;
+    .hero p {
+      font-size: 19px;
+      color: #c9c9ce;
+      margin-bottom: 30px;
+      max-width: 560px;
     }
 
-    .buttons button {
-      border: none;
-      border-radius: 16px;
-      padding: 17px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .primary {
+    .btn {
+      display: inline-block;
+      border: 0;
+      border-radius: 12px;
+      padding: 14px 22px;
+      font-weight: 700;
       background: #fff;
-      color: #000;
+      color: #080808;
+      margin-right: 8px;
+      margin-bottom: 10px;
     }
 
-    .secondary {
-      background: rgba(255,255,255,.12);
-      color: #fff;
-      backdrop-filter: blur(10px);
+    .btn.secondary {
+      background: transparent;
+      color: white;
+      border: 1px solid #555;
     }
 
-    .buttons button:active,
-    .submit-button:active {
-      transform: scale(.98);
+    section {
+      padding: 80px 0;
     }
 
-    /* CARDS */
+    .section-title {
+      font-size: 36px;
+      margin-bottom: 30px;
+    }
 
-    .menu {
+    .cards {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 14px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
     }
 
     .card {
-      background: #151515;
+      background: #151518;
+      border: 1px solid #29292d;
       border-radius: 18px;
+      padding: 25px;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      font-size: 21px;
+    }
+
+    .card p {
+      color: #aaa;
+    }
+
+    .hidden-section {
+      display: none;
+    }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .portfolio-item {
+      min-height: 220px;
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, #252529, #101012);
+      display: flex;
+      align-items: flex-end;
       padding: 20px;
-      min-height: 110px;
-      cursor: pointer;
+      border: 1px solid #29292d;
     }
 
-    .card:active {
-      transform: scale(.98);
-      background: #1d1d1d;
+    .service-list {
+      display: grid;
+      gap: 12px;
     }
 
-    .icon {
-      font-size: 25px;
-      margin-bottom: 15px;
+    .service {
+      padding: 18px;
+      border-radius: 14px;
+      background: #151518;
+      border: 1px solid #29292d;
     }
 
-    .card-title {
-      font-size: 15px;
-      font-weight: 600;
+    .contact-box {
+      background: #151518;
+      border: 1px solid #29292d;
+      border-radius: 18px;
+      padding: 25px;
     }
 
-    .card-text {
-      color: #888;
-      font-size: 12px;
-      margin-top: 5px;
-    }
-
-    .footer {
+    footer {
+      padding: 35px 0;
+      color: #777;
+      border-top: 1px solid #222;
       text-align: center;
-      color: #666;
-      font-size: 12px;
-      padding: 25px 0;
     }
 
     /* MODAL */
@@ -219,823 +231,698 @@
       display: none;
       position: fixed;
       inset: 0;
+      z-index: 200;
       background: rgba(0,0,0,.78);
-      z-index: 100;
       padding: 20px;
-      overflow-y: auto;
-    }
-
-    .modal.open {
-      display: flex;
       align-items: center;
       justify-content: center;
     }
 
+    .modal.active {
+      display: flex;
+    }
+
     .modal-box {
-      width: 100%;
-      max-width: 460px;
-      background: #151515;
-      border: 1px solid #292929;
-      border-radius: 24px;
-      padding: 22px;
+      width: min(500px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #151518;
+      border: 1px solid #333;
+      border-radius: 20px;
+      padding: 25px;
       position: relative;
     }
 
-    .modal-title {
-      font-size: 25px;
-      margin-bottom: 7px;
-      padding-right: 35px;
-    }
-
-    .modal-description {
-      color: #888;
-      font-size: 13px;
-      line-height: 1.5;
-      margin-bottom: 20px;
-    }
-
-    .close-button {
+    .close {
       position: absolute;
-      right: 16px;
-      top: 14px;
-      width: 36px;
-      height: 36px;
-      border: none;
-      border-radius: 50%;
-      background: #252525;
-      color: #fff;
-      font-size: 20px;
-      cursor: pointer;
+      right: 15px;
+      top: 12px;
+      background: transparent;
+      border: 0;
+      color: white;
+      font-size: 30px;
+    }
+
+    .modal-box h2 {
+      margin-bottom: 20px;
+      padding-right: 30px;
     }
 
     .form-group {
-      margin-bottom: 13px;
+      margin-bottom: 14px;
     }
 
     .form-group label {
       display: block;
-      color: #aaa;
-      font-size: 12px;
       margin-bottom: 6px;
+      color: #bbb;
+      font-size: 14px;
     }
 
     .form-group input,
     .form-group select,
     .form-group textarea {
       width: 100%;
+      background: #0d0d0f;
       border: 1px solid #333;
-      background: #0d0d0d;
-      color: #fff;
-      border-radius: 12px;
-      padding: 13px;
-      font-size: 14px;
+      color: white;
+      border-radius: 10px;
+      padding: 12px;
       outline: none;
     }
 
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      border-color: #777;
-    }
-
     .form-group textarea {
-      min-height: 90px;
+      min-height: 100px;
       resize: vertical;
     }
 
-    .submit-button {
-      width: 100%;
-      border: none;
-      border-radius: 14px;
-      background: #fff;
-      color: #000;
-      padding: 15px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 5px;
-    }
-
-    .submit-button:disabled {
-      opacity: .5;
-      cursor: default;
-    }
-
     .form-message {
-      text-align: center;
-      font-size: 13px;
-      margin-top: 12px;
-      line-height: 1.4;
+      margin-top: 15px;
+      display: none;
+      padding: 12px;
+      border-radius: 10px;
+      background: #202024;
     }
 
-    .success {
-      color: #7dff9b;
-    }
+    @media (max-width: 700px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
 
-    .error {
-      color: #ff7d7d;
+      .portfolio-grid {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 60px 0;
+      }
+
+      .hero h1 {
+        font-size: 48px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <main class="app">
+<header>
+  <div class="container">
+    <nav>
+      <div class="logo">МОБІЛОГРАФ</div>
 
-    <!-- LANGUAGE -->
+      <div class="lang">
+        <button id="langBtn">UA ▾</button>
 
-    <div class="language-switcher">
-
-      <button
-        type="button"
-        class="language-button"
-        id="languageButton">
-        🌐 Українська ▾
-      </button>
-
-      <div class="language-menu" id="languageMenu">
-
-        <button type="button" data-language="ua">
-          🇺🇦 Українська
-        </button>
-
-        <button type="button" data-language="ru">
-          🇷🇺 Русский
-        </button>
-
-        <button type="button" data-language="en">
-          🇬🇧 English
-        </button>
-
+        <div class="lang-menu" id="langMenu">
+          <button data-lang="ua">Українська</button>
+          <button data-lang="ru">Русский</button>
+          <button data-lang="en">English</button>
+        </div>
       </div>
+    </nav>
+  </div>
+</header>
 
-    </div>
 
+<main>
 
-    <!-- HERO -->
+  <!-- HERO -->
 
-    <section class="hero">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
 
-      <div class="label" id="label">
-        📸 МОБІЛОГРАФІЯ
-      </div>
+        <h1 id="heroTitle">
+          Фото та відео,<br>
+          які продають
+        </h1>
 
-      <h1 id="title">
-        Кадри,<br>
-        які хочеться<br>
-        передивлятися.
-      </h1>
+        <p id="heroText">
+          Створюю сучасний контент для бізнесу,
+          брендів та особистих сторінок.
+        </p>
 
-      <p class="description" id="description">
-        Фото та відеозйомка для брендів,
-        людей і важливих моментів.
-      </p>
-
-      <div class="buttons">
-
-        <button
-          type="button"
-          class="primary"
-          id="bookButton">
+        <button class="btn" id="bookingBtn">
           Забронювати зйомку
         </button>
 
-        <button
-          type="button"
-          class="secondary"
-          id="portfolioButton">
+        <button class="btn secondary" id="portfolioBtn">
           Переглянути роботи
         </button>
 
       </div>
-
-    </section>
-
-
-    <!-- MENU -->
-
-    <section class="menu">
-
-      <div class="card" id="servicesCard">
-        <div class="icon">💰</div>
-
-        <div class="card-title" id="servicesTitle">
-          Послуги
-        </div>
-
-        <div class="card-text" id="servicesText">
-          Ціни та формати
-        </div>
-      </div>
-
-
-      <div class="card" id="bookingCard">
-        <div class="icon">📅</div>
-
-        <div class="card-title" id="bookingTitle">
-          Бронювання
-        </div>
-
-        <div class="card-text" id="bookingText">
-          Обрати дату
-        </div>
-      </div>
-
-
-      <div class="card" id="locationCard">
-        <div class="icon">📍</div>
-
-        <div class="card-title" id="locationTitle">
-          Локація
-        </div>
-
-        <div class="card-text" id="locationText">
-          Де працюємо
-        </div>
-      </div>
-
-
-      <div class="card" id="contactCard">
-        <div class="icon">💬</div>
-
-        <div class="card-title" id="contactTitle">
-          Контакти
-        </div>
-
-        <div class="card-text" id="contactText">
-          Зв'язатися зі мною
-        </div>
-      </div>
-
-    </section>
-
-
-    <div class="footer" id="footer">
-      © 2026 Motion Studio
     </div>
+  </section>
 
-  </main>
 
+  <!-- MAIN CARDS -->
 
-  <!-- BOOKING MODAL -->
+  <section>
+    <div class="container">
 
-  <div class="modal" id="bookingModal">
-
-    <div class="modal-box">
-
-      <button
-        type="button"
-        class="close-button"
-        id="closeBookingButton">
-        ×
-      </button>
-
-      <h2 class="modal-title" id="formTitle">
-        Забронювати зйомку
+      <h2 class="section-title" id="aboutTitle">
+        Що я роблю
       </h2>
 
-      <p class="modal-description" id="formDescription">
-        Заповніть форму, і я зв'яжуся з вами для уточнення деталей.
-      </p>
+      <div class="cards">
 
-
-      <form id="bookingForm">
-
-        <div class="form-group">
-
-          <label id="nameLabel">
-            Ваше ім'я
-          </label>
-
-          <input
-            type="text"
-            id="clientName"
-            required
-            placeholder="Ім'я">
-
+        <div class="card">
+          <h3>📸 Фото</h3>
+          <p>
+            Контент для Instagram, сайтів,
+            реклами та особистого бренду.
+          </p>
         </div>
 
-
-        <div class="form-group">
-
-          <label id="phoneLabel">
-            Телефон
-          </label>
-
-          <input
-            type="tel"
-            id="clientPhone"
-            required
-            placeholder="+380">
-
+        <div class="card">
+          <h3>🎥 Відео</h3>
+          <p>
+            Reels, рекламні відео,
+            короткі ролики та контент для соцмереж.
+          </p>
         </div>
 
-
-        <div class="form-group">
-
-          <label id="dateLabel">
-            Бажана дата
-          </label>
-
-          <input
-            type="date"
-            id="shootDate"
-            required>
-
+        <div class="card">
+          <h3>✨ Контент</h3>
+          <p>
+            Допоможу створити візуальний стиль,
+            який привертає увагу клієнтів.
+          </p>
         </div>
 
+      </div>
+    </div>
+  </section>
 
-        <div class="form-group">
 
-          <label id="serviceLabel">
-            Послуга
-          </label>
+  <!-- PORTFOLIO -->
 
-          <select id="shootService" required>
+  <section class="hidden-section" id="portfolioSection">
 
-            <option value="" id="servicePlaceholder">
-              Оберіть послугу
-            </option>
+    <div class="container">
 
-            <option value="Фото">
-              📸 Фото
-            </option>
+      <h2 class="section-title">
+        Портфоліо
+      </h2>
 
-            <option value="Відео">
-              🎥 Відео
-            </option>
+      <div class="portfolio-grid">
 
-            <option value="Фото + відео">
-              📸🎥 Фото + відео
-            </option>
-
-            <option value="Контент для соцмереж">
-              📱 Контент для соцмереж
-            </option>
-
-          </select>
-
+        <div class="portfolio-item">
+          <strong>Reels для бізнесу</strong>
         </div>
 
-
-        <div class="form-group">
-
-          <label id="commentLabel">
-            Коментар
-          </label>
-
-          <textarea
-            id="clientComment"
-            placeholder="Розкажіть коротко про зйомку..."></textarea>
-
+        <div class="portfolio-item">
+          <strong>Предметна зйомка</strong>
         </div>
 
-
-        <button
-          type="submit"
-          class="submit-button"
-          id="submitButton">
-          Надіслати заявку
-        </button>
-
-        <div
-          class="form-message"
-          id="formMessage">
+        <div class="portfolio-item">
+          <strong>Особистий бренд</strong>
         </div>
 
-      </form>
+        <div class="portfolio-item">
+          <strong>Рекламний контент</strong>
+        </div>
+
+      </div>
 
     </div>
+
+  </section>
+
+
+  <!-- SERVICES -->
+
+  <section class="hidden-section" id="servicesSection">
+
+    <div class="container">
+
+      <h2 class="section-title">
+        Послуги
+      </h2>
+
+      <div class="service-list">
+
+        <div class="service">
+          📸 Фотосесія
+        </div>
+
+        <div class="service">
+          🎥 Відеозйомка
+        </div>
+
+        <div class="service">
+          📱 Reels для Instagram
+        </div>
+
+        <div class="service">
+          🏢 Контент для бізнесу
+        </div>
+
+        <div class="service">
+          👤 Особистий бренд
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- CONTACT -->
+
+  <section>
+
+    <div class="container">
+
+      <div class="contact-box">
+
+        <h2 class="section-title">
+          Готові до зйомки?
+        </h2>
+
+        <p style="color:#aaa;margin-bottom:20px;">
+          Напишіть мені та обговоримо вашу зйомку.
+        </p>
+
+        <button class="btn" id="contactBtn">
+          Зв'язатися
+        </button>
+
+        <button class="btn secondary" id="locationBtn">
+          Локація
+        </button>
+
+        <div id="contactInfo"
+             style="display:none;margin-top:20px;color:#bbb;">
+
+          Telegram: @mob1lograf_bot<br>
+          Instagram: ваш Instagram<br>
+          Телефон: ваш номер
+
+        </div>
+
+        <div id="locationInfo"
+             style="display:none;margin-top:20px;color:#bbb;">
+
+          Працюю у вашому місті та можу виїхати
+          на локацію клієнта.
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<footer>
+  © 2026 Мобілограф. Усі права захищені.
+</footer>
+
+
+<!-- BOOKING MODAL -->
+
+<div class="modal" id="bookingModal">
+
+  <div class="modal-box">
+
+    <button class="close" id="closeModal">
+      ×
+    </button>
+
+    <h2>
+      Забронювати зйомку
+    </h2>
+
+    <form id="bookingForm">
+
+      <div class="form-group">
+        <label>Ваше ім'я</label>
+        <input
+          type="text"
+          id="name"
+          placeholder="Ім'я"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label>Телефон</label>
+        <input
+          type="tel"
+          id="phone"
+          placeholder="+380..."
+          required>
+      </div>
+
+      <div class="form-group">
+        <label>Дата зйомки</label>
+        <input
+          type="date"
+          id="date"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label>Послуга</label>
+
+        <select id="service">
+
+          <option value="Фотосесія">
+            Фотосесія
+          </option>
+
+          <option value="Відеозйомка">
+            Відеозйомка
+          </option>
+
+          <option value="Reels">
+            Reels
+          </option>
+
+          <option value="Контент для бізнесу">
+            Контент для бізнесу
+          </option>
+
+          <option value="Особистий бренд">
+            Особистий бренд
+          </option>
+
+        </select>
+
+      </div>
+
+      <div class="form-group">
+
+        <label>Коментар</label>
+
+        <textarea
+          id="comment"
+          placeholder="Розкажіть коротко про вашу ідею">
+        </textarea>
+
+      </div>
+
+      <button
+        type="submit"
+        class="btn"
+        style="width:100%;">
+
+        Надіслати заявку
+
+      </button>
+
+      <div
+        class="form-message"
+        id="formMessage">
+      </div>
+
+    </form>
 
   </div>
 
+</div>
 
-  <script>
 
-    /* =========================
-       TELEGRAM
-    ========================= */
+<script>
 
-    const CHAT_ID = "1047945172";
+  const CHAT_ID = "1047945172";
 
 
-    /* =========================
-       TRANSLATIONS
-    ========================= */
+  /* LANGUAGE */
 
-    const translations = {
+  const translations = {
 
-      ua: {
-        languageName: "🌐 Українська ▾",
+    ua: {
+      heroTitle: "Фото та відео,<br>які продають",
+      heroText: "Створюю сучасний контент для бізнесу, брендів та особистих сторінок.",
+      booking: "Забронювати зйомку",
+      portfolio: "Переглянути роботи",
+      about: "Що я роблю"
+    },
 
-        label: "📸 МОБІЛОГРАФІЯ",
+    ru: {
+      heroTitle: "Фото и видео,<br>которые продают",
+      heroText: "Создаю современный контент для бизнеса, брендов и личных страниц.",
+      booking: "Забронировать съёмку",
+      portfolio: "Посмотреть работы",
+      about: "Что я делаю"
+    },
 
-        title: "Кадри,<br>які хочеться<br>передивлятися.",
+    en: {
+      heroTitle: "Photos & videos<br>that sell",
+      heroText: "Creating modern content for businesses, brands and personal pages.",
+      booking: "Book a shoot",
+      portfolio: "View portfolio",
+      about: "What I do"
+    }
 
-        description:
-          "Фото та відеозйомка для брендів, людей і важливих моментів.",
+  };
 
-        book: "Забронювати зйомку",
 
-        portfolio: "Переглянути роботи",
+  let currentLang = "ua";
 
-        services: "Послуги",
 
-        servicesText: "Ціни та формати",
+  const langBtn = document.getElementById("langBtn");
+  const langMenu = document.getElementById("langMenu");
 
-        booking: "Бронювання",
 
-        bookingText: "Обрати дату",
+  langBtn.addEventListener("click", function () {
 
-        location: "Локація",
+    langMenu.classList.toggle("active");
 
-        locationText: "Де працюємо",
+  });
 
-        contact: "Контакти",
 
-        contactText: "Зв'язатися зі мною",
+  document.querySelectorAll("[data-lang]").forEach(function(button) {
 
-        footer: "© 2026 Motion Studio",
+    button.addEventListener("click", function() {
 
-        formTitle: "Забронювати зйомку",
+      currentLang = this.dataset.lang;
 
-        formDescription:
-          "Заповніть форму, і я зв'яжуся з вами для уточнення деталей.",
+      const t = translations[currentLang];
 
-        name: "Ваше ім'я",
+      document.getElementById("heroTitle").innerHTML =
+        t.heroTitle;
 
-        phone: "Телефон",
+      document.getElementById("heroText").textContent =
+        t.heroText;
 
-        date: "Бажана дата",
-
-        service: "Послуга",
-
-        servicePlaceholder: "Оберіть послугу",
-
-        comment: "Коментар",
-
-        commentPlaceholder:
-          "Розкажіть коротко про зйомку...",
-
-        submit: "Надіслати заявку",
-
-        sending: "Надсилання...",
-
-        success:
-          "✅ Заявку успішно надіслано! Я зв'яжуся з вами найближчим часом.",
-
-        error:
-          "❌ Не вдалося надіслати заявку. Спробуйте ще раз.",
-
-        alerts: {
-          portfolio:
-            "Тут буде портфоліо фотографій та відео 📸",
-
-          services:
-            "Тут будуть послуги та ціни 💰",
-
-          location:
-            "Тут буде карта та інформація про локації 📍",
-
-          contact:
-            "Тут будуть Telegram та Instagram 💬"
-        }
-      },
-
-
-      ru: {
-        languageName: "🌐 Русский ▾",
-
-        label: "📸 МОБИЛОГРАФИЯ",
-
-        title: "Кадры,<br>которые хочется<br>пересматривать.",
-
-        description:
-          "Фото и видеосъёмка для брендов, людей и важных моментов.",
-
-        book: "Забронировать съёмку",
-
-        portfolio: "Посмотреть работы",
-
-        services: "Услуги",
-
-        servicesText: "Цены и форматы",
-
-        booking: "Бронирование",
-
-        bookingText: "Выбрать дату",
-
-        location: "Локация",
-
-        locationText: "Где работаем",
-
-        contact: "Контакты",
-
-        contactText: "Связаться со мной",
-
-        footer: "© 2026 Motion Studio",
-
-        formTitle: "Забронировать съёмку",
-
-        formDescription:
-          "Заполните форму, и я свяжусь с вами для уточнения деталей.",
-
-        name: "Ваше имя",
-
-        phone: "Телефон",
-
-        date: "Желаемая дата",
-
-        service: "Услуга",
-
-        servicePlaceholder: "Выберите услугу",
-
-        comment: "Комментарий",
-
-        commentPlaceholder:
-          "Коротко расскажите о съёмке...",
-
-        submit: "Отправить заявку",
-
-        sending: "Отправка...",
-
-        success:
-          "✅ Заявка успешно отправлена! Я свяжусь с вами в ближайшее время.",
-
-        error:
-          "❌ Не удалось отправить заявку. Попробуйте ещё раз.",
-
-        alerts: {
-          portfolio:
-            "Здесь будет портфолио фотографий и видео 📸",
-
-          services:
-            "Здесь будут услуги и цены 💰",
-
-          location:
-            "Здесь будет карта и информация о локациях 📍",
-
-          contact:
-            "Здесь будут Telegram и Instagram 💬"
-        }
-      },
-
-
-      en: {
-        languageName: "🌐 English ▾",
-
-        label: "📸 MOBILE PHOTOGRAPHY",
-
-        title: "Frames<br>you'll want<br>to watch again.",
-
-        description:
-          "Photo and video production for brands, people and special moments.",
-
-        book: "Book a shoot",
-
-        portfolio: "View portfolio",
-
-        services: "Services",
-
-        servicesText: "Prices and packages",
-
-        booking: "Booking",
-
-        bookingText: "Choose a date",
-
-        location: "Location",
-
-        locationText: "Where we work",
-
-        contact: "Contact",
-
-        contactText: "Get in touch",
-
-        footer: "© 2026 Motion Studio",
-
-        formTitle: "Book a shoot",
-
-        formDescription:
-          "Fill out the form and I will contact you to discuss the details.",
-
-        name: "Your name",
-
-        phone: "Phone",
-
-        date: "Preferred date",
-
-        service: "Service",
-
-        servicePlaceholder: "Choose a service",
-
-        comment: "Comment",
-
-        commentPlaceholder:
-          "Briefly describe your shoot...",
-
-        submit: "Send request",
-
-        sending: "Sending...",
-
-        success:
-          "✅ Request sent successfully! I will contact you soon.",
-
-        error:
-          "❌ Failed to send the request. Please try again.",
-
-        alerts: {
-          portfolio:
-            "The photo and video portfolio will be here 📸",
-
-          services:
-            "Services and prices will be here 💰",
-
-          location:
-            "The map and location information will be here 📍",
-
-          contact:
-            "Telegram and Instagram will be here 💬"
-        }
-      }
-
-    };
-
-
-    let currentLanguage = "ua";
-
-
-    /* =========================
-       ELEMENTS
-    ========================= */
-
-    const languageButton =
-      document.getElementById("languageButton");
-
-    const languageMenu =
-      document.getElementById("languageMenu");
-
-    const bookingModal =
-      document.getElementById("bookingModal");
-
-    const bookingForm =
-      document.getElementById("bookingForm");
-
-    const formMessage =
-      document.getElementById("formMessage");
-
-
-    /* =========================
-       LANGUAGE MENU
-    ========================= */
-
-    languageButton.addEventListener("click", function(event) {
-
-      event.stopPropagation();
-
-      languageMenu.classList.toggle("open");
-
-    });
-
-
-    document
-      .querySelectorAll("[data-language]")
-      .forEach(function(button) {
-
-        button.addEventListener("click", function() {
-
-          changeLanguage(
-            button.getAttribute("data-language")
-          );
-
-        });
-
-      });
-
-
-    document.addEventListener("click", function(event) {
-
-      if (
-        !languageMenu.contains(event.target) &&
-        event.target !== languageButton
-      ) {
-
-        languageMenu.classList.remove("open");
-
-      }
-
-    });
-
-
-    function changeLanguage(language) {
-
-      currentLanguage = language;
-
-      const t = translations[language];
-
-      document.documentElement.lang =
-        language === "ua" ? "uk" : language;
-
-      languageButton.textContent =
-        t.languageName;
-
-      document.getElementById("label").textContent =
-        t.label;
-
-      document.getElementById("title").innerHTML =
-        t.title;
-
-      document.getElementById("description").textContent =
-        t.description;
-
-      document.getElementById("bookButton").textContent =
-        t.book;
-
-      document.getElementById("portfolioButton").textContent =
-        t.portfolio;
-
-      document.getElementById("servicesTitle").textContent =
-        t.services;
-
-      document.getElementById("servicesText").textContent =
-        t.servicesText;
-
-      document.getElementById("bookingTitle").textContent =
+      document.getElementById("bookingBtn").textContent =
         t.booking;
 
-      document.getElementById("bookingText").textContent =
-        t.bookingText;
+      document.getElementById("portfolioBtn").textContent =
+        t.portfolio;
 
-      document.getElementById("locationTitle").textContent =
-        t.location;
+      document.getElementById("aboutTitle").textContent =
+        t.about;
 
-      document.getElementById("locationText").textContent =
-        t.locationText;
+      langBtn.textContent =
+        currentLang.toUpperCase() + " ▾";
 
-      document.getElementById("contactTitle").textContent =
-        t.contact;
+      langMenu.classList.remove("active");
 
-      document.getElementById("contactText").textContent =
-        t.contactText;
+    });
 
-      document.getElementById("footer").textContent =
-        t.footer;
+  });
 
 
-      /* FORM */
+  /* MODAL */
 
-      document.getElementById("formTitle").textContent =
-        t.formTitle;
+  const modal = document.getElementById("bookingModal");
 
-      document.getElementById("formDescription").textContent =
-        t.formDescription;
+  const bookingBtn =
+    document.getElementById("bookingBtn");
 
-      document.getElementById("nameLabel").textContent =
-        t.name;
-
-      document.getElementById("phoneLabel").textContent =
-        t.phone;
-
-      document.getElementById("dateLabel").textContent =
-        t.date;
-
-      document.getElementById("serviceLabel").textContent =
-        t.service;
-
-      document.getElementById("servicePlaceholder").textContent =
-        t.servicePlaceholder;
-
-      document.getElementById("commentLabel").textContent =
-        t.comment;
-
-      document.getElementById("clientComment").placeholder =
-        t.commentPlaceholder;
-
-      document.getElementById("submitButton").textContent =
-        t.submit;
+  const closeModal =
+    document.getElementById("closeModal");
 
 
-      languageMenu.classList.remove("open");
+  bookingBtn.addEventListener("click", function() {
 
-      formMessage.textContent = "";
+    modal.classList.add("active");
 
+  });
+
+
+  closeModal.addEventListener("click", function() {
+
+    modal.classList.remove("active");
+
+  });
+
+
+  modal.addEventListener("click", function(e) {
+
+    if (e.target === modal) {
+      modal.classList.remove("active");
     }
 
-
-    /* =========================
-       BOOKING MODAL
-    ========================= */
-
-    function openBooking() {
-
-      bookingModal.classList.add("open");
-
-      document.body.style.overflow = "hidden";
-
-    }
+  });
 
 
-    function closeBooking() {
+  /* PORTFOLIO */
 
-      bookingModal.classList.remove("open");
+  document
+    .getElementById("portfolioBtn")
+    .addEventListener("click", function() {
 
-      document.bod
+      const section =
+        document.getElementById("portfolioSection");
+
+      section.classList.toggle("hidden-section");
+
+      if (!section.classList.contains("hidden-section")) {
+
+        section.scrollIntoView({
+          behavior: "smooth"
+        });
+
+      }
+
+    });
+
+
+  /* CONTACT */
+
+  document
+    .getElementById("contactBtn")
+    .addEventListener("click", function() {
+
+      const info =
+        document.getElementById("contactInfo");
+
+      info.style.display =
+        info.style.display === "none"
+          ? "block"
+          : "none";
+
+    });
+
+
+  /* LOCATION */
+
+  document
+    .getElementById("locationBtn")
+    .addEventListener("click", function() {
+
+      const info =
+        document.getElementById("locationInfo");
+
+      info.style.display =
+        info.style.display === "none"
+          ? "block"
+          : "none";
+
+    });
+
+
+  /* BOOKING FORM */
+
+  document
+    .getElementById("bookingForm")
+    .addEventListener("submit", async function(e) {
+
+      e.preventDefault();
+
+
+      const message =
+        document.getElementById("formMessage");
+
+      message.style.display = "block";
+
+      message.textContent =
+        "Відправляємо заявку...";
+
+
+      const name =
+        document.getElementById("name").value.trim();
+
+      const phone =
+        document.getElementById("phone").value.trim();
+
+      const date =
+        document.getElementById("date").value;
+
+      const service =
+        document.getElementById("service").value;
+
+      const comment =
+        document.getElementById("comment").value.trim();
+
+
+      const text =
+`📸 НОВА ЗАЯВКА
+
+👤 Ім'я: ${name}
+
+📞 Телефон: ${phone}
+
+📅 Дата: ${date}
+
+🎥 Послуга: ${service}
+
+💬 Коментар:
+${comment || "Не вказано"}`;
+
+
+      try {
+
+        const response = await fetch(
+          "/api/send-message.js",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              chatId: CHAT_ID,
+              text: text
+            })
+          }
+        );
+
+
+        const result =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            result.error || "Помилка"
+          );
+
+        }
+
+
+        message.textContent =
+          "✅ Заявку успішно надіслано!";
+
+
+        document
+          .getElementById("bookingForm")
+          .reset();
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        message.textContent =
+          "❌ Не вдалося надіслати заявку. Спробуйте ще раз.";
+
+      }
+
+    });
+
+</script>
+
+</body>
+</html>
