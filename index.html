@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Motion Studio</title>
 
   <style>
@@ -16,7 +15,7 @@
     body {
       font-family: Arial, sans-serif;
       background: #0b0b0b;
-      color: white;
+      color: #fff;
       min-height: 100vh;
     }
 
@@ -25,6 +24,10 @@
     select,
     textarea {
       font-family: inherit;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
     }
 
     .app {
@@ -47,9 +50,9 @@
     .language-button {
       border: 1px solid #333;
       background: #151515;
-      color: white;
+      color: #fff;
       border-radius: 12px;
-      padding: 9px 13px;
+      padding: 10px 14px;
       font-size: 13px;
       cursor: pointer;
     }
@@ -59,12 +62,12 @@
       position: absolute;
       top: 46px;
       right: 0;
-      width: 150px;
+      width: 155px;
       background: #181818;
       border: 1px solid #333;
       border-radius: 14px;
       padding: 6px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+      box-shadow: 0 15px 40px rgba(0,0,0,.5);
     }
 
     .language-menu.open {
@@ -75,15 +78,15 @@
       width: 100%;
       border: none;
       background: transparent;
-      color: white;
-      padding: 11px;
+      color: #fff;
+      padding: 12px;
       text-align: left;
       border-radius: 9px;
       cursor: pointer;
       font-size: 13px;
     }
 
-    .language-menu button:hover {
+    .language-menu button:active {
       background: #292929;
     }
 
@@ -100,8 +103,8 @@
       background:
         linear-gradient(
           to top,
-          rgba(0,0,0,0.9),
-          rgba(0,0,0,0.15)
+          rgba(0,0,0,.92),
+          rgba(0,0,0,.12)
         ),
         url("https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=85");
 
@@ -115,7 +118,7 @@
       width: fit-content;
       padding: 8px 13px;
       border-radius: 30px;
-      background: rgba(255,255,255,0.12);
+      background: rgba(255,255,255,.12);
       backdrop-filter: blur(10px);
       font-size: 13px;
       margin-bottom: 15px;
@@ -123,7 +126,7 @@
 
     h1 {
       font-size: 46px;
-      line-height: 0.95;
+      line-height: .95;
       letter-spacing: -2px;
       margin-bottom: 16px;
     }
@@ -150,14 +153,19 @@
     }
 
     .primary {
-      background: white;
-      color: black;
+      background: #fff;
+      color: #000;
     }
 
     .secondary {
-      background: rgba(255,255,255,0.12);
-      color: white;
+      background: rgba(255,255,255,.12);
+      color: #fff;
       backdrop-filter: blur(10px);
+    }
+
+    .buttons button:active,
+    .submit-button:active {
+      transform: scale(.98);
     }
 
     /* CARDS */
@@ -175,6 +183,11 @@
       padding: 20px;
       min-height: 110px;
       cursor: pointer;
+    }
+
+    .card:active {
+      transform: scale(.98);
+      background: #1d1d1d;
     }
 
     .icon {
@@ -206,7 +219,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.78);
+      background: rgba(0,0,0,.78);
       z-index: 100;
       padding: 20px;
       overflow-y: auto;
@@ -231,6 +244,7 @@
     .modal-title {
       font-size: 25px;
       margin-bottom: 7px;
+      padding-right: 35px;
     }
 
     .modal-description {
@@ -249,7 +263,7 @@
       border: none;
       border-radius: 50%;
       background: #252525;
-      color: white;
+      color: #fff;
       font-size: 20px;
       cursor: pointer;
     }
@@ -271,7 +285,7 @@
       width: 100%;
       border: 1px solid #333;
       background: #0d0d0d;
-      color: white;
+      color: #fff;
       border-radius: 12px;
       padding: 13px;
       font-size: 14px;
@@ -293,8 +307,8 @@
       width: 100%;
       border: none;
       border-radius: 14px;
-      background: white;
-      color: black;
+      background: #fff;
+      color: #000;
       padding: 15px;
       font-size: 15px;
       font-weight: 600;
@@ -303,7 +317,8 @@
     }
 
     .submit-button:disabled {
-      opacity: 0.5;
+      opacity: .5;
+      cursor: default;
     }
 
     .form-message {
@@ -332,23 +347,23 @@
     <div class="language-switcher">
 
       <button
+        type="button"
         class="language-button"
-        id="languageButton"
-        onclick="toggleLanguageMenu()">
+        id="languageButton">
         🌐 Українська ▾
       </button>
 
       <div class="language-menu" id="languageMenu">
 
-        <button onclick="changeLanguage('ua')">
+        <button type="button" data-language="ua">
           🇺🇦 Українська
         </button>
 
-        <button onclick="changeLanguage('ru')">
+        <button type="button" data-language="ru">
           🇷🇺 Русский
         </button>
 
-        <button onclick="changeLanguage('en')">
+        <button type="button" data-language="en">
           🇬🇧 English
         </button>
 
@@ -379,16 +394,16 @@
       <div class="buttons">
 
         <button
+          type="button"
           class="primary"
-          id="bookButton"
-          onclick="bookShoot()">
+          id="bookButton">
           Забронювати зйомку
         </button>
 
         <button
+          type="button"
           class="secondary"
-          id="portfolioButton"
-          onclick="showPortfolio()">
+          id="portfolioButton">
           Переглянути роботи
         </button>
 
@@ -401,8 +416,7 @@
 
     <section class="menu">
 
-      <div class="card" onclick="showServices()">
-
+      <div class="card" id="servicesCard">
         <div class="icon">💰</div>
 
         <div class="card-title" id="servicesTitle">
@@ -412,12 +426,10 @@
         <div class="card-text" id="servicesText">
           Ціни та формати
         </div>
-
       </div>
 
 
-      <div class="card" onclick="bookShoot()">
-
+      <div class="card" id="bookingCard">
         <div class="icon">📅</div>
 
         <div class="card-title" id="bookingTitle">
@@ -427,12 +439,10 @@
         <div class="card-text" id="bookingText">
           Обрати дату
         </div>
-
       </div>
 
 
-      <div class="card" onclick="showLocation()">
-
+      <div class="card" id="locationCard">
         <div class="icon">📍</div>
 
         <div class="card-title" id="locationTitle">
@@ -442,12 +452,10 @@
         <div class="card-text" id="locationText">
           Де працюємо
         </div>
-
       </div>
 
 
-      <div class="card" onclick="contact()">
-
+      <div class="card" id="contactCard">
         <div class="icon">💬</div>
 
         <div class="card-title" id="contactTitle">
@@ -457,7 +465,6 @@
         <div class="card-text" id="contactText">
           Зв'язатися зі мною
         </div>
-
       </div>
 
     </section>
@@ -477,8 +484,9 @@
     <div class="modal-box">
 
       <button
+        type="button"
         class="close-button"
-        onclick="closeBooking()">
+        id="closeBookingButton">
         ×
       </button>
 
@@ -604,92 +612,74 @@
 
   <script>
 
-    /* TELEGRAM */
+    /* =========================
+       TELEGRAM
+    ========================= */
 
     const CHAT_ID = "1047945172";
 
 
-    /* TRANSLATIONS */
+    /* =========================
+       TRANSLATIONS
+    ========================= */
 
     const translations = {
 
       ua: {
-
         languageName: "🌐 Українська ▾",
 
         label: "📸 МОБІЛОГРАФІЯ",
 
-        title:
-          "Кадри,<br>які хочеться<br>передивлятися.",
+        title: "Кадри,<br>які хочеться<br>передивлятися.",
 
         description:
           "Фото та відеозйомка для брендів, людей і важливих моментів.",
 
-        book:
-          "Забронювати зйомку",
+        book: "Забронювати зйомку",
 
-        portfolio:
-          "Переглянути роботи",
+        portfolio: "Переглянути роботи",
 
-        services:
-          "Послуги",
+        services: "Послуги",
 
-        servicesText:
-          "Ціни та формати",
+        servicesText: "Ціни та формати",
 
-        booking:
-          "Бронювання",
+        booking: "Бронювання",
 
-        bookingText:
-          "Обрати дату",
+        bookingText: "Обрати дату",
 
-        location:
-          "Локація",
+        location: "Локація",
 
-        locationText:
-          "Де працюємо",
+        locationText: "Де працюємо",
 
-        contact:
-          "Контакти",
+        contact: "Контакти",
 
-        contactText:
-          "Зв'язатися зі мною",
+        contactText: "Зв'язатися зі мною",
 
-        footer:
-          "© 2026 Motion Studio",
+        footer: "© 2026 Motion Studio",
 
-        formTitle:
-          "Забронювати зйомку",
+        formTitle: "Забронювати зйомку",
 
         formDescription:
           "Заповніть форму, і я зв'яжуся з вами для уточнення деталей.",
 
-        name:
-          "Ваше ім'я",
+        name: "Ваше ім'я",
 
-        phone:
-          "Телефон",
+        phone: "Телефон",
 
-        date:
-          "Бажана дата",
+        date: "Бажана дата",
 
-        service:
-          "Послуга",
+        service: "Послуга",
 
-        servicePlaceholder:
-          "Оберіть послугу",
+        servicePlaceholder: "Оберіть послугу",
 
-        comment:
-          "Коментар",
+        comment: "Коментар",
 
         commentPlaceholder:
           "Розкажіть коротко про зйомку...",
 
-        submit:
-          "Надіслати заявку",
+        submit: "Надіслати заявку",
 
-        sending:
-          "Надсилання...",
+        sending: "Надсилання...",
 
         success:
           "✅ Заявку успішно надіслано! Я зв'яжуся з вами найближчим часом.",
@@ -698,7 +688,6 @@
           "❌ Не вдалося надіслати заявку. Спробуйте ще раз.",
 
         alerts: {
-
           portfolio:
             "Тут буде портфоліо фотографій та відео 📸",
 
@@ -710,89 +699,65 @@
 
           contact:
             "Тут будуть Telegram та Instagram 💬"
-
         }
-
       },
 
 
       ru: {
-
         languageName: "🌐 Русский ▾",
 
         label: "📸 МОБИЛОГРАФИЯ",
 
-        title:
-          "Кадры,<br>которые хочется<br>пересматривать.",
+        title: "Кадры,<br>которые хочется<br>пересматривать.",
 
         description:
           "Фото и видеосъёмка для брендов, людей и важных моментов.",
 
-        book:
-          "Забронировать съёмку",
+        book: "Забронировать съёмку",
 
-        portfolio:
-          "Посмотреть работы",
+        portfolio: "Посмотреть работы",
 
-        services:
-          "Услуги",
+        services: "Услуги",
 
-        servicesText:
-          "Цены и форматы",
+        servicesText: "Цены и форматы",
 
-        booking:
-          "Бронирование",
+        booking: "Бронирование",
 
-        bookingText:
-          "Выбрать дату",
+        bookingText: "Выбрать дату",
 
-        location:
-          "Локация",
+        location: "Локация",
 
-        locationText:
-          "Где работаем",
+        locationText: "Где работаем",
 
-        contact:
-          "Контакты",
+        contact: "Контакты",
 
-        contactText:
-          "Связаться со мной",
+        contactText: "Связаться со мной",
 
-        footer:
-          "© 2026 Motion Studio",
+        footer: "© 2026 Motion Studio",
 
-        formTitle:
-          "Забронировать съёмку",
+        formTitle: "Забронировать съёмку",
 
         formDescription:
           "Заполните форму, и я свяжусь с вами для уточнения деталей.",
 
-        name:
-          "Ваше имя",
+        name: "Ваше имя",
 
-        phone:
-          "Телефон",
+        phone: "Телефон",
 
-        date:
-          "Желаемая дата",
+        date: "Желаемая дата",
 
-        service:
-          "Услуга",
+        service: "Услуга",
 
-        servicePlaceholder:
-          "Выберите услугу",
+        servicePlaceholder: "Выберите услугу",
 
-        comment:
-          "Комментарий",
+        comment: "Комментарий",
 
         commentPlaceholder:
           "Коротко расскажите о съёмке...",
 
-        submit:
-          "Отправить заявку",
+        submit: "Отправить заявку",
 
-        sending:
-          "Отправка...",
+        sending: "Отправка...",
 
         success:
           "✅ Заявка успешно отправлена! Я свяжусь с вами в ближайшее время.",
@@ -801,7 +766,6 @@
           "❌ Не удалось отправить заявку. Попробуйте ещё раз.",
 
         alerts: {
-
           portfolio:
             "Здесь будет портфолио фотографий и видео 📸",
 
@@ -813,89 +777,65 @@
 
           contact:
             "Здесь будут Telegram и Instagram 💬"
-
         }
-
       },
 
 
       en: {
-
         languageName: "🌐 English ▾",
 
         label: "📸 MOBILE PHOTOGRAPHY",
 
-        title:
-          "Frames<br>you'll want<br>to watch again.",
+        title: "Frames<br>you'll want<br>to watch again.",
 
         description:
           "Photo and video production for brands, people and special moments.",
 
-        book:
-          "Book a shoot",
+        book: "Book a shoot",
 
-        portfolio:
-          "View portfolio",
+        portfolio: "View portfolio",
 
-        services:
-          "Services",
+        services: "Services",
 
-        servicesText:
-          "Prices and packages",
+        servicesText: "Prices and packages",
 
-        booking:
-          "Booking",
+        booking: "Booking",
 
-        bookingText:
-          "Choose a date",
+        bookingText: "Choose a date",
 
-        location:
-          "Location",
+        location: "Location",
 
-        locationText:
-          "Where we work",
+        locationText: "Where we work",
 
-        contact:
-          "Contact",
+        contact: "Contact",
 
-        contactText:
-          "Get in touch",
+        contactText: "Get in touch",
 
-        footer:
-          "© 2026 Motion Studio",
+        footer: "© 2026 Motion Studio",
 
-        formTitle:
-          "Book a shoot",
+        formTitle: "Book a shoot",
 
         formDescription:
           "Fill out the form and I will contact you to discuss the details.",
 
-        name:
-          "Your name",
+        name: "Your name",
 
-        phone:
-          "Phone",
+        phone: "Phone",
 
-        date:
-          "Preferred date",
+        date: "Preferred date",
 
-        service:
-          "Service",
+        service: "Service",
 
-        servicePlaceholder:
-          "Choose a service",
+        servicePlaceholder: "Choose a service",
 
-        comment:
-          "Comment",
+        comment: "Comment",
 
         commentPlaceholder:
           "Briefly describe your shoot...",
 
-        submit:
-          "Send request",
+        submit: "Send request",
 
-        sending:
-          "Sending...",
+        sending: "Sending...",
 
         success:
           "✅ Request sent successfully! I will contact you soon.",
@@ -904,7 +844,6 @@
           "❌ Failed to send the request. Please try again.",
 
         alerts: {
-
           portfolio:
             "The photo and video portfolio will be here 📸",
 
@@ -916,9 +855,7 @@
 
           contact:
             "Telegram and Instagram will be here 💬"
-
         }
-
       }
 
     };
@@ -927,15 +864,66 @@
     let currentLanguage = "ua";
 
 
-    /* LANGUAGE MENU */
+    /* =========================
+       ELEMENTS
+    ========================= */
 
-    function toggleLanguageMenu() {
+    const languageButton =
+      document.getElementById("languageButton");
 
-      document
-        .getElementById("languageMenu")
-        .classList.toggle("open");
+    const languageMenu =
+      document.getElementById("languageMenu");
 
-    }
+    const bookingModal =
+      document.getElementById("bookingModal");
+
+    const bookingForm =
+      document.getElementById("bookingForm");
+
+    const formMessage =
+      document.getElementById("formMessage");
+
+
+    /* =========================
+       LANGUAGE MENU
+    ========================= */
+
+    languageButton.addEventListener("click", function(event) {
+
+      event.stopPropagation();
+
+      languageMenu.classList.toggle("open");
+
+    });
+
+
+    document
+      .querySelectorAll("[data-language]")
+      .forEach(function(button) {
+
+        button.addEventListener("click", function() {
+
+          changeLanguage(
+            button.getAttribute("data-language")
+          );
+
+        });
+
+      });
+
+
+    document.addEventListener("click", function(event) {
+
+      if (
+        !languageMenu.contains(event.target) &&
+        event.target !== languageButton
+      ) {
+
+        languageMenu.classList.remove("open");
+
+      }
+
+    });
 
 
     function changeLanguage(language) {
@@ -947,12 +935,10 @@
       document.documentElement.lang =
         language === "ua" ? "uk" : language;
 
-
-      document.getElementById("languageButton").textContent =
+      languageButton.textContent =
         t.languageName;
 
-
-      document.getElementById("label").innerHTML =
+      document.getElementById("label").textContent =
         t.label;
 
       document.getElementById("title").innerHTML =
@@ -1018,4 +1004,38 @@
       document.getElementById("servicePlaceholder").textContent =
         t.servicePlaceholder;
 
-      document.getElementById("comment
+      document.getElementById("commentLabel").textContent =
+        t.comment;
+
+      document.getElementById("clientComment").placeholder =
+        t.commentPlaceholder;
+
+      document.getElementById("submitButton").textContent =
+        t.submit;
+
+
+      languageMenu.classList.remove("open");
+
+      formMessage.textContent = "";
+
+    }
+
+
+    /* =========================
+       BOOKING MODAL
+    ========================= */
+
+    function openBooking() {
+
+      bookingModal.classList.add("open");
+
+      document.body.style.overflow = "hidden";
+
+    }
+
+
+    function closeBooking() {
+
+      bookingModal.classList.remove("open");
+
+      document.bod
