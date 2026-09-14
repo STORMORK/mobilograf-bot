@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Адмін-панель</title>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1 {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin: 18px 0 7px;
+      color: #aaa;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #1d1d1d;
+      color: white;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 25px;
+      padding: 15px;
+      border: 0;
+      border-radius: 10px;
+      background: #fff;
+      color: #000;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    #status {
+      margin-top: 20px;
+      text-align: center;
+      color: #aaa;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>Адмін-панель</h1>
+
+  <label>Заголовок</label>
+  <input id="hero_title" type="text">
+
+  <label>Текст</label>
+  <input id="hero_text" type="text">
+
+  <label>Заголовок «Про мене»</label>
+  <input id="about_title" type="text">
+
+  <label>Телефон</label>
+  <input id="phone" type="text">
+
+  <label>Telegram</label>
+  <input id="telegram" type="text">
+
+  <label>Instagram</label>
+  <input id="instagram" type="text">
+
+  <label>Місто / локація</label>
+  <input id="location" type="text">
+
+  <button onclick="saveContent()">Зберегти зміни</button>
+
+  <div id="status"></div>
+
+</div>
+
+<script>
+  const tg = window.Telegram.WebApp;
+
+  tg.ready();
+  tg.expand();
+
+  const initData = tg.initData;
+
+  async function checkAdmin() {
+    const response = await fetch("/admin-content.js", {
+      method: "GET",
+      headers: {
+        "x-telegram-init-data": initData
+      }
+    });
+
+    if (!response.ok) {
+      document.body.innerHTML =
+        "<h2>Доступ заборонено</h2>";
+      return false;
+    }
+
+    return true;
+  }
+
+  async function saveContent() {
+
+    const status = document.getElementById("status");
+    status.textContent = "Збереження...";
+
+    const data = {
+      hero_title: document.getElementById("hero_title").value,
+      hero_text: document.getElementById("hero_text").value,
+      about_title: document.getElementById("about_title").value,
+      phone: document.getElementById("phone").value,
+      telegram: document.getElementById("telegram").value,
+      instagram: document.getElementById("instagram").value,
+      location: document.getElementById("location").value
+    };
+
+    const response = await fetch("/admin-content.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-telegram-init-data": initData
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      status.textContent = "Зміни збережено ✅";
+    } else {
+      status.textContent =
+        "Помилка: " + (result.error || "невідома помилка");
+    }
+  }
+
+  checkAdmin();
+</script>
+
+</body>
+</html>
