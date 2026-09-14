@@ -2,9 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Адмін — Мобілограф</title>
 
@@ -47,6 +45,7 @@
       margin-bottom: 25px;
       color: #bbb;
       font-size: 14px;
+      line-height: 1.5;
     }
 
     .debug strong {
@@ -98,6 +97,7 @@
 
     .save-btn:disabled {
       opacity: .5;
+      cursor: not-allowed;
     }
 
     #status {
@@ -121,7 +121,6 @@
     Керування інформацією сайту
   </p>
 
-  <!-- ДІАГНОСТИКА -->
   <div class="debug" id="debug">
     Перевіряємо Telegram...
   </div>
@@ -202,9 +201,7 @@
 
 <script>
 
-  /* =========================
-     TELEGRAM
-  ========================= */
+  /* TELEGRAM */
 
   const tg = window.Telegram.WebApp;
 
@@ -212,9 +209,7 @@
   tg.expand();
 
 
-  /* =========================
-     INIT DATA
-  ========================= */
+  /* INIT DATA */
 
   const params =
     new URLSearchParams(
@@ -230,9 +225,7 @@
     "";
 
 
-  /* =========================
-     DEBUG
-  ========================= */
+  /* ELEMENTS */
 
   const debug =
     document.getElementById("debug");
@@ -240,49 +233,39 @@
   const saveBtn =
     document.getElementById("saveBtn");
 
-
   let telegramUserId = null;
 
+
+  /* INITIAL CHECK */
 
   if (!initData) {
 
     debug.innerHTML =
       "<strong>❌ initData відсутній</strong><br>" +
-      "Telegram не передав дані авторизації.";
+      "Відкрий адмінку через кнопку «⚙ Адмін» у Telegram.";
 
   } else {
 
     debug.innerHTML =
       "<strong>✅ initData отримано</strong><br>" +
-      "Довжина даних: " +
-      initData.length +
-      "<br>" +
-      "Перевіряємо права адміністратора...";
+      "Дані Telegram отримані. Перевіряємо адміністратора...";
 
   }
 
 
-  /* =========================
-     CHECK ADMIN
-  ========================= */
+  /* CHECK ADMIN */
 
   async function checkAdmin() {
 
     if (!initData) {
-
-      debug.innerHTML =
-        "<strong>❌ Немає initData</strong><br>" +
-        "Відкрий адмінку саме через кнопку «⚙ Адмін» у Telegram.";
-
       return false;
     }
-
 
     try {
 
       const response =
         await fetch(
-          "/admin-content.js",
+          "/api/admin-content.js",
           {
             method: "GET",
 
@@ -302,12 +285,15 @@
       if (!response.ok) {
 
         debug.innerHTML =
-          "<strong>❌ Сервер відхилив Telegram</strong><br>" +
+          "<strong>❌ Доступ заборонено</strong><br>" +
           "HTTP статус: " +
           response.status +
           "<br>" +
           "Причина: " +
-          (result.error || "Access denied");
+          (
+            result.error ||
+            "Access denied"
+          );
 
         return false;
       }
@@ -343,19 +329,15 @@
   }
 
 
-  /* =========================
-     SAVE CONTENT
-  ========================= */
+  /* SAVE CONTENT */
 
   async function saveContent() {
 
     const status =
       document.getElementById("status");
 
-
     status.style.display =
       "block";
-
 
     status.textContent =
       "Збереження...";
@@ -405,7 +387,7 @@
 
       const response =
         await fetch(
-          "/admin-content.js",
+          "/api/admin-content.js",
           {
             method: "POST",
 
@@ -446,7 +428,6 @@
       status.textContent =
         "✅ Зміни збережено!";
 
-
     } catch (error) {
 
       console.error(error);
@@ -459,9 +440,7 @@
   }
 
 
-  /* =========================
-     BUTTON
-  ========================= */
+  /* SAVE BUTTON */
 
   saveBtn.addEventListener(
     "click",
@@ -469,9 +448,7 @@
   );
 
 
-  /* =========================
-     START
-  ========================= */
+  /* START */
 
   checkAdmin();
 
