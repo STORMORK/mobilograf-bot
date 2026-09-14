@@ -53,7 +53,8 @@ function validateTelegramInitData(initData, botToken) {
 
 
   if (
-    Math.floor(Date.now() / 1000) - authDate >
+    Math.floor(Date.now() / 1000) -
+    authDate >
     86400
   ) {
     return null;
@@ -75,9 +76,9 @@ function validateTelegramInitData(initData, botToken) {
 }
 
 
-/* =========================
-   GET ADMIN
-========================= */
+/* ================================
+   ПОЛУЧЕНИЕ ДАННЫХ АДМИНКИ
+================================ */
 
 async function getAdmin(req, res) {
 
@@ -107,6 +108,7 @@ async function getAdmin(req, res) {
   const supabaseUrl =
     process.env.SUPABASE_URL;
 
+
   const supabaseKey =
     process.env.SUPABASE_SECRET_KEY;
 
@@ -124,22 +126,22 @@ async function getAdmin(req, res) {
   }
 
 
-  /* Получаем текущие данные сайта */
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/site_content?id=eq.1&select=*`,
+    {
+      method: "GET",
 
-  const response =
-    await fetch(
-      `${supabaseUrl}/rest/v1/site_content?id=eq.1&select=*`,
-      {
-        method: "GET",
+      headers: {
 
-        headers: {
-          apikey: supabaseKey,
+        apikey: supabaseKey,
 
-          Authorization:
-            `Bearer ${supabaseKey}`
-        }
+        Authorization:
+          `Bearer ${supabaseKey}`
+
       }
-    );
+
+    }
+  );
 
 
   const data =
@@ -149,8 +151,13 @@ async function getAdmin(req, res) {
   if (!response.ok) {
 
     return res.status(500).json({
-      error: "Supabase read error",
-      details: data
+
+      error:
+        "Supabase read error",
+
+      details:
+        data
+
     });
 
   }
@@ -170,9 +177,9 @@ async function getAdmin(req, res) {
 }
 
 
-/* =========================
-   UPDATE CONTENT
-========================= */
+/* ================================
+   СОХРАНЕНИЕ ДАННЫХ
+================================ */
 
 async function updateContent(req, res) {
 
@@ -202,6 +209,7 @@ async function updateContent(req, res) {
   const supabaseUrl =
     process.env.SUPABASE_URL;
 
+
   const supabaseKey =
     process.env.SUPABASE_SECRET_KEY;
 
@@ -212,8 +220,10 @@ async function updateContent(req, res) {
   ) {
 
     return res.status(500).json({
+
       error:
         "Supabase environment variables are missing"
+
     });
 
   }
@@ -263,45 +273,45 @@ async function updateContent(req, res) {
   ) {
 
     return res.status(400).json({
+
       error:
         "No fields to update"
+
     });
 
   }
 
 
-  /* =========================
-     UPDATE SUPABASE
-  ========================= */
+  const response = await fetch(
 
-  const response =
-    await fetch(
-      `${supabaseUrl}/rest/v1/site_content?id=eq.1`,
-      {
+    `${supabaseUrl}/rest/v1/site_content?id=eq.1`,
 
-        method: "PATCH",
+    {
 
-        headers: {
+      method: "PATCH",
 
-          apikey:
-            supabaseKey,
+      headers: {
 
-          Authorization:
-            `Bearer ${supabaseKey}`,
+        apikey:
+          supabaseKey,
 
-          "Content-Type":
-            "application/json",
+        Authorization:
+          `Bearer ${supabaseKey}`,
 
-          Prefer:
-            "return=representation"
+        "Content-Type":
+          "application/json",
 
-        },
+        Prefer:
+          "return=representation"
 
-        body:
-          JSON.stringify(updates)
+      },
 
-      }
-    );
+      body:
+        JSON.stringify(updates)
+
+    }
+
+  );
 
 
   const data =
@@ -323,11 +333,9 @@ async function updateContent(req, res) {
   }
 
 
-  /* =========================
-     IMPORTANT
-     Проверяем, что строка
-     действительно обновилась
-  ========================= */
+  /* ВАЖНО:
+     если строки id=1 нет,
+     считаем сохранение ошибкой */
 
   if (
     !Array.isArray(data) ||
@@ -337,10 +345,10 @@ async function updateContent(req, res) {
     return res.status(500).json({
 
       error:
-        "Данные не изменены",
+        "Дані не змінені",
 
       details:
-        "В Supabase не найдена строка с id=1."
+        "В Supabase не знайдена строка з id=1."
 
     });
 
@@ -359,9 +367,9 @@ async function updateContent(req, res) {
 }
 
 
-/* =========================
-   HANDLER
-========================= */
+/* ================================
+   ОСНОВНОЙ HANDLER
+================================ */
 
 export default async function handler(
   req,
@@ -370,7 +378,9 @@ export default async function handler(
 
   try {
 
-    if (req.method === "GET") {
+    if (
+      req.method === "GET"
+    ) {
 
       return await getAdmin(
         req,
@@ -380,7 +390,9 @@ export default async function handler(
     }
 
 
-    if (req.method === "POST") {
+    if (
+      req.method === "POST"
+    ) {
 
       return await updateContent(
         req,
@@ -397,9 +409,11 @@ export default async function handler(
 
     });
 
+
   } catch (error) {
 
     console.error(error);
+
 
     return res.status(500).json({
 
