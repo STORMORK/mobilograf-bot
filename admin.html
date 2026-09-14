@@ -1,14 +1,20 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
 
   <title>Адмін — Мобілограф</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -25,11 +31,23 @@
     .container {
       width: min(700px, 92%);
       margin: auto;
-      padding: 40px 0;
+      padding: 25px 0 50px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 25px;
+      padding: 10px 15px;
+      border: 1px solid #333;
+      border-radius: 10px;
+      color: white;
+      text-decoration: none;
+      background: #151518;
+      font-size: 14px;
     }
 
     h1 {
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .subtitle {
@@ -48,10 +66,6 @@
       line-height: 1.5;
     }
 
-    .debug strong {
-      color: white;
-    }
-
     .field {
       margin-bottom: 18px;
     }
@@ -60,6 +74,7 @@
       display: block;
       margin-bottom: 7px;
       color: #bbb;
+      font-size: 14px;
     }
 
     input,
@@ -71,16 +86,17 @@
       border-radius: 10px;
       padding: 13px;
       outline: none;
+      font-size: 16px;
     }
 
     textarea {
-      min-height: 100px;
+      min-height: 110px;
       resize: vertical;
     }
 
     input:focus,
     textarea:focus {
-      border-color: #666;
+      border-color: #777;
     }
 
     .save-btn {
@@ -107,13 +123,26 @@
       background: #151518;
       color: #bbb;
       display: none;
+      line-height: 1.5;
     }
+
   </style>
+
 </head>
+
 
 <body>
 
 <div class="container">
+
+  <a
+    href="/"
+    class="back-btn">
+
+    ← Назад на сайт
+
+  </a>
+
 
   <h1>⚙ Адмін-панель</h1>
 
@@ -121,78 +150,122 @@
     Керування інформацією сайту
   </p>
 
-  <div class="debug" id="debug">
+
+  <div
+    class="debug"
+    id="debug">
+
     Перевіряємо Telegram...
+
   </div>
 
+
   <div class="field">
-    <label>Заголовок</label>
+
+    <label>
+      Заголовок
+    </label>
 
     <input
       id="hero_title"
       type="text"
-      placeholder="Фото та відео, які продають">
+      placeholder="Фото та відео, які привертають увагу">
+
   </div>
 
+
   <div class="field">
-    <label>Текст під заголовком</label>
+
+    <label>
+      Текст під заголовком
+    </label>
 
     <textarea
       id="hero_text"
       placeholder="Опис послуг"></textarea>
+
   </div>
 
+
   <div class="field">
-    <label>Заголовок блоку «Що я роблю»</label>
+
+    <label>
+      Заголовок блоку «Що я роблю»
+    </label>
 
     <input
       id="about_title"
       type="text"
-      placeholder="Що я роблю">
+      placeholder="Контент, який працює на ваш бізнес">
+
   </div>
 
+
   <div class="field">
-    <label>Телефон</label>
+
+    <label>
+      Телефон
+    </label>
 
     <input
       id="phone"
       type="text"
-      placeholder="+380...">
+      placeholder="+380 XX XXX XX XX">
+
   </div>
 
+
   <div class="field">
-    <label>Telegram</label>
+
+    <label>
+      Telegram
+    </label>
 
     <input
       id="telegram"
       type="text"
-      placeholder="@username">
+      placeholder="@your_username">
+
   </div>
 
+
   <div class="field">
-    <label>Instagram</label>
+
+    <label>
+      Instagram
+    </label>
 
     <input
       id="instagram"
       type="text"
-      placeholder="@instagram">
+      placeholder="@your_instagram">
+
   </div>
 
+
   <div class="field">
-    <label>Локація</label>
+
+    <label>
+      Локація
+    </label>
 
     <input
       id="location"
       type="text"
-      placeholder="Київ">
+      placeholder="Київ та область">
+
   </div>
+
 
   <button
     class="save-btn"
     id="saveBtn"
     disabled>
+
     Зберегти зміни
+
   </button>
+
 
   <div id="status"></div>
 
@@ -201,42 +274,62 @@
 
 <script>
 
-  /* TELEGRAM */
+const tg = window.Telegram.WebApp;
 
-  const tg = window.Telegram.WebApp;
-
-  tg.ready();
-  tg.expand();
+tg.ready();
+tg.expand();
 
 
-  /* INIT DATA */
+/* =========================
+   INIT DATA
+========================= */
 
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
 
-  const initDataFromUrl =
-    params.get("initData");
+const initDataFromUrl =
+  params.get("initData");
 
-  const initData =
-    initDataFromUrl ||
-    tg.initData ||
-    "";
-
-
-  /* ELEMENTS */
-
-  const debug =
-    document.getElementById("debug");
-
-  const saveBtn =
-    document.getElementById("saveBtn");
-
-  let telegramUserId = null;
+const initData =
+  initDataFromUrl ||
+  tg.initData ||
+  "";
 
 
-  /* INITIAL CHECK */
+/* =========================
+   ELEMENTS
+========================= */
+
+const debug =
+  document.getElementById("debug");
+
+const saveBtn =
+  document.getElementById("saveBtn");
+
+const status =
+  document.getElementById("status");
+
+
+/* =========================
+   STATUS
+========================= */
+
+function showStatus(text) {
+
+  status.style.display = "block";
+
+  status.textContent = text;
+
+}
+
+
+/* =========================
+   LOAD DATA
+========================= */
+
+async function loadAdmin() {
 
   if (!initData) {
 
@@ -244,215 +337,311 @@
       "<strong>❌ initData відсутній</strong><br>" +
       "Відкрий адмінку через кнопку «⚙ Адмін» у Telegram.";
 
-  } else {
+    return;
+  }
+
+
+  debug.innerHTML =
+    "<strong>⏳ Перевіряємо адміністратора...</strong>";
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/admin-content.js",
+        {
+          method: "GET",
+
+          headers: {
+            "x-telegram-init-data":
+              initData
+          }
+        }
+      );
+
+
+    const result =
+      await response
+        .json()
+        .catch(() => ({}));
+
+
+    if (!response.ok) {
+
+      debug.innerHTML =
+        "<strong>❌ Доступ заборонено</strong><br>" +
+        "HTTP: " +
+        response.status +
+        "<br>" +
+        (
+          result.error ||
+          "Access denied"
+        );
+
+      return;
+    }
+
 
     debug.innerHTML =
-      "<strong>✅ initData отримано</strong><br>" +
-      "Дані Telegram отримані. Перевіряємо адміністратора...";
-
-  }
-
-
-  /* CHECK ADMIN */
-
-  async function checkAdmin() {
-
-    if (!initData) {
-      return false;
-    }
-
-    try {
-
-      const response =
-        await fetch(
-          "/api/admin-content.js",
-          {
-            method: "GET",
-
-            headers: {
-              "x-telegram-init-data":
-                initData
-            }
-          }
-        );
+      "<strong>✅ Адміністратор підтверджений</strong><br>" +
+      "Telegram ID: " +
+      result.userId;
 
 
-      const result =
-        await response.json()
-          .catch(() => ({}));
+    /* =========================
+       LOAD SAVED CONTENT
+    ========================= */
+
+    const content =
+      result.content;
 
 
-      if (!response.ok) {
+    if (content) {
 
-        debug.innerHTML =
-          "<strong>❌ Доступ заборонено</strong><br>" +
-          "HTTP статус: " +
-          response.status +
-          "<br>" +
-          "Причина: " +
-          (
-            result.error ||
-            "Access denied"
-          );
-
-        return false;
-      }
+      document.getElementById(
+        "hero_title"
+      ).value =
+        content.hero_title || "";
 
 
-      telegramUserId =
-        result.userId || null;
+      document.getElementById(
+        "hero_text"
+      ).value =
+        content.hero_text || "";
 
 
-      debug.innerHTML =
-        "<strong>✅ Адміністратор підтверджений</strong><br>" +
-        "Telegram ID: " +
-        telegramUserId;
+      document.getElementById(
+        "about_title"
+      ).value =
+        content.about_title || "";
 
 
-      saveBtn.disabled = false;
+      document.getElementById(
+        "phone"
+      ).value =
+        content.phone || "";
 
 
-      return true;
+      document.getElementById(
+        "telegram"
+      ).value =
+        content.telegram || "";
 
 
-    } catch (error) {
-
-      console.error(error);
-
-      debug.innerHTML =
-        "<strong>❌ Помилка з'єднання</strong><br>" +
-        error.message;
-
-      return false;
-    }
-
-  }
+      document.getElementById(
+        "instagram"
+      ).value =
+        content.instagram || "";
 
 
-  /* SAVE CONTENT */
-
-  async function saveContent() {
-
-    const status =
-      document.getElementById("status");
-
-    status.style.display =
-      "block";
-
-    status.textContent =
-      "Збереження...";
-
-
-    const data = {
-
-      hero_title:
-        document
-          .getElementById("hero_title")
-          .value,
-
-      hero_text:
-        document
-          .getElementById("hero_text")
-          .value,
-
-      about_title:
-        document
-          .getElementById("about_title")
-          .value,
-
-      phone:
-        document
-          .getElementById("phone")
-          .value,
-
-      telegram:
-        document
-          .getElementById("telegram")
-          .value,
-
-      instagram:
-        document
-          .getElementById("instagram")
-          .value,
-
-      location:
-        document
-          .getElementById("location")
-          .value
-
-    };
-
-
-    try {
-
-      const response =
-        await fetch(
-          "/api/admin-content.js",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json",
-
-              "x-telegram-init-data":
-                initData
-            },
-
-            body:
-              JSON.stringify(data)
-          }
-        );
-
-
-      const result =
-        await response.json()
-          .catch(() => ({}));
-
-
-      if (!response.ok) {
-
-        status.textContent =
-          "❌ Помилка: " +
-          (
-            result.error ||
-            "Невідома помилка"
-          );
-
-        console.error(result);
-
-        return;
-      }
-
-
-      status.textContent =
-        "✅ Зміни збережено!";
-
-    } catch (error) {
-
-      console.error(error);
-
-      status.textContent =
-        "❌ Помилка з'єднання.";
+      document.getElementById(
+        "location"
+      ).value =
+        content.location || "";
 
     }
 
+
+    saveBtn.disabled = false;
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    debug.innerHTML =
+      "<strong>❌ Помилка з'єднання</strong><br>" +
+      error.message;
+
   }
 
+}
 
-  /* SAVE BUTTON */
 
-  saveBtn.addEventListener(
-    "click",
-    saveContent
+/* =========================
+   SAVE
+========================= */
+
+async function saveContent() {
+
+  saveBtn.disabled = true;
+
+  showStatus(
+    "⏳ Зберігаємо зміни..."
   );
 
 
-  /* START */
+  const data = {
 
-  checkAdmin();
+    hero_title:
+      document.getElementById(
+        "hero_title"
+      ).value,
+
+    hero_text:
+      document.getElementById(
+        "hero_text"
+      ).value,
+
+    about_title:
+      document.getElementById(
+        "about_title"
+      ).value,
+
+    phone:
+      document.getElementById(
+        "phone"
+      ).value,
+
+    telegram:
+      document.getElementById(
+        "telegram"
+      ).value,
+
+    instagram:
+      document.getElementById(
+        "instagram"
+      ).value,
+
+    location:
+      document.getElementById(
+        "location"
+      ).value
+
+  };
+
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/admin-content.js",
+        {
+          method: "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json",
+
+            "x-telegram-init-data":
+              initData
+
+          },
+
+          body:
+            JSON.stringify(data)
+
+        }
+      );
+
+
+    const result =
+      await response
+        .json()
+        .catch(() => ({}));
+
+
+    if (!response.ok) {
+
+      showStatus(
+        "❌ Помилка: " +
+        (
+          result.error ||
+          "Невідома помилка"
+        )
+      );
+
+      saveBtn.disabled = false;
+
+      return;
+    }
+
+
+    showStatus(
+      "✅ Зміни успішно збережено!"
+    );
+
+
+    /* =========================
+       UPDATE FIELDS
+    ========================= */
+
+    if (result.data) {
+
+      document.getElementById(
+        "hero_title"
+      ).value =
+        result.data.hero_title || "";
+
+      document.getElementById(
+        "hero_text"
+      ).value =
+        result.data.hero_text || "";
+
+      document.getElementById(
+        "about_title"
+      ).value =
+        result.data.about_title || "";
+
+      document.getElementById(
+        "phone"
+      ).value =
+        result.data.phone || "";
+
+      document.getElementById(
+        "telegram"
+      ).value =
+        result.data.telegram || "";
+
+      document.getElementById(
+        "instagram"
+      ).value =
+        result.data.instagram || "";
+
+      document.getElementById(
+        "location"
+      ).value =
+        result.data.location || "";
+
+    }
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    showStatus(
+      "❌ Помилка з'єднання."
+    );
+
+  }
+
+
+  saveBtn.disabled = false;
+
+}
+
+
+/* =========================
+   BUTTON
+========================= */
+
+saveBtn.addEventListener(
+  "click",
+  saveContent
+);
+
+
+/* =========================
+   START
+========================= */
+
+loadAdmin();
 
 </script>
 
 </body>
+
 </html>
