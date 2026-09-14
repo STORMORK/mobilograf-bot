@@ -2,588 +2,406 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <meta name="theme-color" content="#070708">
-  <title>МОБІЛОГРАФ</title>
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <title>Мобілограф</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
+    * {
+      box-sizing: border-box;
     }
 
-    html{
-      scroll-behavior:smooth;
+    html {
+      scroll-behavior: smooth;
     }
 
-    body{
-      margin:0;
-      color:#fff;
-      font-family:Arial,Helvetica,sans-serif;
-      background:#060609;
-      min-height:100vh;
-      overflow-x:hidden;
-    }
-
-    /* ===== PREMIUM BACKGROUND ===== */
-
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      z-index:-5;
+    body {
+      margin: 0;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
       background:
-        radial-gradient(circle at 80% 8%,rgba(132,92,255,.22),transparent 30%),
-        radial-gradient(circle at 5% 35%,rgba(0,195,255,.12),transparent 28%),
-        radial-gradient(circle at 70% 70%,rgba(255,70,180,.08),transparent 28%),
-        #060609;
+        radial-gradient(circle at 15% 10%, rgba(255,255,255,.10), transparent 28%),
+        radial-gradient(circle at 85% 25%, rgba(120,90,255,.12), transparent 30%),
+        radial-gradient(circle at 50% 80%, rgba(255,90,150,.08), transparent 32%),
+        #070707;
+      min-height: 100vh;
     }
 
-    body::after{
-      content:"";
-      position:fixed;
-      inset:0;
-      z-index:-4;
-      opacity:.18;
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
       background-image:
-        linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
-        linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
-      background-size:45px 45px;
-      mask-image:linear-gradient(to bottom,black,transparent 90%);
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
     }
 
-    .glow{
-      position:fixed;
-      width:280px;
-      height:280px;
-      border-radius:50%;
-      filter:blur(80px);
-      opacity:.16;
-      z-index:-3;
-      pointer-events:none;
-      animation:floatGlow 10s ease-in-out infinite alternate;
-    }
-
-    .glow.one{
-      background:#7b5cff;
-      top:12%;
-      right:-100px;
-    }
-
-    .glow.two{
-      background:#00bfff;
-      bottom:10%;
-      left:-120px;
-      animation-delay:2s;
-    }
-
-    @keyframes floatGlow{
-      from{
-        transform:translate(0,0) scale(1);
-      }
-      to{
-        transform:translate(-35px,25px) scale(1.15);
-      }
-    }
-
-    /* ===== HEADER ===== */
-
-    header{
-      position:sticky;
-      top:0;
-      z-index:50;
-      padding:14px 16px;
-      background:rgba(6,6,9,.72);
-      backdrop-filter:blur(18px);
-      -webkit-backdrop-filter:blur(18px);
-      border-bottom:1px solid rgba(255,255,255,.07);
-    }
-
-    .header-inner{
-      max-width:1100px;
-      margin:auto;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-
-    .logo{
-      font-size:15px;
-      font-weight:800;
-      letter-spacing:2px;
-      white-space:nowrap;
-    }
-
-    .header-actions{
-      display:flex;
-      align-items:center;
-      gap:7px;
-    }
-
-    button{
-      border:0;
-      color:#fff;
-      cursor:pointer;
-      font:inherit;
-    }
-
-    .admin-btn,
-    .lang-btn{
-      padding:9px 11px;
-      border-radius:12px;
-      background:rgba(255,255,255,.07);
-      border:1px solid rgba(255,255,255,.09);
-      font-size:12px;
-    }
-
-    .admin-btn{
-      display:none;
-    }
-
-    .lang-wrap{
-      position:relative;
-    }
-
-    .lang-menu{
-      display:none;
-      position:absolute;
-      right:0;
-      top:45px;
-      width:145px;
-      padding:7px;
-      border-radius:14px;
-      background:rgba(18,18,23,.96);
-      border:1px solid rgba(255,255,255,.1);
-      box-shadow:0 15px 45px rgba(0,0,0,.45);
-    }
-
-    .lang-menu.show{
-      display:block;
-    }
-
-    .lang-menu button{
-      width:100%;
-      padding:11px;
-      text-align:left;
-      border-radius:9px;
-      background:transparent;
-      font-size:13px;
-    }
-
-    .lang-menu button:hover{
-      background:rgba(255,255,255,.08);
-    }
-
-    /* ===== MAIN ===== */
-
-    main{
-      max-width:1100px;
-      margin:auto;
-      padding:0 18px 50px;
-    }
-
-    section{
-      padding:75px 0;
-    }
-
-    /* ===== HERO ===== */
-
-    .hero{
-      min-height:calc(100vh - 65px);
-      display:flex;
-      align-items:center;
-      position:relative;
-    }
-
-    .hero-content{
-      width:100%;
-      max-width:760px;
-      position:relative;
-    }
-
-    .hero-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:7px;
-      padding:8px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.055);
-      border:1px solid rgba(255,255,255,.09);
-      color:#c9c9d3;
-      font-size:11px;
-      margin-bottom:22px;
-      backdrop-filter:blur(10px);
-    }
-
-    .hero-badge span{
-      width:6px;
-      height:6px;
-      border-radius:50%;
-      background:#70ffb0;
-      box-shadow:0 0 12px #70ffb0;
-    }
-
-    h1{
-      margin:0;
-      font-size:clamp(42px,11vw,86px);
-      line-height:.95;
-      letter-spacing:-3px;
-      font-weight:800;
-      max-width:850px;
-      background:linear-gradient(135deg,#fff 20%,#bdb7ff 65%,#fff);
-      -webkit-background-clip:text;
-      background-clip:text;
-      color:transparent;
-    }
-
-    .hero-text{
-      max-width:650px;
-      margin:25px 0 30px;
-      color:#a7a7b2;
-      font-size:17px;
-      line-height:1.65;
-    }
-
-    .hero-buttons{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
-    .primary-btn{
-      padding:14px 19px;
-      border-radius:14px;
-      background:linear-gradient(135deg,#765cff,#9d6cff);
-      box-shadow:0 10px 35px rgba(120,80,255,.25);
-      font-weight:700;
-      font-size:14px;
-    }
-
-    .primary-btn:active{
-      transform:scale(.97);
-    }
-
-    .secondary-btn{
-      padding:14px 19px;
-      border-radius:14px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.1);
-      font-weight:600;
-      font-size:14px;
-    }
-
-    /* ===== TITLES ===== */
-
-    .section-label{
-      color:#8f7cff;
-      text-transform:uppercase;
-      letter-spacing:2px;
-      font-size:10px;
-      font-weight:700;
-      margin-bottom:10px;
-    }
-
-    h2{
-      margin:0 0 30px;
-      font-size:34px;
-      letter-spacing:-1.2px;
-    }
-
-    /* ===== SERVICES ===== */
-
-    .services-grid{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:12px;
-    }
-
-    .service-card{
-      min-height:190px;
-      padding:23px;
-      border-radius:22px;
-      background:linear-gradient(
-        145deg,
-        rgba(255,255,255,.075),
-        rgba(255,255,255,.025)
-      );
-      border:1px solid rgba(255,255,255,.08);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
-      transition:.25s;
-    }
-
-    .service-card:hover{
-      transform:translateY(-4px);
-      border-color:rgba(150,125,255,.3);
-    }
-
-    .service-icon{
-      font-size:30px;
-      margin-bottom:25px;
-    }
-
-    .service-card h3{
-      margin:0 0 9px;
-      font-size:18px;
-    }
-
-    .service-card p{
-      margin:0;
-      color:#9696a2;
-      font-size:13px;
-      line-height:1.55;
-    }
-
-    /* ===== PORTFOLIO ===== */
-
-    .portfolio{
-      display:none;
-    }
-
-    .portfolio.show{
-      display:block;
-      animation:fadeIn .35s ease;
-    }
-
-    @keyframes fadeIn{
-      from{
-        opacity:0;
-        transform:translateY(10px);
-      }
-      to{
-        opacity:1;
-        transform:translateY(0);
-      }
-    }
-
-    .portfolio-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:12px;
-    }
-
-    .portfolio-item{
-      min-height:190px;
-      border-radius:20px;
-      padding:20px;
-      display:flex;
-      align-items:flex-end;
-      position:relative;
-      overflow:hidden;
-      background:
-        linear-gradient(135deg,rgba(130,90,255,.25),rgba(0,0,0,.75)),
-        linear-gradient(45deg,#181820,#09090c);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .portfolio-item::before{
-      content:"";
-      position:absolute;
-      width:160px;
-      height:160px;
-      border-radius:50%;
-      right:-50px;
-      top:-50px;
-      background:rgba(150,110,255,.22);
-      filter:blur(30px);
-    }
-
-    .portfolio-item h3{
-      position:relative;
-      z-index:2;
-      margin:0;
-      font-size:18px;
-    }
-
-    /* ===== CONTACTS ===== */
-
-    .contact-box{
-      padding:30px;
-      border-radius:25px;
-      background:
-        radial-gradient(circle at 90% 10%,rgba(125,90,255,.2),transparent 35%),
-        rgba(255,255,255,.045);
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .contact-box p{
-      color:#a0a0aa;
-      line-height:1.6;
-      margin:0 0 22px;
-    }
-
-    .contact-buttons{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-    }
-
-    /* ===== FOOTER ===== */
-
-    footer{
-      padding:30px 18px 45px;
-      text-align:center;
-      color:#64646e;
-      font-size:11px;
-      border-top:1px solid rgba(255,255,255,.06);
-    }
-
-    /* ===== MODAL ===== */
-
-    .modal{
-      display:none;
-      position:fixed;
-      inset:0;
-      z-index:100;
-      background:rgba(0,0,0,.72);
-      backdrop-filter:blur(10px);
-      padding:18px;
-      overflow-y:auto;
-    }
-
-    .modal.show{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .modal-box{
-      width:100%;
-      max-width:520px;
-      padding:24px;
-      border-radius:24px;
-      background:#121217;
-      border:1px solid rgba(255,255,255,.1);
-      box-shadow:0 25px 80px rgba(0,0,0,.65);
-      animation:modalIn .25s ease;
-    }
-
-    @keyframes modalIn{
-      from{
-        opacity:0;
-        transform:translateY(20px) scale(.98);
-      }
-      to{
-        opacity:1;
-        transform:none;
-      }
-    }
-
-    .modal-head{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
-      margin-bottom:22px;
-    }
-
-    .modal-head h2{
-      margin:0;
-      font-size:25px;
-    }
-
-    .close-btn{
-      width:36px;
-      height:36px;
-      border-radius:50%;
-      background:rgba(255,255,255,.07);
-      font-size:20px;
-    }
-
-    .form-group{
-      margin-bottom:14px;
-    }
-
-    .form-group label{
-      display:block;
-      margin-bottom:7px;
-      color:#aaaab4;
-      font-size:12px;
-    }
-
+    button,
     input,
-    select,
-    textarea{
-      width:100%;
-      border:1px solid rgba(255,255,255,.09);
-      background:#0b0b0f;
-      color:#fff;
-      border-radius:12px;
-      padding:13px 14px;
-      outline:none;
-      font:inherit;
-      font-size:14px;
+    textarea,
+    select {
+      font: inherit;
     }
 
-    input:focus,
-    select:focus,
-    textarea:focus{
-      border-color:rgba(130,100,255,.65);
+    button {
+      cursor: pointer;
     }
 
-    textarea{
-      min-height:100px;
-      resize:vertical;
+    .container {
+      width: min(1100px, calc(100% - 32px));
+      margin: 0 auto;
     }
 
-    .form-submit{
-      width:100%;
-      margin-top:6px;
-      padding:14px;
-      border-radius:13px;
-      background:linear-gradient(135deg,#765cff,#9d6cff);
-      font-weight:700;
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7,7,7,.78);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
     }
 
-    .form-status{
-      margin-top:13px;
-      text-align:center;
-      font-size:13px;
-      color:#aaaab4;
-      min-height:18px;
+    .header-inner {
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
     }
 
-    /* ===== MOBILE ===== */
+    .logo {
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      font-size: 18px;
+    }
 
-    @media(max-width:700px){
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-      section{
-        padding:60px 0;
+    .small-btn {
+      border: 1px solid rgba(255,255,255,.13);
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      border-radius: 12px;
+      padding: 10px 13px;
+    }
+
+    .small-btn:hover {
+      background: rgba(255,255,255,.12);
+    }
+
+    #adminButton {
+      display: none;
+    }
+
+    .lang-wrap {
+      position: relative;
+    }
+
+    .lang-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 48px;
+      width: 120px;
+      background: #151515;
+      border: 1px solid #333;
+      border-radius: 12px;
+      overflow: hidden;
+      z-index: 200;
+      box-shadow: 0 15px 40px rgba(0,0,0,.5);
+    }
+
+    .lang-menu button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      text-align: left;
+    }
+
+    .lang-menu button:hover {
+      background: #252525;
+    }
+
+    .hero {
+      position: relative;
+      padding: 100px 0 80px;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      right: -180px;
+      top: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    .hero h1 {
+      position: relative;
+      z-index: 1;
+      max-width: 850px;
+      margin: 0 0 22px;
+      font-size: clamp(44px, 8vw, 86px);
+      line-height: .94;
+      letter-spacing: -4px;
+    }
+
+    .hero p {
+      position: relative;
+      z-index: 1;
+      max-width: 650px;
+      color: #aaa;
+      font-size: 19px;
+      line-height: 1.55;
+    }
+
+    .buttons {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .primary {
+      border: 0;
+      background: #fff;
+      color: #000;
+      border-radius: 14px;
+      padding: 15px 20px;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255,255,255,.12);
+    }
+
+    .secondary {
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      color: #fff;
+      border-radius: 14px;
+      padding: 15px 20px;
+      font-weight: 700;
+    }
+
+    .secondary:hover {
+      background: rgba(255,255,255,.10);
+    }
+
+    section {
+      padding: 65px 0;
+    }
+
+    .section-title {
+      font-size: 38px;
+      margin: 0 0 30px;
+      letter-spacing: -1px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+
+    .card {
+      min-height: 220px;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 20px;
+      background: rgba(255,255,255,.035);
+      padding: 25px;
+      backdrop-filter: blur(10px);
+      transition: .2s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      background: rgba(255,255,255,.06);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    .card p {
+      color: #999;
+      line-height: 1.55;
+    }
+
+    .portfolio {
+      display: none;
+    }
+
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .portfolio-item {
+      min-height: 260px;
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,.13), transparent 30%),
+        linear-gradient(135deg, #202020, #080808);
+      border: 1px solid rgba(255,255,255,.09);
+      display: flex;
+      align-items: end;
+      padding: 22px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .contacts {
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+
+    .contact-box {
+      border: 1px solid rgba(255,255,255,.09);
+      background: rgba(255,255,255,.035);
+      border-radius: 20px;
+      padding: 25px;
+    }
+
+    .contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    footer {
+      border-top: 1px solid rgba(255,255,255,.08);
+      padding: 30px 0;
+      color: #777;
+      font-size: 14px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,.78);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal-box {
+      max-width: 560px;
+      margin: 50px auto;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 22px;
+      padding: 25px;
+      box-shadow: 0 25px 80px rgba(0,0,0,.6);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-head h2 {
+      margin: 0;
+    }
+
+    .close {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #191919;
+      color: #fff;
+      font-size: 22px;
+    }
+
+    .form-group {
+      margin-top: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 7px;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 13px;
+      background: #090909;
+      color: #fff;
+      outline: none;
+    }
+
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .form-message {
+      margin-top: 15px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 700px) {
+      .cards {
+        grid-template-columns: 1fr;
       }
 
-      .hero{
-        min-height:calc(100vh - 65px);
+      .portfolio-grid {
+        grid-template-columns: 1fr;
       }
 
-      h1{
-        font-size:48px;
-        letter-spacing:-2.5px;
+      .hero {
+        padding-top: 65px;
       }
 
-      .hero-text{
-        font-size:15px;
+      .hero h1 {
+        letter-spacing: -2px;
       }
 
-      .services-grid{
-        grid-template-columns:1fr;
+      .logo {
+        font-size: 15px;
       }
 
-      .service-card{
-        min-height:auto;
-      }
-
-      .portfolio-grid{
-        grid-template-columns:1fr;
-      }
-
-      .portfolio-item{
-        min-height:150px;
-      }
-
-      .contact-box{
-        padding:23px;
+      .small-btn {
+        padding: 9px 10px;
       }
     }
   </style>
@@ -591,421 +409,711 @@
 
 <body>
 
-  <div class="glow one"></div>
-  <div class="glow two"></div>
+<header>
+  <div class="container header-inner">
 
-  <header>
-    <div class="header-inner">
+    <div class="logo" id="logoText">
+      МОБІЛОГРАФ
+    </div>
 
-      <div class="logo">МОБІЛОГРАФ</div>
+    <div class="header-actions">
 
-      <div class="header-actions">
+      <button
+        id="adminButton"
+        class="small-btn"
+        type="button"
+      >
+        ⚙ Адмін
+      </button>
 
-        <button class="admin-btn" id="adminBtn">⚙ <span data-i18n="admin">Адмін</span></button>
+      <div class="lang-wrap">
 
-        <div class="lang-wrap">
-          <button class="lang-btn" id="langBtn">UA ▾</button>
+        <button
+          id="langButton"
+          class="small-btn"
+          type="button"
+        >
+          UA ▾
+        </button>
 
-          <div class="lang-menu" id="langMenu">
-            <button data-lang="ua">🇺🇦 Українська</button>
-            <button data-lang="ru">🇷🇺 Русский</button>
-            <button data-lang="en">🇬🇧 English</button>
-          </div>
+        <div id="langMenu" class="lang-menu">
+          <button type="button" data-lang="ua">Українська</button>
+          <button type="button" data-lang="ru">Русский</button>
+          <button type="button" data-lang="en">English</button>
         </div>
 
       </div>
     </div>
-  </header>
 
-  <main>
+  </div>
+</header>
 
-    <!-- HERO -->
-    <section class="hero">
 
-      <div class="hero-content">
+<main>
 
-        <div class="hero-badge">
-          <span></span>
-          <span data-i18n="available">Відкритий до нових зйомок</span>
-        </div>
+  <section class="hero">
+    <div class="container">
 
-        <h1 id="heroTitle" data-i18n="heroTitle">
-          Фото та відео, які продають
-        </h1>
+      <h1 id="heroTitle">
+        Фото та відео, які продають
+      </h1>
 
-        <p class="hero-text" id="heroText" data-i18n="heroText">
-          Створюю якісний фото та відеоконтент для бізнесу, брендів і соціальних мереж.
-        </p>
+      <p id="heroText">
+        Створюю якісний фото та відеоконтент для бізнесу,
+        брендів і соціальних мереж.
+      </p>
 
-        <div class="hero-buttons">
+      <div class="buttons">
 
-          <button class="primary-btn" id="bookingBtn" data-i18n="order">
-            Замовити зйомку
-          </button>
+        <button
+          id="bookingButton"
+          class="primary"
+          type="button"
+        >
+          Замовити зйомку
+        </button>
 
-          <button class="secondary-btn" id="portfolioBtn" data-i18n="works">
-            Роботи
-          </button>
-
-        </div>
+        <button
+          id="portfolioButton"
+          class="secondary"
+          type="button"
+        >
+          Роботи
+        </button>
 
       </div>
 
-    </section>
+    </div>
+  </section>
 
 
-    <!-- SERVICES -->
-    <section>
+  <section>
+    <div class="container">
 
-      <div class="section-label" data-i18n="servicesLabel">
-        Послуги
-      </div>
-
-      <h2 id="servicesTitle" data-i18n="servicesTitle">
+      <h2 class="section-title" id="servicesTitle">
         Що я роблю
       </h2>
 
-      <div class="services-grid">
+      <div class="cards">
 
-        <div class="service-card">
-
-          <div class="service-icon">📸</div>
-
-          <h3 data-i18n="photoTitle">
-            Фото
-          </h3>
-
-          <p data-i18n="photoText">
-            Предметна, рекламна та lifestyle-фотографія для вашого бізнесу.
+        <div class="card">
+          <h3 id="photoTitle">📸 Фото</h3>
+          <p id="photoText">
+            Предметна, портретна та контентна фотографія
+            для бізнесу і соцмереж.
           </p>
-
         </div>
 
-
-        <div class="service-card">
-
-          <div class="service-icon">🎥</div>
-
-          <h3 data-i18n="videoTitle">
-            Відео
-          </h3>
-
-          <p data-i18n="videoText">
-            Reels, короткі ролики та відео для соціальних мереж.
+        <div class="card">
+          <h3 id="videoTitle">🎥 Відео</h3>
+          <p id="videoText">
+            Reels, короткі рекламні відео та відеоконтент
+            для Instagram і TikTok.
           </p>
-
         </div>
 
-
-        <div class="service-card">
-
-          <div class="service-icon">📱</div>
-
-          <h3 data-i18n="contentTitle">
-            Контент
-          </h3>
-
-          <p data-i18n="contentText">
-            Регулярний контент для Instagram, TikTok та інших платформ.
+        <div class="card">
+          <h3 id="contentTitle">📱 Контент</h3>
+          <p id="contentText">
+            Повний контент для вашого бізнесу:
+            фото, відео та готові матеріали.
           </p>
-
         </div>
 
       </div>
+    </div>
+  </section>
 
-    </section>
 
+  <section id="portfolioSection" class="portfolio">
 
-    <!-- PORTFOLIO -->
-    <section class="portfolio" id="portfolio">
+    <div class="container">
 
-      <div class="section-label" data-i18n="portfolioLabel">
-        Портфоліо
-      </div>
-
-      <h2 data-i18n="portfolioTitle">
-        Приклади робіт
+      <h2 class="section-title" id="portfolioTitle">
+        Роботи
       </h2>
 
       <div class="portfolio-grid">
 
-        <div class="portfolio-item">
-          <h3 data-i18n="portfolioBusiness">
-            Фото для бізнесу
-          </h3>
+        <div class="portfolio-item" id="portfolio1">
+          Фото для бізнесу
         </div>
 
-        <div class="portfolio-item">
-          <h3 data-i18n="portfolioReels">
-            Reels
-          </h3>
+        <div class="portfolio-item" id="portfolio2">
+          Reels
         </div>
 
-        <div class="portfolio-item">
-          <h3 data-i18n="portfolioContent">
-            Контент
-          </h3>
+        <div class="portfolio-item" id="portfolio3">
+          Контент
         </div>
 
-        <div class="portfolio-item">
-          <h3 data-i18n="portfolioAds">
-            Реклама
-          </h3>
+        <div class="portfolio-item" id="portfolio4">
+          Реклама
         </div>
 
       </div>
+    </div>
 
-    </section>
+  </section>
 
 
-    <!-- CONTACTS -->
-    <section>
+  <section class="contacts">
 
-      <div class="section-label" data-i18n="contactsLabel">
-        Контакти
-      </div>
+    <div class="container">
 
       <div class="contact-box">
 
-        <h2 data-i18n="contactsTitle">
-          Готові обговорити зйомку?
+        <h2 class="section-title" id="contactsTitle">
+          Контакти
         </h2>
 
-        <p data-i18n="contactsText">
-          Розкажіть про вашу задачу — обговоримо формат, ідею та умови зйомки.
-        </p>
+        <div
+          id="contactInfo"
+          style="color:#aaa;line-height:1.7;"
+        >
+          <span id="contactDefault">
+            Готовий обговорити вашу зйомку.
+          </span>
+        </div>
 
-        <div class="contact-buttons">
+        <div class="contact-row">
 
-          <button class="primary-btn" id="contactBtn" data-i18n="contact">
+          <button
+            id="contactButton"
+            class="primary"
+            type="button"
+          >
             Зв'язатися
           </button>
 
-          <button class="secondary-btn" id="locationBtn" data-i18n="location">
+          <button
+            id="locationButton"
+            class="secondary"
+            type="button"
+          >
             📍 Локація
           </button>
 
         </div>
 
       </div>
+    </div>
 
-    </section>
+  </section>
 
-  </main>
-
-
-  <footer>
-    © <span id="year"></span> МОБІЛОГРАФ ·
-    <span data-i18n="footer">Фото та відеоконтент</span>
-  </footer>
+</main>
 
 
-  <!-- BOOKING MODAL -->
+<footer>
+  <div class="container" id="footerText">
+    © 2026 Мобілограф
+  </div>
+</footer>
 
-  <div class="modal" id="bookingModal">
 
-    <div class="modal-box">
+<!-- BOOKING MODAL -->
 
-      <div class="modal-head">
+<div id="bookingModal" class="modal">
 
-        <h2 data-i18n="modalTitle">
-          Замовити зйомку
-        </h2>
+  <div class="modal-box">
 
-        <button class="close-btn" id="closeModal">×</button>
+    <div class="modal-head">
+
+      <h2 id="modalTitle">
+        Замовити зйомку
+      </h2>
+
+      <button
+        id="closeModal"
+        class="close"
+        type="button"
+      >
+        ×
+      </button>
+
+    </div>
+
+
+    <form id="bookingForm">
+
+      <div class="form-group">
+        <label for="name" id="nameLabel">
+          Ім'я
+        </label>
+
+        <input
+          id="name"
+          type="text"
+          required
+        >
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="phone" id="phoneLabel">
+          Телефон
+        </label>
+
+        <input
+          id="phone"
+          type="tel"
+          required
+        >
 
       </div>
 
 
-      <form id="bookingForm">
+      <div class="form-group">
 
-        <div class="form-group">
+        <label for="date" id="dateLabel">
+          Бажана дата
+        </label>
 
-          <label data-i18n="nameLabel">
-            Ім'я
-          </label>
-
-          <input
-            type="text"
-            name="name"
-            required
-            data-i18n-placeholder="namePlaceholder"
-            placeholder="Ваше ім'я"
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label data-i18n="phoneLabel">
-            Телефон
-          </label>
-
-          <input
-            type="tel"
-            name="phone"
-            required
-            data-i18n-placeholder="phonePlaceholder"
-            placeholder="+380..."
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label data-i18n="dateLabel">
-            Бажана дата
-          </label>
-
-          <input
-            type="date"
-            name="date"
-          >
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label data-i18n="serviceLabel">
-            Послуга
-          </label>
-
-          <select name="service">
-
-            <option value="Фото" data-i18n="optionPhoto">
-              Фото
-            </option>
-
-            <option value="Відео" data-i18n="optionVideo">
-              Відео
-            </option>
-
-            <option value="Контент" data-i18n="optionContent">
-              Контент
-            </option>
-
-            <option value="Інше" data-i18n="optionOther">
-              Інше
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <div class="form-group">
-
-          <label data-i18n="commentLabel">
-            Коментар
-          </label>
-
-          <textarea
-            name="comment"
-            data-i18n-placeholder="commentPlaceholder"
-            placeholder="Розкажіть коротко про вашу задачу..."
-          ></textarea>
-
-        </div>
-
-
-        <button
-          type="submit"
-          class="form-submit"
-          id="submitBtn"
-          data-i18n="submit"
+        <input
+          id="date"
+          type="date"
         >
-          Відправити заявку
-        </button>
 
-        <div class="form-status" id="formStatus"></div>
+      </div>
 
-      </form>
 
-    </div>
+      <div class="form-group">
+
+        <label for="service" id="serviceLabel">
+          Послуга
+        </label>
+
+        <select id="service">
+
+          <option value="Фото" id="servicePhoto">
+            Фото
+          </option>
+
+          <option value="Відео" id="serviceVideo">
+            Відео
+          </option>
+
+          <option value="Контент" id="serviceContent">
+            Контент
+          </option>
+
+          <option value="Інше" id="serviceOther">
+            Інше
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label for="comment" id="commentLabel">
+          Коментар
+        </label>
+
+        <textarea
+          id="comment"
+          placeholder="Розкажіть коротко про ваше замовлення..."
+        ></textarea>
+
+      </div>
+
+
+      <button
+        id="submitButton"
+        class="primary"
+        type="submit"
+        style="width:100%;margin-top:20px;"
+      >
+        Відправити заявку
+      </button>
+
+
+      <div
+        id="formMessage"
+        class="form-message"
+      ></div>
+
+    </form>
 
   </div>
 
+</div>
 
-  <script>
 
-    /* ==============================
-       TELEGRAM
-    ============================== */
+<script>
 
-    const tg = window.Telegram && window.Telegram.WebApp
-      ? window.Telegram.WebApp
-      : null;
+  /* =========================
+     TELEGRAM
+  ========================= */
 
-    if(tg){
-      tg.ready();
-      tg.expand();
+  const tg = window.Telegram
+    ? window.Telegram.WebApp
+    : null;
+
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+
+  const ADMIN_ID = "1047945172";
+
+
+  /* =========================
+     ADMIN
+  ========================= */
+
+  function getTelegramUser() {
+
+    if (!tg) {
+      return null;
     }
 
+    if (
+      tg.initDataUnsafe &&
+      tg.initDataUnsafe.user
+    ) {
+      return tg.initDataUnsafe.user;
+    }
 
-    /* ==============================
-       LANGUAGE
-    ============================== */
+    return null;
+  }
 
-    const translations = {
 
-      ua: {
+  function checkAdmin() {
 
-        admin:"Адмін",
-        available:"Відкритий до нових зйомок",
+    const user = getTelegramUser();
 
-        heroTitle:"Фото та відео, які продають",
-        heroText:"Створюю якісний фото та відеоконтент для бізнесу, брендів і соціальних мереж.",
+    if (!user) {
+      return false;
+    }
 
-        order:"Замовити зйомку",
-        works:"Роботи",
+    return String(user.id) === ADMIN_ID;
+  }
 
-        servicesLabel:"Послуги",
-        servicesTitle:"Що я роблю",
 
-        photoTitle:"Фото",
-        photoText:"Предметна, рекламна та lifestyle-фотографія для вашого бізнесу.",
+  const adminButton =
+    document.getElementById("adminButton");
 
-        videoTitle:"Відео",
-        videoText:"Reels, короткі ролики та відео для соціальних мереж.",
 
-        contentTitle:"Контент",
-        contentText:"Регулярний контент для Instagram, TikTok та інших платформ.",
+  if (checkAdmin()) {
 
-        portfolioLabel:"Портфоліо",
-        portfolioTitle:"Приклади робіт",
+    adminButton.style.display = "block";
 
-        portfolioBusiness:"Фото для бізнесу",
-        portfolioReels:"Reels",
-        portfolioContent:"Контент",
-        portfolioAds:"Реклама",
+    adminButton.addEventListener(
+      "click",
+      function () {
 
-        contactsLabel:"Контакти",
-        contactsTitle:"Готові обговорити зйомку?",
-        contactsText:"Розкажіть про вашу задачу — обговоримо формат, ідею та умови зйомки.",
+        const initData =
+          tg && tg.initData
+            ? tg.initData
+            : "";
 
-        contact:"Зв'язатися",
-        location:"📍 Локація",
+        if (!initData) {
+          alert(
+            "Відкрити адмінку можна тільки через Telegram."
+          );
+          return;
+        }
 
-        footer:"Фото та відеоконтент",
+        window.location.href =
+          "/admin.html?initData=" +
+          encodeURIComponent(initData);
 
-        modalTitle:"Замовити зйомку",
+      }
+    );
+  }
 
-        nameLabel:"Ім'я",
-        namePlaceholder:"Ваше ім'я",
 
-        phoneLabel:"Телефон",
-        phonePlaceholder:"+380...",
+  /* =========================
+     TRANSLATIONS
+  ========================= */
 
-        dateLabel:"Бажана дата",
+  const translations = {
 
-        serviceLabel:"Послуга",
-        optionPhoto:"Фото",
-        optionVideo:"Відео",
-        optionContent:"Контент",
-        optionOther:"Інше",
+    ua: {
 
-        commentLabel:"Коментар",
-        commentPlaceholder:"Розкажіть коротко про вашу зада
+      logo: "МОБІЛОГРАФ",
+
+      admin: "⚙ Адмін",
+
+      title: "Фото та відео, які продають",
+
+      text:
+        "Створюю якісний фото та відеоконтент для бізнесу, брендів і соціальних мереж.",
+
+      booking: "Замовити зйомку",
+
+      works: "Роботи",
+
+      services: "Що я роблю",
+
+      photo: "📸 Фото",
+
+      photoText:
+        "Предметна, портретна та контентна фотографія для бізнесу і соцмереж.",
+
+      video: "🎥 Відео",
+
+      videoText:
+        "Reels, короткі рекламні відео та відеоконтент для Instagram і TikTok.",
+
+      content: "📱 Контент",
+
+      contentText:
+        "Повний контент для вашого бізнесу: фото, відео та готові матеріали.",
+
+      portfolio: "Роботи",
+
+      p1: "Фото для бізнесу",
+
+      p2: "Reels",
+
+      p3: "Контент",
+
+      p4: "Реклама",
+
+      contacts: "Контакти",
+
+      contactDefault:
+        "Готовий обговорити вашу зйомку.",
+
+      contact: "Зв'язатися",
+
+      location: "📍 Локація",
+
+      footer: "© 2026 Мобілограф",
+
+      modal: "Замовити зйомку",
+
+      name: "Ім'я",
+
+      phone: "Телефон",
+
+      date: "Бажана дата",
+
+      service: "Послуга",
+
+      photoOption: "Фото",
+
+      videoOption: "Відео",
+
+      contentOption: "Контент",
+
+      otherOption: "Інше",
+
+      comment: "Коментар",
+
+      placeholder:
+        "Розкажіть коротко про ваше замовлення...",
+
+      submit: "Відправити заявку",
+
+      sending: "Відправляємо заявку...",
+
+      success: "✅ Заявку успішно відправлено!",
+
+      error: "Помилка відправлення"
+
+    },
+
+
+    ru: {
+
+      logo: "МОБИЛОГРАФ",
+
+      admin: "⚙ Админ",
+
+      title: "Фото и видео, которые продают",
+
+      text:
+        "Создаю качественный фото и видеоконтент для бизнеса, брендов и социальных сетей.",
+
+      booking: "Заказать съёмку",
+
+      works: "Работы",
+
+      services: "Что я делаю",
+
+      photo: "📸 Фото",
+
+      photoText:
+        "Предметная, портретная и контентная фотография для бизнеса и соцсетей.",
+
+      video: "🎥 Видео",
+
+      videoText:
+        "Reels, короткие рекламные видео и видеоконтент для Instagram и TikTok.",
+
+      content: "📱 Контент",
+
+      contentText:
+        "Полный контент для вашего бизнеса: фото, видео и готовые материалы.",
+
+      portfolio: "Работы",
+
+      p1: "Фото для бизнеса",
+
+      p2: "Reels",
+
+      p3: "Контент",
+
+      p4: "Реклама",
+
+      contacts: "Контакты",
+
+      contactDefault:
+        "Готов обсудить вашу съёмку.",
+
+      contact: "Связаться",
+
+      location: "📍 Локация",
+
+      footer: "© 2026 Мобилограф",
+
+      modal: "Заказать съёмку",
+
+      name: "Имя",
+
+      phone: "Телефон",
+
+      date: "Желаемая дата",
+
+      service: "Услуга",
+
+      photoOption: "Фото",
+
+      videoOption: "Видео",
+
+      contentOption: "Контент",
+
+      otherOption: "Другое",
+
+      comment: "Комментарий",
+
+      placeholder:
+        "Коротко расскажите о вашем заказе...",
+
+      submit: "Отправить заявку",
+
+      sending: "Отправляем заявку...",
+
+      success: "✅ Заявка успешно отправлена!",
+
+      error: "Ошибка отправки"
+
+    },
+
+
+    en: {
+
+      logo: "MOBILEOGRAPHER",
+
+      admin: "⚙ Admin",
+
+      title: "Photos and videos that sell",
+
+      text:
+        "I create high-quality photo and video content for businesses, brands and social media.",
+
+      booking: "Book a shoot",
+
+      works: "Portfolio",
+
+      services: "What I do",
+
+      photo: "📸 Photography",
+
+      photoText:
+        "Product, portrait and content photography for businesses and social media.",
+
+      video: "🎥 Video",
+
+      videoText:
+        "Reels, short advertising videos and video content for Instagram and TikTok.",
+
+      content: "📱 Content",
+
+      contentText:
+        "Complete content for your business: photos, videos and ready-to-use materials.",
+
+      portfolio: "Portfolio",
+
+      p1: "Business photography",
+
+      p2: "Reels",
+
+      p3: "Content",
+
+      p4: "Advertising",
+
+      contacts: "Contacts",
+
+      contactDefault:
+        "Ready to discuss your project.",
+
+      contact: "Contact me",
+
+      location: "📍 Location",
+
+      footer: "© 2026 Mobileographer",
+
+      modal: "Book a shoot",
+
+      name: "Name",
+
+      phone: "Phone",
+
+      date: "Preferred date",
+
+      service: "Service",
+
+      photoOption: "Photography",
+
+      videoOption: "Video",
+
+      contentOption: "Content",
+
+      otherOption: "Other",
+
+      comment: "Comment",
+
+      placeholder:
+        "Briefly tell me about your project...",
+
+      submit: "Send request",
+
+      sending: "Sending request...",
+
+      success: "✅ Request sent successfully!",
+
+      error: "Sending error"
+
+    }
+
+  };
+
+
+  let currentLang = "ua";
+
+
+  function applyLanguage(lang) {
+
+    currentLang = lang;
+
+    const t = translations[lang];
+
+    document.documentElement.lang =
+      lang === "ua" ? "uk" : lang;
+
+
+    document.getElementById("logoText").textContent =
+      t.logo;
+
+    document.getElementById("adminButton").textContent =
+      t.admin;
+
+    document.getElementById("heroTit
