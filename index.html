@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Motion Studio</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b0b0b;
+      color: white;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* LANGUAGE SWITCHER */
+
+    .language-switcher {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .language-switcher button {
+      border: 1px solid #333;
+      background: #151515;
+      color: #888;
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .language-switcher button.active {
+      background: white;
+      color: black;
+      border-color: white;
+    }
+
+    /* HERO */
+
+    .hero {
+      min-height: 620px;
+      border-radius: 28px;
+      padding: 28px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+
+      background:
+        linear-gradient(
+          to top,
+          rgba(0,0,0,0.9),
+          rgba(0,0,0,0.15)
+        ),
+        url("https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=85");
+
+      background-size: cover;
+      background-position: center;
+      overflow: hidden;
+    }
+
+    .label {
+      display: inline-block;
+      width: fit-content;
+      padding: 8px 13px;
+      border-radius: 30px;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      font-size: 13px;
+      margin-bottom: 15px;
+    }
+
+    h1 {
+      font-size: 46px;
+      line-height: 0.95;
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+    }
+
+    .description {
+      color: #d0d0d0;
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 25px;
+    }
+
+    .buttons {
+      display: grid;
+      gap: 10px;
+    }
+
+    .buttons button {
+      border: none;
+      border-radius: 16px;
+      padding: 17px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: white;
+      color: black;
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.12);
+      color: white;
+      backdrop-filter: blur(10px);
+    }
+
+    /* CARDS */
+
+    .menu {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .card {
+      background: #151515;
+      border-radius: 18px;
+      padding: 20px;
+      min-height: 110px;
+      cursor: pointer;
+    }
+
+    .icon {
+      font-size: 25px;
+      margin-bottom: 15px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .card-text {
+      color: #888;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    .footer {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      padding: 25px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="app">
+
+    <!-- LANGUAGE -->
+
+    <div class="language-switcher">
+
+      <button id="uaBtn" class="active" onclick="changeLanguage('ua')">
+        UA
+      </button>
+
+      <button id="ruBtn" onclick="changeLanguage('ru')">
+        RU
+      </button>
+
+      <button id="enBtn" onclick="changeLanguage('en')">
+        EN
+      </button>
+
+    </div>
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+      <div class="label" id="label">
+        📸 МОБІЛОГРАФІЯ
+      </div>
+
+      <h1 id="title">
+        Кадри,<br>
+        які хочеться<br>
+        передивлятися.
+      </h1>
+
+      <p class="description" id="description">
+        Фото та відеозйомка для брендів,
+        людей і важливих моментів.
+      </p>
+
+      <div class="buttons">
+
+        <button
+          class="primary"
+          id="bookButton"
+          onclick="bookShoot()">
+          Забронювати зйомку
+        </button>
+
+        <button
+          class="secondary"
+          id="portfolioButton"
+          onclick="showPortfolio()">
+          Переглянути роботи
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- MENU -->
+
+    <section class="menu">
+
+      <div class="card" onclick="showServices()">
+
+        <div class="icon">💰</div>
+
+        <div class="card-title" id="servicesTitle">
+          Послуги
+        </div>
+
+        <div class="card-text" id="servicesText">
+          Ціни та формати
+        </div>
+
+      </div>
+
+
+      <div class="card" onclick="bookShoot()">
+
+        <div class="icon">📅</div>
+
+        <div class="card-title" id="bookingTitle">
+          Бронювання
+        </div>
+
+        <div class="card-text" id="bookingText">
+          Обрати дату
+        </div>
+
+      </div>
+
+
+      <div class="card" onclick="showLocation()">
+
+        <div class="icon">📍</div>
+
+        <div class="card-title" id="locationTitle">
+          Локація
+        </div>
+
+        <div class="card-text" id="locationText">
+          Де працюємо
+        </div>
+
+      </div>
+
+
+      <div class="card" onclick="contact()">
+
+        <div class="icon">💬</div>
+
+        <div class="card-title" id="contactTitle">
+          Контакти
+        </div>
+
+        <div class="card-text" id="contactText">
+          Зв'язатися зі мною
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <div class="footer" id="footer">
+      © 2026 Motion Studio
+    </div>
+
+  </main>
+
+
+  <script>
+
+    const translations = {
+
+      ua: {
+        label: "📸 МОБІЛОГРАФІЯ",
+
+        title:
+          "Кадри,<br>які хочеться<br>передивлятися.",
+
+        description:
+          "Фото та відеозйомка для брендів, людей і важливих моментів.",
+
+        book:
+          "Забронювати зйомку",
+
+        portfolio:
+          "Переглянути роботи",
+
+        services:
+          "Послуги",
+
+        servicesText:
+          "Ціни та формати",
+
+        booking:
+          "Бронювання",
+
+        bookingText:
+          "Обрати дату",
+
+        location:
+          "Локація",
+
+        locationText:
+          "Де працюємо",
+
+        contact:
+          "Контакти",
+
+        contactText:
+          "Зв'язатися зі мною",
+
+        footer:
+          "© 2026 Motion Studio",
+
+        alerts: {
+          booking:
+            "Тут буде форма бронювання зйомки 📅",
+
+          portfolio:
+            "Тут буде портфоліо фотографій та відео 📸",
+
+          services:
+            "Тут будуть послуги та ціни 💰",
+
+          location:
+            "Тут буде карта та інформація про локації 📍",
+
+          contact:
+            "Тут будуть Telegram та Instagram 💬"
+        }
+      },
+
+
+      ru: {
+        label: "📸 МОБИЛОГРАФИЯ",
+
+        title:
+          "Кадры,<br>которые хочется<br>пересматривать.",
+
+        description:
+          "Фото и видеосъёмка для брендов, людей и важных моментов.",
+
+        book:
+          "Забронировать съёмку",
+
+        portfolio:
+          "Посмотреть работы",
+
+        services:
+          "Услуги",
+
+        servicesText:
+          "Цены и форматы",
+
+        booking:
+          "Бронирование",
+
+        bookingText:
+          "Выбрать дату",
+
+        location:
+          "Локация",
+
+        locationText:
+          "Где работаем",
+
+        contact:
+          "Контакты",
+
+        contactText:
+          "Связаться со мной",
+
+        footer:
+          "© 2026 Motion Studio",
+
+        alerts: {
+          booking:
+            "Здесь будет форма бронирования съёмки 📅",
+
+          portfolio:
+            "Здесь будет портфолио фотографий и видео 📸",
+
+          services:
+            "Здесь будут услуги и цены 💰",
+
+          location:
+            "Здесь будет карта и информация о локациях 📍",
+
+          contact:
+            "Здесь будут Telegram и Instagram 💬"
+        }
+      },
+
+
+      en: {
+        label: "📸 MOBILE PHOTOGRAPHY",
+
+        title:
+          "Frames<br>you'll want<br>to watch again.",
+
+        description:
+          "Photo and video production for brands, people and special moments.",
+
+        book:
+          "Book a shoot",
+
+        portfolio:
+          "View portfolio",
+
+        services:
+          "Services",
+
+        servicesText:
+          "Prices and packages",
+
+        booking:
+          "Booking",
+
+        bookingText:
+          "Choose a date",
+
+        location:
+          "Location",
+
+        locationText:
+          "Where we work",
+
+        contact:
+          "Contact",
+
+        contactText:
+          "Get in touch",
+
+        footer:
+          "© 2026 Motion Studio",
+
+        alerts: {
+          booking:
+            "The booking form will be here 📅",
+
+          portfolio:
+            "The photo and video portfolio will be here 📸",
+
+          services:
+            "Services and prices will be here 💰",
+
+          location:
+            "The map and location information will be here 📍",
+
+          contact:
+            "Telegram and Instagram will be here 💬"
+        }
+      }
+
+    };
+
+
+    let currentLanguage = "ua";
+
+
+    function changeLanguage(language) {
+
+      currentLanguage = language;
+
+      const t = translations[language];
+
+      document.documentElement.lang =
+        language === "ua" ? "uk" : language;
+
+
+      document.getElementById("label").innerHTML =
+        t.label;
+
+      document.getElementById("title").innerHTML =
+        t.title;
+
+      document.getElementById("description").textContent =
+        t.description;
+
+      document.getElementById("bookButton").textContent =
+        t.book;
+
+      document.getElementById("portfolioButton").textContent =
+        t.portfolio;
+
+      document.getElementById("servicesTitle").textContent =
+        t.services;
+
+      document.getElementById("servicesText").textContent =
+        t.servicesText;
+
+      document.getElementById("bookingTitle").textContent =
+        t.booking;
+
+      document.getElementById("bookingText").textContent =
+        t.bookingText;
+
+      document.getElementById("locationTitle").textContent =
+        t.location;
+
+      document.getElementById("locationText").textContent =
+        t.locationText;
+
+      document.getElementById("contactTitle").textContent =
+        t.contact;
+
+      document.getElementById("contactText").textContent =
+        t.contactText;
+
+      document.getElementById("footer").textContent =
+        t.footer;
+
+
+      document
+        .querySelectorAll(".language-switcher button")
+        .forEach(button => {
+          button.classList.remove("active");
+        });
+
+
+      document
+        .getElementById(language + "Btn")
+        .classList.add("active");
+    }
+
+
+    function bookShoot() {
+      alert(translations[currentLanguage].alerts.booking);
+    }
+
+
+    function showPortfolio() {
+      alert(translations[currentLanguage].alerts.portfolio);
+    }
+
+
+    function showServices() {
+      alert(translations[currentLanguage].alerts.services);
+    }
+
+
+    function showLocation() {
+      alert(translations[currentLanguage].alerts.location);
+    }
+
+
+    function contact() {
+      alert(translations[currentLanguage].alerts.contact);
+    }
+
+  </script>
+
+</body>
+  </html>
