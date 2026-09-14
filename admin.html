@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <title>Адмін-панель</title>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
+
     body {
       margin: 0;
       padding: 20px;
@@ -59,7 +67,9 @@
       text-align: center;
       color: #aaa;
     }
+
   </style>
+
 </head>
 
 <body>
@@ -69,92 +79,250 @@
   <h1>Адмін-панель</h1>
 
   <label>Заголовок</label>
-  <input id="hero_title" type="text">
+
+  <input
+    id="hero_title"
+    type="text"
+  >
+
 
   <label>Текст</label>
-  <input id="hero_text" type="text">
+
+  <input
+    id="hero_text"
+    type="text"
+  >
+
 
   <label>Заголовок «Про мене»</label>
-  <input id="about_title" type="text">
+
+  <input
+    id="about_title"
+    type="text"
+  >
+
 
   <label>Телефон</label>
-  <input id="phone" type="text">
+
+  <input
+    id="phone"
+    type="text"
+  >
+
 
   <label>Telegram</label>
-  <input id="telegram" type="text">
+
+  <input
+    id="telegram"
+    type="text"
+  >
+
 
   <label>Instagram</label>
-  <input id="instagram" type="text">
+
+  <input
+    id="instagram"
+    type="text"
+  >
+
 
   <label>Місто / локація</label>
-  <input id="location" type="text">
 
-  <button onclick="saveContent()">Зберегти зміни</button>
+  <input
+    id="location"
+    type="text"
+  >
+
+
+  <button onclick="saveContent()">
+    Зберегти зміни
+  </button>
 
   <div id="status"></div>
 
 </div>
 
+
 <script>
+
   const tg = window.Telegram.WebApp;
 
   tg.ready();
   tg.expand();
 
-  const initData = tg.initData;
+
+  /*
+   * Отримуємо initData.
+   *
+   * Спочатку пробуємо взяти його з URL,
+   * який передав index.html.
+   */
+
+  const params =
+    new URLSearchParams(window.location.search);
+
+  const initDataFromUrl =
+    params.get("initData");
+
+
+  const initData =
+    initDataFromUrl ||
+    tg.initData;
+
+
+  /*
+   * Перевірка адміністратора
+   */
 
   async function checkAdmin() {
-    const response = await fetch("/admin-content.js", {
-      method: "GET",
-      headers: {
-        "x-telegram-init-data": initData
-      }
-    });
 
-    if (!response.ok) {
+    try {
+
+      const response = await fetch(
+        "/admin-content.js",
+        {
+          method: "GET",
+
+          headers: {
+            "x-telegram-init-data": initData
+          }
+
+        }
+      );
+
+
+      if (!response.ok) {
+
+        document.body.innerHTML =
+          "<div style='padding:30px;font-family:Arial;color:white;background:#111;min-height:100vh'>" +
+          "<h2>Доступ заборонено</h2>" +
+          "<p>Telegram не підтвердив права адміністратора.</p>" +
+          "</div>";
+
+        return false;
+
+      }
+
+
+      return true;
+
+    } catch (error) {
+
+      console.error(error);
+
       document.body.innerHTML =
-        "<h2>Доступ заборонено</h2>";
+        "<div style='padding:30px;font-family:Arial;color:white;background:#111;min-height:100vh'>" +
+        "<h2>Помилка з'єднання</h2>" +
+        "</div>";
+
       return false;
+
     }
 
-    return true;
   }
+
+
+  /*
+   * ЗБЕРЕЖЕННЯ
+   */
 
   async function saveContent() {
 
-    const status = document.getElementById("status");
-    status.textContent = "Збереження...";
+    const status =
+      document.getElementById("status");
+
+    status.textContent =
+      "Збереження...";
+
 
     const data = {
-      hero_title: document.getElementById("hero_title").value,
-      hero_text: document.getElementById("hero_text").value,
-      about_title: document.getElementById("about_title").value,
-      phone: document.getElementById("phone").value,
-      telegram: document.getElementById("telegram").value,
-      instagram: document.getElementById("instagram").value,
-      location: document.getElementById("location").value
+
+      hero_title:
+        document.getElementById("hero_title").value,
+
+      hero_text:
+        document.getElementById("hero_text").value,
+
+      about_title:
+        document.getElementById("about_title").value,
+
+      phone:
+        document.getElementById("phone").value,
+
+      telegram:
+        document.getElementById("telegram").value,
+
+      instagram:
+        document.getElementById("instagram").value,
+
+      location:
+        document.getElementById("location").value
+
     };
 
-    const response = await fetch("/admin-content.js", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-telegram-init-data": initData
-      },
-      body: JSON.stringify(data)
-    });
 
-    const result = await response.json();
+    try {
 
-    if (response.ok) {
-      status.textContent = "Зміни збережено ✅";
-    } else {
+      const response = await fetch(
+        "/admin-content.js",
+        {
+          method: "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json",
+
+            "x-telegram-init-data":
+              initData
+
+          },
+
+          body:
+            JSON.stringify(data)
+
+        }
+      );
+
+
+      const result =
+        await response.json();
+
+
+      if (response.ok) {
+
+        status.textContent =
+          "Зміни збережено ✅";
+
+      } else {
+
+        status.textContent =
+          "Помилка: " +
+          (result.error ||
+            "невідома помилка");
+
+        console.error(result);
+
+      }
+
+    } catch (error) {
+
+      console.error(error);
+
       status.textContent =
-        "Помилка: " + (result.error || "невідома помилка");
+        "Помилка з'єднання.";
+
     }
+
   }
 
+
+  /*
+   * Перевіряємо доступ
+   */
+
   checkAdmin();
+
 </script>
 
 </body>
