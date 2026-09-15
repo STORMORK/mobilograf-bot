@@ -560,3 +560,74 @@ function getFlatContentSchema() {
   });
 
 }
+
+
+/* =====================================================================
+   MEDIA BLOCKS
+
+   The real, existing visual sections of index.html that a background
+   image/gif/video can be attached to - not every CONTENT_GROUPS entry
+   qualifies: "booking" is a modal, not a page section, and "ui" is a
+   floating button, so neither is a background candidate. "footer" has
+   no text group of its own but is a real section, so it's added here.
+
+   Media is language-independent (one upload serves UA/RU/EN) and is
+   stored separately from text, at content_i18n.media.blocks.<id>, kept
+   in sync by api/media-commit.js. Adding a 7th block later is one entry
+   here, same pattern as CONTENT_SCHEMA.
+===================================================================== */
+
+var MEDIA_BLOCKS = [
+  { id: "hero", label: "🏠 Головний екран" },
+  { id: "about", label: "👤 Про нас" },
+  { id: "services", label: "🎬 Послуги" },
+  { id: "portfolio", label: "📸 Портфоліо" },
+  { id: "contact", label: "📞 Контакти" },
+  { id: "footer", label: "🔻 Footer" }
+];
+
+
+function getMediaBlockById(id) {
+
+  for (var i = 0; i < MEDIA_BLOCKS.length; i++) {
+    if (MEDIA_BLOCKS[i].id === id) {
+      return MEDIA_BLOCKS[i];
+    }
+  }
+
+  return null;
+
+}
+
+
+function resolveBlockMedia(siteContent, blockId) {
+
+  var media = siteContent && siteContent.content_i18n && siteContent.content_i18n.media;
+  var blocks = media && media.blocks;
+
+  return (blocks && blocks[blockId]) || null;
+
+}
+
+
+/* Lets this same file be require()'d from serverless functions (so the
+   block list has one source of truth instead of being duplicated
+   server-side) while still working exactly as before as a plain
+   <script> global in index.html/admin.html - browsers never define
+   "module", so this block is a no-op there. */
+if (typeof module !== "undefined" && module.exports) {
+
+  module.exports = {
+    CONTENT_LANGS: CONTENT_LANGS,
+    CONTENT_GROUPS: CONTENT_GROUPS,
+    CONTENT_SCHEMA: CONTENT_SCHEMA,
+    MEDIA_BLOCKS: MEDIA_BLOCKS,
+    resolveContentValue: resolveContentValue,
+    getContentSchemaByKey: getContentSchemaByKey,
+    getMultilingualContentSchema: getMultilingualContentSchema,
+    getFlatContentSchema: getFlatContentSchema,
+    getMediaBlockById: getMediaBlockById,
+    resolveBlockMedia: resolveBlockMedia
+  };
+
+}

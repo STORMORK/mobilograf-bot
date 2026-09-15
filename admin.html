@@ -195,6 +195,175 @@ content:"▾";
 padding:18px;
 }
 
+.section-card{
+background:#111;
+border:1px solid #292929;
+border-radius:20px;
+padding:22px;
+margin-top:20px;
+}
+
+.section-card h2{
+margin:0 0 18px;
+font-size:20px;
+}
+
+.section-header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+margin-bottom:18px;
+flex-wrap:wrap;
+}
+
+.section-header h2{
+margin:0;
+}
+
+.media-block-card{
+border:1px solid #242424;
+border-radius:16px;
+padding:16px;
+margin-bottom:14px;
+}
+
+.media-block-card h3{
+margin:0 0 8px;
+font-size:16px;
+}
+
+.media-type-line{
+color:#888;
+font-size:13px;
+margin-bottom:10px;
+}
+
+.media-hint{
+color:#777;
+font-size:12px;
+line-height:1.6;
+margin:0 0 14px;
+}
+
+.media-empty{
+color:#666;
+font-size:14px;
+padding:20px;
+text-align:center;
+border:1px dashed #333;
+border-radius:12px;
+margin:0 0 14px;
+}
+
+.media-preview{
+margin-bottom:12px;
+}
+
+.media-preview img,
+.media-preview video{
+max-width:100%;
+max-height:220px;
+border-radius:12px;
+display:block;
+}
+
+.media-file-info,
+.media-selected-info{
+color:#8ab4ff;
+font-size:12px;
+margin-bottom:10px;
+word-break:break-all;
+}
+
+.media-status{
+margin-top:8px;
+font-size:13px;
+line-height:1.5;
+}
+
+.media-btn{
+border:1px solid #333;
+border-radius:10px;
+background:#1a1a1a;
+color:#fff;
+padding:11px 14px;
+font-size:14px;
+cursor:pointer;
+margin:0 8px 8px 0;
+min-height:42px;
+}
+
+.media-btn:disabled{
+opacity:0.5;
+}
+
+.media-btn-primary{
+background:#fff;
+color:#000;
+border-color:#fff;
+font-weight:700;
+}
+
+.media-btn-danger{
+border-color:#5a2323;
+color:#ff8a8a;
+}
+
+.portfolio-item summary{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.portfolio-order-row{
+margin-bottom:14px;
+}
+
+.portfolio-media-row{
+display:flex;
+align-items:center;
+gap:12px;
+padding:10px 0;
+border-bottom:1px solid #202020;
+flex-wrap:wrap;
+}
+
+.portfolio-media-thumb{
+width:60px;
+height:60px;
+object-fit:cover;
+border-radius:10px;
+background:#000;
+flex-shrink:0;
+}
+
+.portfolio-media-info{
+flex:1;
+min-width:120px;
+font-size:13px;
+color:#aaa;
+word-break:break-all;
+}
+
+.portfolio-media-controls{
+display:flex;
+gap:6px;
+flex-wrap:wrap;
+}
+
+.portfolio-media-controls .media-btn{
+margin:0;
+padding:8px 12px;
+min-height:38px;
+}
+
+.portfolio-empty{
+color:#888;
+font-size:14px;
+padding:16px 0;
+}
+
 @media(max-width:600px){
 
 .top{
@@ -277,6 +446,45 @@ type="button"
 
 </div>
 
+
+<div
+id="mediaSection"
+class="section-card"
+style="display:none;"
+>
+
+<h2>🎨 Медіа сайту</h2>
+
+<div id="mediaBlocks"></div>
+
+</div>
+
+
+<div
+id="portfolioSection"
+class="section-card"
+style="display:none;"
+>
+
+<div class="section-header">
+
+<h2>🖼 Портфоліо</h2>
+
+<button
+type="button"
+id="addPortfolioItemButton"
+class="media-btn media-btn-primary"
+style="margin:0;"
+>
++ Додати роботу
+</button>
+
+</div>
+
+<div id="portfolioItems"></div>
+
+</div>
+
 </div>
 
 
@@ -314,6 +522,21 @@ document.getElementById("groups");
 
 const expandToggle =
 document.getElementById("expandToggle");
+
+const mediaSection =
+document.getElementById("mediaSection");
+
+const mediaBlocksContainer =
+document.getElementById("mediaBlocks");
+
+const portfolioSection =
+document.getElementById("portfolioSection");
+
+const portfolioItemsContainer =
+document.getElementById("portfolioItems");
+
+const addPortfolioItemButton =
+document.getElementById("addPortfolioItemButton");
 
 
 const params =
@@ -406,6 +629,12 @@ result.userId;
 panel.style.display =
 "block";
 
+mediaSection.style.display =
+"block";
+
+portfolioSection.style.display =
+"block";
+
 
 if(result.content){
 
@@ -413,7 +642,14 @@ initContentEditor(
 result.content
 );
 
+renderMediaBlocks(
+result.content
+);
+
 }
+
+
+loadPortfolioItems();
 
 
 }catch(error){
@@ -797,6 +1033,939 @@ saveButton.textContent =
 "💾 Зберегти всі зміни";
 
 }
+
+
+/* =====================================
+   SITE MEDIA (🎨 Медіа сайту)
+
+   Driven by MEDIA_BLOCKS (content-schema.js) - the same 6 real visual
+   sections of index.html the text editor already groups content into,
+   minus "booking" (a modal, not a section) and "ui" (a floating
+   button), plus "footer" (a real section with no text group of its
+   own). Metadata lives at content_i18n.media.blocks.<id>, written by
+   api/media-commit.js after the browser uploads the file directly to
+   Supabase Storage via a signed URL from api/media-upload-url.js.
+===================================== */
+
+function adminJsonHeaders(){
+
+  return {
+    "Content-Type": "application/json",
+    "x-telegram-init-data": telegramInitData
+  };
+
+}
+
+
+function formatFileSize(bytes){
+
+  if(typeof bytes !== "number" || !Number.isFinite(bytes)){
+    return "";
+  }
+
+  if(bytes < 1024){
+    return bytes + " B";
+  }
+
+  if(bytes < 1024 * 1024){
+    return (bytes / 1024).toFixed(1) + " KB";
+  }
+
+  return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+
+}
+
+
+function makeSmallButton(label, disabled, onClick){
+
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "media-btn";
+  btn.textContent = label;
+  btn.disabled = disabled;
+  btn.addEventListener("click", onClick);
+
+  return btn;
+
+}
+
+
+async function uploadViaSignedUrl(uploadUrlEndpoint, commitEndpoint, uploadPayload, commitExtra, file){
+
+  const signResponse =
+    await fetch(uploadUrlEndpoint, {
+      method: "POST",
+      headers: adminJsonHeaders(),
+      body: JSON.stringify(Object.assign(
+        { mimeType: file.type, fileName: file.name, fileSize: file.size },
+        uploadPayload
+      ))
+    });
+
+  const signData = await signResponse.json();
+
+  if(!signResponse.ok){
+    throw new Error(signData.error || "Не вдалося отримати посилання для завантаження");
+  }
+
+  const putResponse =
+    await fetch(signData.signedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type },
+      body: file
+    });
+
+  if(!putResponse.ok){
+    throw new Error("Не вдалося завантажити файл у сховище");
+  }
+
+  const commitResponse =
+    await fetch(commitEndpoint, {
+      method: "POST",
+      headers: adminJsonHeaders(),
+      body: JSON.stringify(Object.assign(
+        {
+          path: signData.path,
+          mimeType: file.type,
+          fileName: file.name,
+          fileSize: file.size
+        },
+        commitExtra
+      ))
+    });
+
+  const commitData = await commitResponse.json();
+
+  if(!commitResponse.ok){
+    throw new Error(commitData.error || "Не вдалося зберегти медіа");
+  }
+
+  return commitData;
+
+}
+
+
+function uploadBlockMedia(blockId, file){
+
+  return uploadViaSignedUrl(
+    "/api/media-upload-url.js",
+    "/api/media-commit.js",
+    { blockId: blockId },
+    { action: "save", blockId: blockId },
+    file
+  ).then(function(data){ return data.data; });
+
+}
+
+
+function createMediaPreviewElement(mediaEntry){
+
+  if(!mediaEntry){
+
+    const p = document.createElement("p");
+    p.className = "media-empty";
+    p.textContent = "Медіа не задано";
+
+    return p;
+
+  }
+
+  if(mediaEntry.type === "video"){
+
+    const video = document.createElement("video");
+    video.src = mediaEntry.url;
+    video.controls = true;
+    video.muted = true;
+    video.playsInline = true;
+
+    return video;
+
+  }
+
+  const img = document.createElement("img");
+  img.src = mediaEntry.url;
+
+  return img;
+
+}
+
+
+function createMediaBlockCard(block, mediaEntry){
+
+  const card = document.createElement("div");
+  card.className = "media-block-card";
+
+  const title = document.createElement("h3");
+  title.textContent = block.label;
+  card.appendChild(title);
+
+  const typeLine = document.createElement("div");
+  typeLine.className = "media-type-line";
+  typeLine.textContent = "Тип: Фон";
+  card.appendChild(typeLine);
+
+  const hint = document.createElement("p");
+  hint.className = "media-hint";
+  hint.textContent =
+    "Фото: WebP / JPG / PNG (рекомендується WebP, до 10 MB) · " +
+    "GIF: до 5 MB · " +
+    "Відео: MP4 / WebM (рекомендується MP4, до 20 MB)";
+  card.appendChild(hint);
+
+  const previewWrap = document.createElement("div");
+  previewWrap.className = "media-preview";
+  previewWrap.appendChild(createMediaPreviewElement(mediaEntry));
+  card.appendChild(previewWrap);
+
+  if(mediaEntry){
+
+    const info = document.createElement("div");
+    info.className = "media-file-info";
+    info.textContent =
+      (mediaEntry.fileName || "") + " · " +
+      formatFileSize(mediaEntry.fileSize) + " · " +
+      mediaEntry.mime;
+    card.appendChild(info);
+
+  }
+
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm";
+  fileInput.hidden = true;
+
+  const pickButton = document.createElement("button");
+  pickButton.type = "button";
+  pickButton.className = "media-btn";
+  pickButton.textContent = mediaEntry ? "🔄 Замінити" : "📤 Вибрати файл";
+  pickButton.addEventListener("click", function(){ fileInput.click(); });
+
+  const selectedInfo = document.createElement("div");
+  selectedInfo.className = "media-selected-info";
+  selectedInfo.hidden = true;
+
+  const uploadButton = document.createElement("button");
+  uploadButton.type = "button";
+  uploadButton.className = "media-btn media-btn-primary";
+  uploadButton.textContent = "⬆️ Завантажити і застосувати";
+  uploadButton.hidden = true;
+
+  const deleteButton = document.createElement("button");
+  deleteButton.type = "button";
+  deleteButton.className = "media-btn media-btn-danger";
+  deleteButton.textContent = "🗑 Видалити";
+  deleteButton.hidden = !mediaEntry;
+
+  const statusMsg = document.createElement("div");
+  statusMsg.className = "media-status";
+
+  let selectedFile = null;
+
+  fileInput.addEventListener("change", function(){
+
+    const file = fileInput.files[0];
+
+    if(!file){
+      return;
+    }
+
+    selectedFile = file;
+
+    selectedInfo.hidden = false;
+    selectedInfo.textContent =
+      file.name + " · " + formatFileSize(file.size) + " · " + file.type;
+
+    uploadButton.hidden = false;
+    statusMsg.textContent = "";
+
+    previewWrap.innerHTML = "";
+
+    const localUrl = URL.createObjectURL(file);
+    const isVideo = file.type.indexOf("video/") === 0;
+    const el = isVideo ? document.createElement("video") : document.createElement("img");
+
+    el.src = localUrl;
+
+    if(isVideo){
+      el.controls = true;
+      el.muted = true;
+      el.playsInline = true;
+    }
+
+    previewWrap.appendChild(el);
+
+  });
+
+  uploadButton.addEventListener("click", async function(){
+
+    if(!selectedFile){
+      return;
+    }
+
+    uploadButton.disabled = true;
+    uploadButton.textContent = "Завантажуємо...";
+    statusMsg.textContent = "";
+
+    try{
+
+      const updatedContent = await uploadBlockMedia(block.id, selectedFile);
+
+      statusMsg.textContent = "✅ Медіа застосовано";
+
+      renderMediaBlocks(updatedContent);
+
+    }catch(error){
+
+      statusMsg.textContent = "❌ " + error.message;
+      uploadButton.disabled = false;
+      uploadButton.textContent = "⬆️ Завантажити і застосувати";
+
+    }
+
+  });
+
+  deleteButton.addEventListener("click", async function(){
+
+    if(!confirm("Видалити медіа для «" + block.label + "»?")){
+      return;
+    }
+
+    deleteButton.disabled = true;
+
+    try{
+
+      const response =
+        await fetch("/api/media-commit.js", {
+          method: "POST",
+          headers: adminJsonHeaders(),
+          body: JSON.stringify({ action: "delete", blockId: block.id })
+        });
+
+      const data = await response.json();
+
+      if(!response.ok){
+        throw new Error(data.error || "Помилка видалення");
+      }
+
+      renderMediaBlocks(data.data);
+
+    }catch(error){
+
+      statusMsg.textContent = "❌ " + error.message;
+      deleteButton.disabled = false;
+
+    }
+
+  });
+
+  card.appendChild(pickButton);
+  card.appendChild(fileInput);
+  card.appendChild(selectedInfo);
+  card.appendChild(uploadButton);
+  card.appendChild(deleteButton);
+  card.appendChild(statusMsg);
+
+  return card;
+
+}
+
+
+function renderMediaBlocks(content){
+
+  mediaBlocksContainer.innerHTML = "";
+
+  MEDIA_BLOCKS.forEach(function(block){
+
+    const mediaEntry = resolveBlockMedia(content, block.id);
+    mediaBlocksContainer.appendChild(createMediaBlockCard(block, mediaEntry));
+
+  });
+
+}
+
+
+/* =====================================
+   PORTFOLIO (🖼 Портфоліо)
+
+   Lives in its own portfolio_items / portfolio_media Supabase tables
+   (see README.md for the required SQL) rather than content_i18n - an
+   unbounded number of works, each with an unbounded number of mixed
+   photo/GIF/video files, doesn't fit well into one jsonb blob the way
+   the fixed 45-field text schema does. Title/description are
+   per-language; media is shared across UA/RU/EN.
+===================================== */
+
+let portfolioItems = [];
+
+
+function summarizeMedia(mediaList){
+
+  const counts = { image: 0, gif: 0, video: 0 };
+
+  (mediaList || []).forEach(function(media){
+    if(counts[media.media_type] !== undefined){
+      counts[media.media_type]++;
+    }
+  });
+
+  const parts = [];
+
+  if(counts.image){ parts.push(counts.image + " фото"); }
+  if(counts.gif){ parts.push(counts.gif + " GIF"); }
+  if(counts.video){ parts.push(counts.video + " відео"); }
+
+  return parts.length ? parts.join(" · ") : "Немає медіа";
+
+}
+
+
+async function loadPortfolioItems(){
+
+  try{
+
+    const response =
+      await fetch("/api/portfolio.js", {
+        method: "GET",
+        headers: { "x-telegram-init-data": telegramInitData },
+        cache: "no-store"
+      });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      return;
+    }
+
+    portfolioItems = data.items || [];
+    renderPortfolioItems();
+
+  }catch(error){
+
+    console.error("loadPortfolioItems error:", error);
+
+  }
+
+}
+
+
+function renderPortfolioItems(){
+
+  portfolioItemsContainer.innerHTML = "";
+
+  if(portfolioItems.length === 0){
+
+    const p = document.createElement("p");
+    p.className = "portfolio-empty";
+    p.textContent = "Робіт ще немає.";
+    portfolioItemsContainer.appendChild(p);
+
+    return;
+
+  }
+
+  portfolioItems.forEach(function(item, index){
+    portfolioItemsContainer.appendChild(createPortfolioItemCard(item, index));
+  });
+
+}
+
+
+async function movePortfolioItem(id, direction){
+
+  const index = portfolioItems.findIndex(function(item){ return item.id === id; });
+  const newIndex = index + direction;
+
+  if(index === -1 || newIndex < 0 || newIndex >= portfolioItems.length){
+    return;
+  }
+
+  const list = portfolioItems.slice();
+  const moved = list.splice(index, 1)[0];
+  list.splice(newIndex, 0, moved);
+
+  portfolioItems = list;
+  renderPortfolioItems();
+
+  const order = list.map(function(item){ return item.id; });
+
+  try{
+
+    await fetch("/api/portfolio.js", {
+      method: "POST",
+      headers: adminJsonHeaders(),
+      body: JSON.stringify({ action: "reorder", order: order })
+    });
+
+  }catch(error){
+
+    console.error("reorder portfolio items error:", error);
+
+  }
+
+}
+
+
+async function reorderPortfolioMedia(item, fromIndex, toIndex){
+
+  const list = item.portfolio_media.slice();
+  const moved = list.splice(fromIndex, 1)[0];
+  list.splice(toIndex, 0, moved);
+
+  item.portfolio_media = list;
+
+  const order = list.map(function(media){ return media.id; });
+
+  try{
+
+    await fetch("/api/portfolio-media.js", {
+      method: "POST",
+      headers: adminJsonHeaders(),
+      body: JSON.stringify({
+        action: "reorder",
+        portfolioItemId: item.id,
+        order: order
+      })
+    });
+
+  }catch(error){
+
+    console.error("reorder portfolio media error:", error);
+
+  }
+
+}
+
+
+function uploadPortfolioMedia(portfolioItemId, file){
+
+  return uploadViaSignedUrl(
+    "/api/portfolio-upload-url.js",
+    "/api/portfolio-media.js",
+    { portfolioItemId: portfolioItemId },
+    { action: "add", portfolioItemId: portfolioItemId },
+    file
+  ).then(function(data){ return data.media; });
+
+}
+
+
+function createPortfolioMediaRow(item, media, index, total, onChanged){
+
+  const row = document.createElement("div");
+  row.className = "portfolio-media-row";
+
+  const thumb =
+    media.media_type === "video"
+      ? document.createElement("video")
+      : document.createElement("img");
+
+  thumb.className = "portfolio-media-thumb";
+  thumb.src = media.url;
+
+  if(media.media_type === "video"){
+    thumb.muted = true;
+  }
+
+  row.appendChild(thumb);
+
+  const info = document.createElement("div");
+  info.className = "portfolio-media-info";
+  info.textContent =
+    (media.file_name || "") + " · " +
+    media.media_type + " · " +
+    formatFileSize(media.file_size);
+  row.appendChild(info);
+
+  const controls = document.createElement("div");
+  controls.className = "portfolio-media-controls";
+
+  controls.appendChild(
+    makeSmallButton("↑", index === 0, async function(){
+      await reorderPortfolioMedia(item, index, index - 1);
+      onChanged();
+    })
+  );
+
+  controls.appendChild(
+    makeSmallButton("↓", index === total - 1, async function(){
+      await reorderPortfolioMedia(item, index, index + 1);
+      onChanged();
+    })
+  );
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "media-btn media-btn-danger";
+  deleteBtn.textContent = "🗑";
+  deleteBtn.addEventListener("click", async function(){
+
+    if(!confirm("Видалити цей файл?")){
+      return;
+    }
+
+    deleteBtn.disabled = true;
+
+    try{
+
+      const response =
+        await fetch("/api/portfolio-media.js", {
+          method: "POST",
+          headers: adminJsonHeaders(),
+          body: JSON.stringify({ action: "delete", id: media.id })
+        });
+
+      const data = await response.json();
+
+      if(!response.ok){
+        throw new Error(data.error || "Помилка видалення");
+      }
+
+      item.portfolio_media =
+        item.portfolio_media.filter(function(m){ return m.id !== media.id; });
+
+      onChanged();
+
+    }catch(error){
+
+      alert("❌ " + error.message);
+      deleteBtn.disabled = false;
+
+    }
+
+  });
+
+  controls.appendChild(deleteBtn);
+  row.appendChild(controls);
+
+  return row;
+
+}
+
+
+function createPortfolioItemCard(item, index){
+
+  const draft = {
+    ua: { title: item.title_ua || "", description: item.description_ua || "" },
+    ru: { title: item.title_ru || "", description: item.description_ru || "" },
+    en: { title: item.title_en || "", description: item.description_en || "" }
+  };
+
+  let activeLang = "ua";
+
+  const details = document.createElement("details");
+  details.className = "group portfolio-item";
+
+  const summary = document.createElement("summary");
+
+  function updateSummary(){
+    summary.textContent =
+      (item.title_ua || "(без назви)") + " — " + summarizeMedia(item.portfolio_media);
+  }
+
+  updateSummary();
+  details.appendChild(summary);
+
+  const body = document.createElement("div");
+  body.className = "group-body";
+
+  const orderRow = document.createElement("div");
+  orderRow.className = "portfolio-order-row";
+  orderRow.appendChild(
+    makeSmallButton("↑ Вище", index === 0, function(){ movePortfolioItem(item.id, -1); })
+  );
+  orderRow.appendChild(
+    makeSmallButton("↓ Нижче", index === portfolioItems.length - 1, function(){ movePortfolioItem(item.id, 1); })
+  );
+  body.appendChild(orderRow);
+
+  const langBar = document.createElement("div");
+  langBar.className = "lang-bar";
+
+  const langBarLabel = document.createElement("span");
+  langBarLabel.className = "lang-bar-label";
+  langBarLabel.textContent = "Мова:";
+  langBar.appendChild(langBarLabel);
+
+  const titleInput = document.createElement("input");
+  titleInput.type = "text";
+
+  const descInput = document.createElement("textarea");
+
+  function refreshLangFields(){
+    titleInput.value = draft[activeLang].title;
+    descInput.value = draft[activeLang].description;
+  }
+
+  ["ua", "ru", "en"].forEach(function(lang){
+
+    const langBtn = document.createElement("button");
+    langBtn.type = "button";
+    langBtn.className = "lang-tab" + (lang === "ua" ? " active" : "");
+    langBtn.textContent = lang.toUpperCase();
+
+    langBtn.addEventListener("click", function(){
+
+      activeLang = lang;
+
+      langBar.querySelectorAll(".lang-tab").forEach(function(btn){
+        btn.classList.remove("active");
+      });
+
+      langBtn.classList.add("active");
+      refreshLangFields();
+
+    });
+
+    langBar.appendChild(langBtn);
+
+  });
+
+  body.appendChild(langBar);
+
+  const titleLabel = document.createElement("label");
+  titleLabel.textContent = "Назва";
+  body.appendChild(titleLabel);
+
+  titleInput.addEventListener("input", function(){
+    draft[activeLang].title = titleInput.value;
+  });
+  body.appendChild(titleInput);
+
+  const descLabel = document.createElement("label");
+  descLabel.textContent = "Опис";
+  body.appendChild(descLabel);
+
+  descInput.addEventListener("input", function(){
+    draft[activeLang].description = descInput.value;
+  });
+  body.appendChild(descInput);
+
+  refreshLangFields();
+
+  const saveTextBtn = document.createElement("button");
+  saveTextBtn.type = "button";
+  saveTextBtn.className = "media-btn media-btn-primary";
+  saveTextBtn.textContent = "💾 Зберегти назву й опис";
+
+  const textStatus = document.createElement("div");
+  textStatus.className = "media-status";
+
+  saveTextBtn.addEventListener("click", async function(){
+
+    saveTextBtn.disabled = true;
+    textStatus.textContent = "";
+
+    try{
+
+      const response =
+        await fetch("/api/portfolio.js", {
+          method: "POST",
+          headers: adminJsonHeaders(),
+          body: JSON.stringify({
+            action: "update",
+            id: item.id,
+            title_ua: draft.ua.title,
+            title_ru: draft.ru.title,
+            title_en: draft.en.title,
+            description_ua: draft.ua.description,
+            description_ru: draft.ru.description,
+            description_en: draft.en.description
+          })
+        });
+
+      const data = await response.json();
+
+      if(!response.ok){
+        throw new Error(data.error || "Помилка збереження");
+      }
+
+      Object.assign(item, data.item);
+      textStatus.textContent = "✅ Збережено";
+      updateSummary();
+
+    }catch(error){
+
+      textStatus.textContent = "❌ " + error.message;
+
+    }
+
+    saveTextBtn.disabled = false;
+
+  });
+
+  body.appendChild(saveTextBtn);
+  body.appendChild(textStatus);
+
+  const mediaHeading = document.createElement("h4");
+  mediaHeading.textContent = "Медіа";
+  mediaHeading.style.margin = "22px 0 12px";
+  body.appendChild(mediaHeading);
+
+  const mediaListContainer = document.createElement("div");
+  body.appendChild(mediaListContainer);
+
+  function renderMediaList(){
+
+    mediaListContainer.innerHTML = "";
+
+    const list = item.portfolio_media || [];
+
+    if(list.length === 0){
+
+      const p = document.createElement("p");
+      p.className = "portfolio-empty";
+      p.textContent = "Медіа ще не додано.";
+      mediaListContainer.appendChild(p);
+
+    }
+
+    list.forEach(function(media, mIndex){
+
+      mediaListContainer.appendChild(
+        createPortfolioMediaRow(item, media, mIndex, list.length, function(){
+          renderMediaList();
+          updateSummary();
+        })
+      );
+
+    });
+
+  }
+
+  renderMediaList();
+
+  const addMediaInput = document.createElement("input");
+  addMediaInput.type = "file";
+  addMediaInput.accept = "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm";
+  addMediaInput.hidden = true;
+
+  const addMediaBtn = document.createElement("button");
+  addMediaBtn.type = "button";
+  addMediaBtn.className = "media-btn";
+  addMediaBtn.textContent = "+ Додати медіа";
+  addMediaBtn.style.marginTop = "14px";
+  addMediaBtn.addEventListener("click", function(){ addMediaInput.click(); });
+
+  const addMediaStatus = document.createElement("div");
+  addMediaStatus.className = "media-status";
+
+  addMediaInput.addEventListener("change", async function(){
+
+    const file = addMediaInput.files[0];
+
+    if(!file){
+      return;
+    }
+
+    addMediaBtn.disabled = true;
+    addMediaStatus.textContent = "Завантажуємо...";
+
+    try{
+
+      const newMedia = await uploadPortfolioMedia(item.id, file);
+
+      item.portfolio_media = (item.portfolio_media || []).concat([newMedia]);
+      renderMediaList();
+      updateSummary();
+
+      addMediaStatus.textContent = "✅ Додано";
+
+    }catch(error){
+
+      addMediaStatus.textContent = "❌ " + error.message;
+
+    }
+
+    addMediaBtn.disabled = false;
+    addMediaInput.value = "";
+
+  });
+
+  body.appendChild(addMediaBtn);
+  body.appendChild(addMediaInput);
+  body.appendChild(addMediaStatus);
+
+  const deleteItemBtn = document.createElement("button");
+  deleteItemBtn.type = "button";
+  deleteItemBtn.className = "media-btn media-btn-danger";
+  deleteItemBtn.textContent = "🗑 Видалити роботу";
+  deleteItemBtn.style.marginTop = "20px";
+
+  deleteItemBtn.addEventListener("click", async function(){
+
+    if(!confirm("Видалити цю роботу разом з усіма файлами?")){
+      return;
+    }
+
+    deleteItemBtn.disabled = true;
+
+    try{
+
+      const response =
+        await fetch("/api/portfolio.js", {
+          method: "POST",
+          headers: adminJsonHeaders(),
+          body: JSON.stringify({ action: "delete", id: item.id })
+        });
+
+      const data = await response.json();
+
+      if(!response.ok){
+        throw new Error(data.error || "Помилка видалення");
+      }
+
+      portfolioItems = portfolioItems.filter(function(i){ return i.id !== item.id; });
+      renderPortfolioItems();
+
+    }catch(error){
+
+      alert("❌ " + error.message);
+      deleteItemBtn.disabled = false;
+
+    }
+
+  });
+
+  body.appendChild(deleteItemBtn);
+
+  details.appendChild(body);
+
+  return details;
+
+}
+
+
+addPortfolioItemButton.addEventListener("click", async function(){
+
+  addPortfolioItemButton.disabled = true;
+
+  try{
+
+    const response =
+      await fetch("/api/portfolio.js", {
+        method: "POST",
+        headers: adminJsonHeaders(),
+        body: JSON.stringify({ action: "create" })
+      });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(data.error || "Помилка створення");
+    }
+
+    portfolioItems.push(Object.assign({ portfolio_media: [] }, data.item));
+    renderPortfolioItems();
+
+  }catch(error){
+
+    alert("❌ " + error.message);
+
+  }
+
+  addPortfolioItemButton.disabled = false;
+
+});
 
 </script>
 

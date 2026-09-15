@@ -25,3 +25,104 @@ ADD COLUMN IF NOT EXISTS content_i18n jsonb NOT NULL DEFAULT '{}'::jsonb;
 викликаються. Мовні вкладки UA/RU/EN лише перемикають, яку саме версію
 поточного поля видно і можна редагувати; збережені значення завжди
 йдуть у ту саму колонку `content_i18n`.
+
+## Медіа сайту та портфоліо
+
+Два нових розділи адмінки — **🎨 Медіа сайту** (фонове зображення/GIF/відео
+для 6 реальних секцій сайту: hero, about, services, portfolio, contact,
+footer) та **🖼 Портфоліо** (окрема система робіт з необмеженою кількістю
+фото/GIF/відео на роботу). Потребують одноразового ручного налаштування
+в Supabase, яке неможливо виконати автоматично.
+
+### 1. Storage bucket
+
+Створіть у Supabase Storage публічний bucket з назвою `site-media`
+(Storage → New bucket → назва `site-media`, увімкнути "Public bucket").
+Файли зберігаються за шляхами:
+
+```
+site-media/blocks/<blockId>/<random-id>.<ext>       — фон блоку сайту
+site-media/portfolio/<portfolio-item-id>/<random-id>.<ext>  — медіа роботи
+```
+
+Шлях і випадкове ім'я файлу завжди генерує сервер (`api/_lib/mediaValidation.js`),
+браузер не може вибрати довільний шлях чи ім'я.
+
+### 2. Таблиці портфоліо
+
+Виконайте один раз у SQL Editor (суто нові таблиці, жодні існуючі дані
+не змінюються):
+
+```sql
+create table portfolio_items (
+  id uuid primary key default gen_random_uuid(),
+  title_ua text not null default '',
+  title_ru text not null default '',
+  title_en text not null default '',
+  description_ua text not null default '',
+  description_ru text not null default '',
+  description_en text not null default '',
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table portfolio_media (
+  id uuid primary key default gen_random_uuid(),
+  portfolio_item_id uuid not null references portfolio_items(id) on delete cascade,
+  url text not null,
+  storage_path text not null,
+  media_type text not null check (media_type in ('image','gif','video')),
+  mime_type text not null,
+  file_name text not null,
+  file_size integer not null,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+```
+
+`on delete cascade` — видалення роботи автоматично видаляє її рядки
+`portfolio_media`; самі файли у Storage сервер видаляє окремим викликом
+перед видаленням рядка роботи.
+
+Доки ці таблиці не створені, `api/portfolio-list.js` (публічний
+для сайту) просто повертає порожній список замість помилки — сайт
+продовжує працювати, портфоліо-галерея не показується. Адмінські дії
+з портфоліо (`api/portfolio.js`, `api/portfolio-media.js`,
+`api/portfolio-upload-url.js`) до створення таблиць повертатимуть
+помилку Supabase з поясненням.
+
+### 3. Нові API endpoints
+
+Усі — тільки для адміністратора (та ж Telegram initData + `ADMIN_ID`
+перевірка, що й у `admin-content.js`), крім `portfolio-list.js`:
+
+| Endpoint | Призначення |
+|---|---|
+| `api/media-upload-url.js` | видає підписаний Storage URL для завантаження фону блоку |
+| `api/media-commit.js` | зберігає/видаляє metadata фону блоку в `content_i18n.media` |
+| `api/portfolio.js` | CRUD робіт портфоліо (створити/оновити/видалити/переставити) |
+| `api/portfolio-upload-url.js` | видає підписаний Storage URL для медіа конкретної роботи |
+| `api/portfolio-media.js` | додає/видаляє/переставляє окремі файли роботи |
+| `api/portfolio-list.js` | **публічний**, без авторизації — список робіт для сайту |
+
+Завантаження файлів іде напряму з браузера в Supabase Storage
+(signed upload URL), а не через ці serverless-функції — важливо для
+відео до 20 MB, які інакше могли б впертися в ліміти Vercel.
+`SUPABASE_SECRET_KEY` при цьому ніколи не потрапляє в браузер.
+
+### 4. Формати та ліміти
+
+| Тип | MIME | Ліміт |
+|---|---|---|
+| Фото | `image/jpeg`, `image/png`, `image/webp` | до 10 MB |
+| GIF | `image/gif` | до 5 MB |
+| Відео | `video/mp4`, `video/webm` | до 20 MB |
+
+Сервер (`api/_lib/mediaValidation.js`) перевіряє MIME-тип, розширення
+файлу (має відповідати заявленому MIME) і розмір — жодному з цих трьох
+параметрів окремо від інших не довіряють.
+
+### 5. Нових Environment Variables не потрібно
+
+Все працює на вже наявних `SUPABASE_URL` та `SUPABASE_SECRET_KEY`.

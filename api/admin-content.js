@@ -1,11 +1,16 @@
-const crypto = require("crypto");
-
-const ADMIN_ID = "1047945172";
+const { requireAdmin } = require("./_lib/telegramAuth");
+const { getSiteContentRow, patchSiteContent } = require("./_lib/supabase");
 
 const CONTENT_I18N_LANGS = ["ua", "ru", "en"];
 const MAX_CONTENT_I18N_BYTES = 200 * 1024;
 const MAX_CONTENT_I18N_FIELD_LENGTH = 5000;
 const MAX_CONTENT_I18N_KEY_LENGTH = 100;
+
+/* "media" is a reserved top-level content_i18n key written exclusively by
+   api/media-commit.js (a different shape: { blocks: { <id>: {...} } }, not
+   {ua,ru,en}). Rejecting it here stops it from ever being silently
+   corrupted by the {ua,ru,en}-shaped validation below. */
+const RESERVED_CONTENT_I18N_KEYS = ["media"];
 
 
 function isPlainObject(value){
@@ -16,7 +21,8 @@ function isPlainObject(value){
 /* Validates and sanitizes the universal content editor payload
    (admin.html -> content-schema.js). Every key/value is type- and
    size-checked before it ever reaches Supabase, so a malformed or
-   oversized payload is rejected with 400 instead of being stored. */
+   oversized payload is rejected with 400 instead of being stored.
+   Unchanged from before this file started sharing _lib helpers. */
 function validateContentI18n(value){
 
   if(!isPlainObject(value)){
@@ -37,6 +43,10 @@ function validateContentI18n(value){
       key.length > MAX_CONTENT_I18N_KEY_LENGTH
     ){
       return { error: `Invalid content_i18n key: ${key}` };
+    }
+
+    if(RESERVED_CONTENT_I18N_KEYS.includes(key)){
+      return { error: `"${key}" is a reserved key and cannot be set here` };
     }
 
     const entry = value[key];
@@ -76,121 +86,6 @@ function validateContentI18n(value){
 }
 
 
-function validateTelegramInitData(
-  initData,
-  botToken
-){
-
-  if(!initData || !botToken){
-    return null;
-  }
-
-  try{
-
-    const params =
-      new URLSearchParams(initData);
-
-    const hash =
-      params.get("hash");
-
-    if(!hash){
-      return null;
-    }
-
-    params.delete("hash");
-
-    const dataCheckString =
-      Array.from(params.entries())
-        .sort(([a],[b]) =>
-          a.localeCompare(b)
-        )
-        .map(
-          ([key,value]) =>
-            `${key}=${value}`
-        )
-        .join("\n");
-
-    const secretKey =
-      crypto
-        .createHmac(
-          "sha256",
-          "WebAppData"
-        )
-        .update(botToken)
-        .digest();
-
-    const calculatedHash =
-      crypto
-        .createHmac(
-          "sha256",
-          secretKey
-        )
-        .update(dataCheckString)
-        .digest("hex");
-
-    if(calculatedHash !== hash){
-      return null;
-    }
-
-    const userString =
-      params.get("user");
-
-    if(!userString){
-      return null;
-    }
-
-    const user =
-      JSON.parse(userString);
-
-    return user;
-
-  }catch(error){
-
-    console.error(
-      "Telegram validation error:",
-      error
-    );
-
-    return null;
-
-  }
-
-}
-
-
-async function getContent(){
-
-  const response =
-    await fetch(
-      `${process.env.SUPABASE_URL}/rest/v1/site_content?id=eq.1&select=*`,
-      {
-        method:"GET",
-        headers:{
-          apikey:
-            process.env.SUPABASE_SECRET_KEY,
-
-          Authorization:
-            `Bearer ${process.env.SUPABASE_SECRET_KEY}`
-        }
-      }
-    );
-
-  const data =
-    await response.json();
-
-  if(!response.ok){
-
-    throw new Error(
-      JSON.stringify(data)
-    );
-
-  }
-
-  return data[0] || null;
-
-}
-
-
 export default async function handler(
   req,
   res
@@ -198,36 +93,19 @@ export default async function handler(
 
   try{
 
-    const initData =
-      req.headers["x-telegram-init-data"];
+    const auth = requireAdmin(req);
 
-    const user =
-      validateTelegramInitData(
-        initData,
-        process.env.BOT_TOKEN
-      );
-
-    if(!user){
-
-      return res.status(401).json({
-        error:"Telegram authorization failed"
-      });
-
+    if(auth.error){
+      return res.status(auth.status).json({ error: auth.error });
     }
 
-    if(String(user.id) !== ADMIN_ID){
-
-      return res.status(403).json({
-        error:"You are not administrator"
-      });
-
-    }
+    const user = auth.user;
 
 
     if(req.method === "GET"){
 
       const content =
-        await getContent();
+        await getSiteContentRow();
 
       return res.status(200).json({
         isAdmin:true,
@@ -261,7 +139,7 @@ export default async function handler(
 
       ];
 
-      const updates = {};
+      const flatUpdates = {};
 
       for(const field of allowedFields){
 
@@ -270,13 +148,15 @@ export default async function handler(
           req.body[field] !== undefined
         ){
 
-          updates[field] =
+          flatUpdates[field] =
             String(req.body[field]);
 
         }
 
       }
 
+
+      let contentI18nPatch;
 
       if(
         req.body &&
@@ -294,14 +174,14 @@ export default async function handler(
 
         }
 
-        updates.content_i18n =
-          validation.value;
+        contentI18nPatch = validation.value;
 
       }
 
 
       if(
-        Object.keys(updates).length === 0
+        contentI18nPatch === undefined &&
+        Object.keys(flatUpdates).length === 0
       ){
 
         return res.status(400).json({
@@ -311,54 +191,17 @@ export default async function handler(
       }
 
 
-      const response =
-        await fetch(
-          `${process.env.SUPABASE_URL}/rest/v1/site_content?id=eq.1`,
-          {
-            method:"PATCH",
+      let data;
 
-            headers:{
-              apikey:
-                process.env.SUPABASE_SECRET_KEY,
+      try{
 
-              Authorization:
-                `Bearer ${process.env.SUPABASE_SECRET_KEY}`,
+        data = await patchSiteContent(contentI18nPatch, flatUpdates);
 
-              "Content-Type":
-                "application/json",
-
-              Prefer:
-                "return=representation"
-            },
-
-            body:
-              JSON.stringify(updates)
-          }
-        );
-
-
-      const data =
-        await response.json();
-
-
-      if(!response.ok){
+      }catch(error){
 
         return res.status(500).json({
           error:"Supabase error",
-          details:data
-        });
-
-      }
-
-
-      if(
-        !Array.isArray(data) ||
-        data.length === 0
-      ){
-
-        return res.status(500).json({
-          error:
-            "Supabase did not update row with id=1"
+          details:error.message
         });
 
       }
@@ -366,7 +209,7 @@ export default async function handler(
 
       return res.status(200).json({
         success:true,
-        data:data[0]
+        data:data
       });
 
     }

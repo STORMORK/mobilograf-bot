@@ -549,6 +549,127 @@
     }
 
     /* =========================
+       BLOCK BACKGROUND MEDIA
+
+       Applies to every MEDIA_BLOCKS section (content-schema.js). When no
+       media is set for a block, none of this changes how it looks today -
+       position:relative/overflow:hidden are no-ops without an absolutely
+       positioned child, and the child-promotion rule only affects
+       elements that already render normally in flow.
+    ========================= */
+
+    #heroBlock,
+    #aboutBlock,
+    #servicesBlock,
+    #portfolioBlock,
+    #contactBlock,
+    #footerBlock {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #heroBlock > *:not(.block-media-layer):not(.block-media-gradient),
+    #aboutBlock > *:not(.block-media-layer):not(.block-media-gradient),
+    #servicesBlock > *:not(.block-media-layer):not(.block-media-gradient),
+    #portfolioBlock > *:not(.block-media-layer):not(.block-media-gradient),
+    #contactBlock > *:not(.block-media-layer):not(.block-media-gradient),
+    #footerBlock > *:not(.block-media-layer):not(.block-media-gradient) {
+      position: relative;
+      z-index: 2;
+    }
+
+    .block-media-layer {
+      position: absolute;
+      inset: 0;
+
+      width: 100%;
+      height: 100%;
+
+      object-fit: cover;
+
+      z-index: 0;
+
+      pointer-events: none;
+    }
+
+    .block-media-gradient {
+      position: absolute;
+      inset: 0;
+
+      z-index: 1;
+
+      pointer-events: none;
+
+      background:
+        linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.55) 0%,
+          rgba(0, 0, 0, 0.32) 45%,
+          rgba(0, 0, 0, 0.75) 100%
+        );
+    }
+
+    /* =========================
+       PORTFOLIO GALLERY
+    ========================= */
+
+    .portfolio-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .portfolio-card {
+      cursor: pointer;
+
+      border-radius: 16px;
+      overflow: hidden;
+
+      border: 1px solid #292929;
+      background: #111;
+
+      transition: transform 0.2s ease;
+    }
+
+    .portfolio-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .portfolio-card-thumb {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+
+      object-fit: cover;
+      display: block;
+
+      background: #000;
+    }
+
+    .portfolio-card-title {
+      padding: 12px 14px;
+
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .portfolio-modal-media-item {
+      margin-bottom: 14px;
+    }
+
+    .portfolio-modal-media-item img,
+    .portfolio-modal-media-item video {
+      width: 100%;
+      max-height: 70vh;
+
+      object-fit: contain;
+      display: block;
+
+      border-radius: 14px;
+
+      background: #000;
+    }
+
+    /* =========================
        MOBILE
     ========================= */
 
@@ -603,7 +724,7 @@
 
 
   <!-- HERO -->
-  <header class="hero">
+  <header class="hero" id="heroBlock">
 
     <div class="language">
       <button data-lang="ua" class="active">UA</button>
@@ -649,7 +770,7 @@
 
 
   <!-- ABOUT / SERVICES -->
-  <section class="about">
+  <section class="about" id="aboutBlock">
 
     <h2
       id="aboutTitle"
@@ -664,7 +785,7 @@
     </p>
 
 
-    <div class="services-grid">
+    <div class="services-grid" id="servicesBlock">
 
       <div class="service-card">
 
@@ -725,7 +846,7 @@
 
 
   <!-- PORTFOLIO -->
-  <section class="portfolio">
+  <section class="portfolio" id="portfolioBlock">
 
     <h2 class="section-title" data-i18n="portfolio_title">
       Портфоліо
@@ -746,7 +867,12 @@
       id="portfolioContent"
       class="portfolio-content">
 
-      <div class="portfolio-placeholder" data-i18n="portfolio_placeholder">
+      <div id="portfolioGallery" class="portfolio-gallery" hidden></div>
+
+      <div
+        id="portfolioPlaceholder"
+        class="portfolio-placeholder"
+        data-i18n="portfolio_placeholder">
 
         Тут можна розмістити твої фотографії,
         відео та Reels.
@@ -758,8 +884,41 @@
   </section>
 
 
+  <!-- PORTFOLIO ITEM MODAL -->
+
+  <div
+    id="portfolioItemModal"
+    class="modal">
+
+    <div class="modal-box">
+
+      <div class="modal-top">
+
+        <h2 id="portfolioModalTitle"></h2>
+
+        <button
+          id="closePortfolioModal"
+          class="close-modal">
+          ×
+        </button>
+
+      </div>
+
+      <p
+        id="portfolioModalDescription"
+        class="section-text"
+        style="margin-bottom:20px;">
+      </p>
+
+      <div id="portfolioModalMedia"></div>
+
+    </div>
+
+  </div>
+
+
   <!-- CONTACT -->
-  <section>
+  <section id="contactBlock">
 
     <h2 class="section-title" data-i18n="contact_title">
       Контакти
@@ -783,7 +942,7 @@
   </section>
 
 
-  <footer>
+  <footer id="footerBlock">
     © <span id="year"></span> <span data-i18n="footer_brand">Мобілограф</span>
   </footer>
 
@@ -1112,6 +1271,10 @@
     applyUiTranslations();
 
     renderContactInfo();
+
+    applyBlockMedia(siteContent);
+
+    renderPortfolioGallery();
 
   }
 
@@ -1757,6 +1920,297 @@
 
 
   /* =====================================
+     BLOCK BACKGROUND MEDIA
+
+     MEDIA_BLOCKS / resolveBlockMedia come from content-schema.js
+     (loaded above). One admin-uploaded image/gif/video per real visual
+     section, shared across UA/RU/EN. A block with no media saved keeps
+     its existing design untouched (this function simply does nothing
+     for it beyond clearing any previous layer).
+  ===================================== */
+
+  const MEDIA_BLOCK_ELEMENT_IDS = {
+    hero: "heroBlock",
+    about: "aboutBlock",
+    services: "servicesBlock",
+    portfolio: "portfolioBlock",
+    contact: "contactBlock",
+    footer: "footerBlock"
+  };
+
+
+  function applyBlockMedia(content) {
+
+    MEDIA_BLOCKS.forEach(function (block) {
+
+      const el =
+        document.getElementById(
+          MEDIA_BLOCK_ELEMENT_IDS[block.id]
+        );
+
+      if (!el) {
+        return;
+      }
+
+      el
+        .querySelectorAll(
+          ":scope > .block-media-layer, :scope > .block-media-gradient"
+        )
+        .forEach(function (node) {
+          node.remove();
+        });
+
+      const mediaEntry =
+        resolveBlockMedia(content, block.id);
+
+      if (!mediaEntry) {
+        return;
+      }
+
+      let mediaEl;
+
+      if (mediaEntry.type === "video") {
+
+        mediaEl = document.createElement("video");
+        mediaEl.autoplay = true;
+        mediaEl.muted = true;
+        mediaEl.loop = true;
+        mediaEl.playsInline = true;
+
+      } else {
+
+        mediaEl = document.createElement("img");
+        mediaEl.alt = "";
+
+      }
+
+      mediaEl.src = mediaEntry.url;
+      mediaEl.className = "block-media-layer";
+
+      el.insertBefore(mediaEl, el.firstChild);
+
+      /* hero already has its own dark gradient via .hero::after -
+         adding a second one here would double-darken it. */
+      if (block.id !== "hero") {
+
+        const gradient = document.createElement("div");
+        gradient.className = "block-media-gradient";
+
+        el.insertBefore(gradient, mediaEl.nextSibling);
+
+      }
+
+    });
+
+  }
+
+
+  /* =====================================
+     PORTFOLIO GALLERY
+
+     Reads api/portfolio-list.js (public, no auth) - a separate system
+     from the text/media editors above, backed by its own Supabase
+     tables (portfolio_items / portfolio_media). Title/description are
+     per-language; media is the same for everyone regardless of
+     currentLang, per the admin's own single upload.
+  ===================================== */
+
+  let portfolioData = [];
+
+  const portfolioGallery =
+    document.getElementById("portfolioGallery");
+
+  const portfolioPlaceholder =
+    document.getElementById("portfolioPlaceholder");
+
+  const portfolioItemModal =
+    document.getElementById("portfolioItemModal");
+
+
+  function portfolioText(item, field) {
+
+    const value = item[field + "_" + currentLang];
+
+    if (value) {
+      return value;
+    }
+
+    return item[field + "_ua"] || "";
+
+  }
+
+
+  function renderPortfolioGallery() {
+
+    if (!portfolioGallery) {
+      return;
+    }
+
+    portfolioGallery.innerHTML = "";
+
+    if (!portfolioData || portfolioData.length === 0) {
+
+      portfolioGallery.hidden = true;
+      portfolioPlaceholder.hidden = false;
+
+      return;
+
+    }
+
+    portfolioPlaceholder.hidden = true;
+    portfolioGallery.hidden = false;
+
+    portfolioData.forEach(function (item) {
+
+      const card = document.createElement("div");
+      card.className = "portfolio-card";
+
+      const media = item.portfolio_media || [];
+      const cover = media[0];
+
+      if (cover) {
+
+        const thumb =
+          cover.media_type === "video"
+            ? document.createElement("video")
+            : document.createElement("img");
+
+        thumb.className = "portfolio-card-thumb";
+        thumb.src = cover.url;
+
+        if (cover.media_type === "video") {
+          thumb.muted = true;
+        }
+
+        card.appendChild(thumb);
+
+      }
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "portfolio-card-title";
+      titleEl.textContent = portfolioText(item, "title") || "—";
+      card.appendChild(titleEl);
+
+      card.addEventListener("click", function () {
+        openPortfolioModal(item);
+      });
+
+      portfolioGallery.appendChild(card);
+
+    });
+
+  }
+
+
+  function openPortfolioModal(item) {
+
+    document.getElementById("portfolioModalTitle").textContent =
+      portfolioText(item, "title");
+
+    document.getElementById("portfolioModalDescription").textContent =
+      portfolioText(item, "description");
+
+    const mediaContainer =
+      document.getElementById("portfolioModalMedia");
+
+    mediaContainer.innerHTML = "";
+
+    (item.portfolio_media || []).forEach(function (media) {
+
+      const wrap = document.createElement("div");
+      wrap.className = "portfolio-modal-media-item";
+
+      let el;
+
+      if (media.media_type === "video") {
+
+        el = document.createElement("video");
+        el.controls = true;
+        el.muted = true;
+        el.autoplay = true;
+        el.loop = true;
+        el.playsInline = true;
+
+      } else {
+
+        el = document.createElement("img");
+        el.alt = "";
+
+      }
+
+      el.src = media.url;
+
+      wrap.appendChild(el);
+      mediaContainer.appendChild(wrap);
+
+    });
+
+    portfolioItemModal.classList.add("show");
+
+  }
+
+
+  function closePortfolioModal() {
+
+    portfolioItemModal.classList.remove("show");
+
+    /* stop any playing video instead of just hiding it */
+    document.getElementById("portfolioModalMedia").innerHTML = "";
+
+  }
+
+
+  document
+    .getElementById("closePortfolioModal")
+    .addEventListener("click", closePortfolioModal);
+
+
+  portfolioItemModal.addEventListener(
+    "click",
+    function (event) {
+
+      if (event.target === portfolioItemModal) {
+        closePortfolioModal();
+      }
+
+    }
+  );
+
+
+  async function loadPortfolioGallery() {
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/portfolio-list.js",
+          {
+            method: "GET",
+            cache: "no-store"
+          }
+        );
+
+      if (!response.ok) {
+        return;
+      }
+
+      portfolioData = await response.json();
+
+      renderPortfolioGallery();
+
+    } catch (error) {
+
+      console.error(
+        "Portfolio list error:",
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =====================================
      YEAR
   ===================================== */
 
@@ -1771,6 +2225,8 @@
   ===================================== */
 
   loadSiteContent();
+
+  loadPortfolioGallery();
 
 </script>
 
