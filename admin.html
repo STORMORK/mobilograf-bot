@@ -1057,6 +1057,32 @@ function adminJsonHeaders(){
 }
 
 
+/* Every admin API endpoint can return {error, details} - "details" is
+   often the actually useful part (Supabase's own message, e.g. a
+   missing bucket/table telling you exactly what to fix), but most
+   error handlers below used to read only "error" and show a generic
+   label like "Internal server error" instead. This is now the one
+   place all of them build their message from. */
+function buildErrorMessage(data, fallback){
+
+  if(!data){
+    return fallback;
+  }
+
+  if(data.details){
+
+    return (
+      (data.error ? data.error + ": " : "") +
+      data.details
+    );
+
+  }
+
+  return data.error || fallback;
+
+}
+
+
 function formatFileSize(bytes){
 
   if(typeof bytes !== "number" || !Number.isFinite(bytes)){
@@ -1105,7 +1131,7 @@ async function uploadViaSignedUrl(uploadUrlEndpoint, commitEndpoint, uploadPaylo
   const signData = await signResponse.json();
 
   if(!signResponse.ok){
-    throw new Error(signData.error || "Не вдалося отримати посилання для завантаження");
+    throw new Error(buildErrorMessage(signData, "Не вдалося отримати посилання для завантаження"));
   }
 
   const putResponse =
@@ -1137,7 +1163,7 @@ async function uploadViaSignedUrl(uploadUrlEndpoint, commitEndpoint, uploadPaylo
   const commitData = await commitResponse.json();
 
   if(!commitResponse.ok){
-    throw new Error(commitData.error || "Не вдалося зберегти медіа");
+    throw new Error(buildErrorMessage(commitData, "Не вдалося зберегти медіа"));
   }
 
   return commitData;
@@ -1344,7 +1370,7 @@ function createMediaBlockCard(block, mediaEntry){
       const data = await response.json();
 
       if(!response.ok){
-        throw new Error(data.error || "Помилка видалення");
+        throw new Error(buildErrorMessage(data, "Помилка видалення"));
       }
 
       renderMediaBlocks(data.data);
@@ -1617,7 +1643,7 @@ function createPortfolioMediaRow(item, media, index, total, onChanged){
       const data = await response.json();
 
       if(!response.ok){
-        throw new Error(data.error || "Помилка видалення");
+        throw new Error(buildErrorMessage(data, "Помилка видалення"));
       }
 
       item.portfolio_media =
@@ -1776,7 +1802,7 @@ function createPortfolioItemCard(item, index){
       const data = await response.json();
 
       if(!response.ok){
-        throw new Error(data.error || "Помилка збереження");
+        throw new Error(buildErrorMessage(data, "Помилка збереження"));
       }
 
       Object.assign(item, data.item);
@@ -1911,7 +1937,7 @@ function createPortfolioItemCard(item, index){
       const data = await response.json();
 
       if(!response.ok){
-        throw new Error(data.error || "Помилка видалення");
+        throw new Error(buildErrorMessage(data, "Помилка видалення"));
       }
 
       portfolioItems = portfolioItems.filter(function(i){ return i.id !== item.id; });
@@ -1951,7 +1977,7 @@ addPortfolioItemButton.addEventListener("click", async function(){
     const data = await response.json();
 
     if(!response.ok){
-      throw new Error(data.error || "Помилка створення");
+      throw new Error(buildErrorMessage(data, "Помилка створення"));
     }
 
     portfolioItems.push(Object.assign({ portfolio_media: [] }, data.item));

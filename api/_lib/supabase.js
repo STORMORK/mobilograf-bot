@@ -24,6 +24,35 @@ function authHeaders(extra){
 }
 
 
+/* Turns a raw Supabase REST/Storage error body into a message an admin
+   can actually act on, instead of every caller propagating a generic
+   500 "Internal server error". The two cases below are exactly the
+   one-time manual setup steps documented in README.md (the bucket and
+   the portfolio tables) and are the most likely real-world cause of a
+   failure here - everything else still surfaces Supabase's own message
+   rather than being swallowed. */
+function buildSupabaseErrorMessage(status, data){
+
+  const raw =
+    (data && (data.message || data.error || data.hint)) || "";
+
+  if(/bucket not found/i.test(raw)){
+    return `Storage bucket "${STORAGE_BUCKET}" не створено. Створіть публічний bucket "${STORAGE_BUCKET}" у Supabase Storage (Storage → New bucket → Public bucket).`;
+  }
+
+  if(/could not find the table|schema cache|relation .* does not exist/i.test(raw)){
+    return "Таблиці портфоліо ще не створені в Supabase. Виконайте SQL з README.md (розділ \"Медіа сайту та портфоліо\").";
+  }
+
+  if(raw){
+    return raw;
+  }
+
+  return `Supabase error (HTTP ${status})`;
+
+}
+
+
 /* ---------- site_content (existing table, unchanged shape) ---------- */
 
 async function getSiteContentRow(){
@@ -37,10 +66,10 @@ async function getSiteContentRow(){
       }
     );
 
-  const data = await response.json();
+  const data = await response.json().catch(function(){ return null; });
 
   if(!response.ok){
-    throw new Error(JSON.stringify(data));
+    throw new Error(buildSupabaseErrorMessage(response.status, data));
   }
 
   return data[0] || null;
@@ -90,10 +119,10 @@ async function patchSiteContent(contentI18nPatch, flatFields){
       }
     );
 
-  const data = await response.json();
+  const data = await response.json().catch(function(){ return null; });
 
   if(!response.ok){
-    throw new Error(JSON.stringify(data));
+    throw new Error(buildSupabaseErrorMessage(response.status, data));
   }
 
   if(!Array.isArray(data) || data.length === 0){
@@ -132,7 +161,7 @@ async function pgRequest(table, { method, query, body, prefer }){
   const data = await response.json().catch(function(){ return null; });
 
   if(!response.ok){
-    throw new Error(JSON.stringify(data));
+    throw new Error(buildSupabaseErrorMessage(response.status, data));
   }
 
   return data;
@@ -154,10 +183,10 @@ async function createSignedUploadUrl(path){
       }
     );
 
-  const data = await response.json();
+  const data = await response.json().catch(function(){ return null; });
 
   if(!response.ok){
-    throw new Error(JSON.stringify(data));
+    throw new Error(buildSupabaseErrorMessage(response.status, data));
   }
 
   return data;

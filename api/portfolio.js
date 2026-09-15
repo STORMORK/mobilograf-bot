@@ -211,9 +211,15 @@ export default async function handler(req, res){
 
     console.error(error);
 
+    /* error.message is already a clear, actionable reason for the two
+       most likely real-world causes here - a missing "site-media"
+       Storage bucket or missing portfolio tables (see
+       _lib/supabase.js's buildSupabaseErrorMessage) - so it goes
+       straight into "error" instead of being hidden behind a generic
+       "Internal server error" label with the real reason buried in a
+       separate "details" field admin.html would have to know to read. */
     return res.status(500).json({
-      error: "Internal server error",
-      details: error.message
+      error: error.message || "Internal server error"
     });
 
   }
