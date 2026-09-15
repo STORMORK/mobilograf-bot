@@ -195,19 +195,6 @@ content:"▾";
 padding:18px;
 }
 
-input[readonly],
-textarea[readonly]{
-opacity:0.65;
-cursor:default;
-}
-
-.auto-badge{
-display:block;
-color:#8ab4ff;
-font-size:12px;
-padding:6px 0 0;
-}
-
 @media(max-width:600px){
 
 .top{
@@ -263,20 +250,15 @@ style="display:none;"
 
 <div class="lang-bar">
 
-<span class="lang-bar-label">Мова:</span>
+<span class="lang-bar-label">Мова редагування:</span>
 
-<button type="button" class="lang-tab active" data-edit-lang="ua">🇺🇦 UA (редагується)</button>
-<button type="button" class="lang-tab" data-edit-lang="ru">🇷🇺 RU (авто)</button>
-<button type="button" class="lang-tab" data-edit-lang="en">🇬🇧 EN (авто)</button>
+<button type="button" class="lang-tab active" data-edit-lang="ua">🇺🇦 UA</button>
+<button type="button" class="lang-tab" data-edit-lang="ru">🇷🇺 RU</button>
+<button type="button" class="lang-tab" data-edit-lang="en">🇬🇧 EN</button>
 
 <button type="button" id="expandToggle" class="expand-toggle">Розгорнути все</button>
 
 </div>
-
-
-<p style="color:#888;font-size:13px;margin:-12px 0 20px;">
-Редагується лише UA. RU та EN перекладаються автоматично (DeepL) при збереженні і доступні тут лише для перегляду.
-</p>
 
 
 <div id="groups"></div>
@@ -453,6 +435,11 @@ status.innerHTML =
    index.html). Adding a new editable text on the site = adding one
    entry to that schema; this editor picks it up automatically, grouped
    and with UA/RU/EN tabs, with no changes needed here.
+
+   All three languages are edited by hand - the UA/RU/EN tab bar only
+   switches which language's value the (single, shared) input for a
+   field currently shows and writes to; there is no automatic
+   translation anywhere in this flow.
 ===================================== */
 
 let draft = {};
@@ -531,29 +518,10 @@ field.type = "text";
 field.dataset.key = item.key;
 
 field.addEventListener("input", function(){
-
-/* UA is the only language an admin can type into; RU/EN are always
-   derived server-side from UA via DeepL. The field is also marked
-   readonly for ru/en (see refreshFieldValues), but this guard keeps
-   the draft itself safe even if that attribute is bypassed somehow. */
-if(activeEditLang !== "ua"){
-return;
-}
-
 draft[item.key][activeEditLang] = field.value;
-
 });
 
 wrapper.appendChild(field);
-
-
-const autoBadge = document.createElement("span");
-autoBadge.className = "auto-badge";
-autoBadge.textContent = "🤖 Автоматичний переклад";
-autoBadge.hidden = true;
-autoBadge.dataset.autoBadgeFor = item.key;
-
-wrapper.appendChild(autoBadge);
 
 
 return wrapper;
@@ -602,8 +570,6 @@ groupsContainer.appendChild(details);
 
 function refreshFieldValues(){
 
-const isAutoLang = activeEditLang !== "ua";
-
 document
 .querySelectorAll("[data-key]")
 .forEach(function(el){
@@ -614,15 +580,6 @@ if(draft[key]){
 el.value = draft[key][activeEditLang] || "";
 }
 
-el.readOnly = isAutoLang;
-
-});
-
-
-document
-.querySelectorAll("[data-auto-badge-for]")
-.forEach(function(el){
-el.hidden = !isAutoLang;
 });
 
 
@@ -784,12 +741,7 @@ refreshFieldValues();
 
 
 message.textContent =
-"✅ Зміни успішно збережено!" +
-(
-result.translationWarning
-? " ⚠️ " + result.translationWarning
-: ""
-);
+"✅ Зміни успішно збережено!";
 
 
 const verifyResponse =
