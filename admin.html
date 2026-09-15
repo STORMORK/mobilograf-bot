@@ -3,132 +3,132 @@
 
 <head>
 
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0"
+>
 
-  <title>Адмін-панель</title>
+<title>Адмін-панель</title>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <style>
+<style>
 
-    * {
-      box-sizing: border-box;
-    }
+*{
+box-sizing:border-box;
+}
 
-    body {
-      margin: 0;
-      background: #090909;
-      color: #fff;
-      font-family: Arial, Helvetica, sans-serif;
-    }
+body{
+margin:0;
+background:#090909;
+color:#fff;
+font-family:Arial,Helvetica,sans-serif;
+}
 
-    .container {
-      width: min(700px, calc(100% - 30px));
-      margin: 0 auto;
-      padding: 30px 0 60px;
-    }
+.container{
+width:min(700px,calc(100% - 30px));
+margin:0 auto;
+padding:30px 0 60px;
+}
 
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
+.top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:15px;
+margin-bottom:30px;
+}
 
-    h1 {
-      margin: 0;
-      font-size: 32px;
-    }
+h1{
+margin:0;
+font-size:32px;
+}
 
-    .back {
-      color: #fff;
-      text-decoration: none;
-      border: 1px solid #333;
-      background: #151515;
-      padding: 11px 14px;
-      border-radius: 12px;
-    }
+.back{
+color:#fff;
+text-decoration:none;
+border:1px solid #333;
+background:#151515;
+padding:11px 14px;
+border-radius:12px;
+}
 
-    .status {
-      padding: 15px;
-      border-radius: 14px;
-      background: #101010;
-      border: 1px solid #292929;
-      margin-bottom: 20px;
-      color: #aaa;
-    }
+.status{
+padding:15px;
+border-radius:14px;
+background:#101010;
+border:1px solid #292929;
+margin-bottom:20px;
+color:#aaa;
+}
 
-    .card {
-      background: #111;
-      border: 1px solid #292929;
-      border-radius: 20px;
-      padding: 22px;
-    }
+.card{
+background:#111;
+border:1px solid #292929;
+border-radius:20px;
+padding:22px;
+}
 
-    .field {
-      margin-bottom: 18px;
-    }
+.field{
+margin-bottom:18px;
+}
 
-    label {
-      display: block;
-      margin-bottom: 7px;
-      color: #aaa;
-      font-size: 14px;
-    }
+label{
+display:block;
+margin-bottom:7px;
+color:#aaa;
+font-size:14px;
+}
 
-    input,
-    textarea {
-      width: 100%;
-      border: 1px solid #333;
-      background: #080808;
-      color: #fff;
-      border-radius: 12px;
-      padding: 13px;
-      outline: none;
-    }
+input,
+textarea{
+width:100%;
+border:1px solid #333;
+background:#080808;
+color:#fff;
+border-radius:12px;
+padding:13px;
+outline:none;
+}
 
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
+textarea{
+min-height:110px;
+resize:vertical;
+}
 
-    .save {
-      width: 100%;
-      border: 0;
-      background: #fff;
-      color: #000;
-      border-radius: 13px;
-      padding: 15px;
-      font-weight: 800;
-      font-size: 16px;
-    }
+.save{
+width:100%;
+border:0;
+background:#fff;
+color:#000;
+border-radius:13px;
+padding:15px;
+font-weight:800;
+font-size:16px;
+}
 
-    #message {
-      margin-top: 15px;
-      line-height: 1.5;
-    }
+#message{
+margin-top:15px;
+line-height:1.5;
+}
 
-    @media (max-width: 600px) {
+@media(max-width:600px){
 
-      .top {
-        align-items: flex-start;
-        flex-direction: column;
-      }
+.top{
+align-items:flex-start;
+flex-direction:column;
+}
 
-      .back {
-        width: 100%;
-        text-align: center;
-      }
+.back{
+width:100%;
+text-align:center;
+}
 
-    }
+}
 
-  </style>
+</style>
 
 </head>
 
@@ -137,509 +137,517 @@
 
 <div class="container">
 
-  <div class="top">
+<div class="top">
 
-    <h1>
-      Адмін-панель
-    </h1>
+<h1>
+Адмін-панель
+</h1>
 
-    <a
-      class="back"
-      href="/"
-    >
-      ← Назад на сайт
-    </a>
+<a
+class="back"
+href="/"
+>
+← Назад на сайт
+</a>
 
-  </div>
-
-
-  <div
-    id="status"
-    class="status"
-  >
-    Перевірка доступу...
-  </div>
+</div>
 
 
-  <div
-    id="panel"
-    class="card"
-    style="display:none;"
-  >
-
-    <div class="field">
-
-      <label>
-        Заголовок
-      </label>
-
-      <input
-        id="hero_title"
-        type="text"
-      >
-
-    </div>
+<div
+id="status"
+class="status"
+>
+Перевірка доступу...
+</div>
 
 
-    <div class="field">
+<div
+id="panel"
+class="card"
+style="display:none;"
+>
 
-      <label>
-        Текст під заголовком
-      </label>
+<div class="field">
 
-      <textarea
-        id="hero_text"
-      ></textarea>
+<label>
+Заголовок
+</label>
 
-    </div>
+<input
+id="hero_title"
+type="text"
+>
 
-
-    <div class="field">
-
-      <label>
-        Заголовок блоку «Що я роблю»
-      </label>
-
-      <input
-        id="about_title"
-        type="text"
-      >
-
-    </div>
+</div>
 
 
-    <div class="field">
+<div class="field">
 
-      <label>
-        Телефон
-      </label>
+<label>
+Текст під заголовком
+</label>
 
-      <input
-        id="phone"
-        type="text"
-      >
+<textarea
+id="hero_text"
+></textarea>
 
-    </div>
-
-
-    <div class="field">
-
-      <label>
-        Telegram
-      </label>
-
-      <input
-        id="telegram"
-        type="text"
-      >
-
-    </div>
+</div>
 
 
-    <div class="field">
+<div class="field">
 
-      <label>
-        Instagram
-      </label>
+<label>
+Заголовок блоку «Що я роблю»
+</label>
 
-      <input
-        id="instagram"
-        type="text"
-      >
+<input
+id="about_title"
+type="text"
+>
 
-    </div>
-
-
-    <div class="field">
-
-      <label>
-        Локація
-      </label>
-
-      <input
-        id="location"
-        type="text"
-      >
-
-    </div>
+</div>
 
 
-    <button
-      id="saveButton"
-      class="save"
-      type="button"
-    >
-      Зберегти зміни
-    </button>
+<div class="field">
+
+<label>
+Телефон
+</label>
+
+<input
+id="phone"
+type="text"
+>
+
+</div>
 
 
-    <div id="message"></div>
+<div class="field">
 
-  </div>
+<label>
+Telegram
+</label>
+
+<input
+id="telegram"
+type="text"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Instagram
+</label>
+
+<input
+id="instagram"
+type="text"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+Локація
+</label>
+
+<input
+id="location"
+type="text"
+>
+
+</div>
+
+
+<button
+id="saveButton"
+class="save"
+type="button"
+>
+Зберегти зміни
+</button>
+
+
+<div id="message"></div>
+
+</div>
 
 </div>
 
 
 <script>
 
-  const tg = window.Telegram
-    ? window.Telegram.WebApp
-    : null;
+const tg =
+window.Telegram
+? window.Telegram.WebApp
+: null;
 
 
-  if (tg) {
-    tg.ready();
-    tg.expand();
-  }
+if(tg){
 
+tg.ready();
+tg.expand();
 
-  const status =
-    document.getElementById("status");
+}
 
-  const panel =
-    document.getElementById("panel");
 
-  const message =
-    document.getElementById("message");
+const status =
+document.getElementById("status");
 
-  const saveButton =
-    document.getElementById("saveButton");
+const panel =
+document.getElementById("panel");
 
+const message =
+document.getElementById("message");
 
-  const params =
-    new URLSearchParams(
-      window.location.search
-    );
+const saveButton =
+document.getElementById("saveButton");
 
 
-  const urlInitData =
-    params.get("initData");
+const params =
+new URLSearchParams(
+window.location.search
+);
 
 
-  const telegramInitData =
-    urlInitData ||
-    (tg && tg.initData
-      ? tg.initData
-      : "");
+const urlInitData =
+params.get("initData");
 
 
-  if (!telegramInitData) {
+const telegramInitData =
+urlInitData ||
+(
+tg && tg.initData
+? tg.initData
+: ""
+);
 
-    status.innerHTML =
-      "❌ Telegram-дані не знайдені.<br><br>" +
-      "Адмін-панель потрібно відкривати кнопкою «Адмін» всередині Telegram Mini App.";
 
-  } else {
+if(!telegramInitData){
 
-    checkAdmin();
+status.innerHTML =
+"❌ Telegram-дані не знайдені.<br><br>" +
+"Адмін-панель потрібно відкривати кнопкою «Адмін» всередині Telegram.";
 
-  }
+}else{
 
+checkAdmin();
 
-  async function checkAdmin() {
+}
 
-    try {
 
-      const response =
-        await fetch(
-          "/api/admin-content.js",
-          {
-            method: "GET",
+async function checkAdmin(){
 
-            headers: {
-              "x-telegram-init-data":
-                telegramInitData
-            },
+try{
 
-            cache: "no-store"
-          }
-        );
+const response =
+await fetch(
+"/api/admin-content.js",
+{
+method:"GET",
 
+headers:{
+"x-telegram-init-data":
+telegramInitData
+},
 
-      const result =
-        await response.json();
+cache:"no-store"
 
+}
+);
 
-      if (!response.ok) {
 
-        status.innerHTML =
-          "❌ Доступ заборонено.<br><br>" +
-          (
-            result.error ||
-            "Помилка авторизації"
-          );
+const result =
+await response.json();
 
-        return;
 
-      }
+if(!response.ok){
 
+status.innerHTML =
+"❌ Доступ заборонено.<br><br>" +
+(
+result.error ||
+"Помилка авторизації"
+);
 
-      if (!result.isAdmin) {
+return;
 
-        status.innerHTML =
-          "❌ Ви не адміністратор.";
+}
 
-        return;
 
-      }
+if(!result.isAdmin){
 
+status.innerHTML =
+"❌ Ви не адміністратор.";
 
-      status.innerHTML =
-        "✅ Адміністратор підтверджений<br>" +
-        "Telegram ID: " +
-        result.userId;
+return;
 
+}
 
-      panel.style.display =
-        "block";
 
+status.innerHTML =
+"✅ Адміністратор підтверджений<br>" +
+"Telegram ID: " +
+result.userId;
 
-      if (result.content) {
 
-        fillForm(result.content);
+panel.style.display =
+"block";
 
-      }
 
-    } catch (error) {
+if(result.content){
 
-      console.error(error);
+fillForm(
+result.content
+);
 
-      status.innerHTML =
-        "❌ Помилка з'єднання з сервером.";
+}
 
-    }
 
-  }
+}catch(error){
 
+console.error(error);
 
-  function fillForm(data) {
+status.innerHTML =
+"❌ Помилка з'єднання з сервером.";
 
-    document.getElementById(
-      "hero_title"
-    ).value =
-      data.hero_title || "";
+}
 
+}
 
-    document.getElementById(
-      "hero_text"
-    ).value =
-      data.hero_text || "";
 
+function fillForm(data){
 
-    document.getElementById(
-      "about_title"
-    ).value =
-      data.about_title || "";
+document.getElementById(
+"hero_title"
+).value =
+data.hero_title || "";
 
 
-    document.getElementById(
-      "phone"
-    ).value =
-      data.phone !== null &&
-      data.phone !== undefined
-        ? data.phone
-        : "";
+document.getElementById(
+"hero_text"
+).value =
+data.hero_text || "";
 
 
-    document.getElementById(
-      "telegram"
-    ).value =
-      data.telegram !== null &&
-      data.telegram !== undefined
-        ? data.telegram
-        : "";
+document.getElementById(
+"about_title"
+).value =
+data.about_title || "";
 
 
-    document.getElementById(
-      "instagram"
-    ).value =
-      data.instagram !== null &&
-      data.instagram !== undefined
-        ? data.instagram
-        : "";
+document.getElementById(
+"phone"
+).value =
+data.phone !== null &&
+data.phone !== undefined
+? data.phone
+: "";
 
 
-    document.getElementById(
-      "location"
-    ).value =
-      data.location !== null &&
-      data.location !== undefined
-        ? data.location
-        : "";
+document.getElementById(
+"telegram"
+).value =
+data.telegram !== null &&
+data.telegram !== undefined
+? data.telegram
+: "";
 
-  }
 
+document.getElementById(
+"instagram"
+).value =
+data.instagram !== null &&
+data.instagram !== undefined
+? data.instagram
+: "";
 
-  saveButton.addEventListener(
-    "click",
-    saveContent
-  );
 
+document.getElementById(
+"location"
+).value =
+data.location !== null &&
+data.location !== undefined
+? data.location
+: "";
 
-  async function saveContent() {
+}
 
-    saveButton.disabled = true;
 
-    saveButton.textContent =
-      "Зберігаємо...";
+saveButton.addEventListener(
+"click",
+saveContent
+);
 
-    message.textContent = "";
 
+async function saveContent(){
 
-    const data = {
+saveButton.disabled =
+true;
 
-      hero_title:
-        document.getElementById(
-          "hero_title"
-        ).value,
+saveButton.textContent =
+"Зберігаємо...";
 
-      hero_text:
-        document.getElementById(
-          "hero_text"
-        ).value,
+message.textContent =
+"";
 
-      about_title:
-        document.getElementById(
-          "about_title"
-        ).value,
 
-      phone:
-        document.getElementById(
-          "phone"
-        ).value,
+const data = {
 
-      telegram:
-        document.getElementById(
-          "telegram"
-        ).value,
+hero_title:
+document.getElementById(
+"hero_title"
+).value,
 
-      instagram:
-        document.getElementById(
-          "instagram"
-        ).value,
+hero_text:
+document.getElementById(
+"hero_text"
+).value,
 
-      location:
-        document.getElementById(
-          "location"
-        ).value
+about_title:
+document.getElementById(
+"about_title"
+).value,
 
-    };
+phone:
+document.getElementById(
+"phone"
+).value,
 
+telegram:
+document.getElementById(
+"telegram"
+).value,
 
-    try {
+instagram:
+document.getElementById(
+"instagram"
+).value,
 
-      const response =
-        await fetch(
-          "/api/admin-content.js",
-          {
-            method: "POST",
+location:
+document.getElementById(
+"location"
+).value
 
-            headers: {
+};
 
-              "Content-Type":
-                "application/json",
 
-              "x-telegram-init-data":
-                telegramInitData
+try{
 
-            },
+const response =
+await fetch(
+"/api/admin-content.js",
+{
+method:"POST",
 
-            body:
-              JSON.stringify(data)
+headers:{
 
-          }
-        );
+"Content-Type":
+"application/json",
 
+"x-telegram-init-data":
+telegramInitData
 
-      const result =
-        await response.json();
+},
 
+body:
+JSON.stringify(data)
 
-      if (!response.ok) {
+}
+);
 
-        throw new Error(
-          result.error ||
-          "Помилка збереження"
-        );
 
-      }
+const result =
+await response.json();
 
 
-      if (
-        !result.data
-      ) {
+if(!response.ok){
 
-        throw new Error(
-          "Сервер не повернув збережені дані"
-        );
+throw new Error(
+result.error ||
+"Помилка збереження"
+);
 
-      }
+}
 
 
-      fillForm(
-        result.data
-      );
+if(!result.data){
 
+throw new Error(
+"Сервер не повернув збережені дані"
+);
 
-      message.textContent =
-        "✅ Зміни успішно збережено!";
+}
 
 
-      /*
-       * Повторно читаємо дані
-       * безпосередньо з сервера.
-       */
+fillForm(
+result.data
+);
 
-      const verifyResponse =
-        await fetch(
-          "/api/admin-content.js",
-          {
-            method: "GET",
 
-            headers: {
-              "x-telegram-init-data":
-                telegramInitData
-            },
+message.textContent =
+"✅ Зміни успішно збережено!";
 
-            cache: "no-store"
-          }
-        );
 
+const verifyResponse =
+await fetch(
+"/api/admin-content.js",
+{
+method:"GET",
 
-      const verifyResult =
-        await verifyResponse.json();
+headers:{
+"x-telegram-init-data":
+telegramInitData
+},
 
+cache:"no-store"
 
-      if (
-        verifyResponse.ok &&
-        verifyResult.content
-      ) {
+}
+);
 
-        fillForm(
-          verifyResult.content
-        );
 
-      }
+const verifyResult =
+await verifyResponse.json();
 
 
-    } catch (error) {
+if(
+verifyResponse.ok &&
+verifyResult.content
+){
 
-      console.error(error);
+fillForm(
+verifyResult.content
+);
 
-      message.textContent =
-        "❌ " + error.message;
+}
 
-    }
 
+}catch(error){
 
-    saveButton.disabled = false;
+console.error(error);
 
-    saveButton.textContent =
-      "Зберегти зміни";
+message.textContent =
+"❌ " +
+error.message;
 
-  }
+}
+
+
+saveButton.disabled =
+false;
+
+saveButton.textContent =
+"Зберегти зміни";
+
+}
 
 </script>
 
 </body>
+
 </html>
