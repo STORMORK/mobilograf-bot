@@ -2,19 +2,25 @@ const crypto = require("crypto");
 
 const ADMIN_ID = "1047945172";
 
-function validateTelegramInitData(initData, botToken) {
 
-  if (!initData || !botToken) {
+function validateTelegramInitData(
+  initData,
+  botToken
+){
+
+  if(!initData || !botToken){
     return null;
   }
 
-  try {
+  try{
 
-    const params = new URLSearchParams(initData);
+    const params =
+      new URLSearchParams(initData);
 
-    const hash = params.get("hash");
+    const hash =
+      params.get("hash");
 
-    if (!hash) {
+    if(!hash){
       return null;
     }
 
@@ -22,37 +28,50 @@ function validateTelegramInitData(initData, botToken) {
 
     const dataCheckString =
       Array.from(params.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([key, value]) => `${key}=${value}`)
+        .sort(([a],[b]) =>
+          a.localeCompare(b)
+        )
+        .map(
+          ([key,value]) =>
+            `${key}=${value}`
+        )
         .join("\n");
 
     const secretKey =
       crypto
-        .createHmac("sha256", "WebAppData")
+        .createHmac(
+          "sha256",
+          "WebAppData"
+        )
         .update(botToken)
         .digest();
 
     const calculatedHash =
       crypto
-        .createHmac("sha256", secretKey)
+        .createHmac(
+          "sha256",
+          secretKey
+        )
         .update(dataCheckString)
         .digest("hex");
 
-    if (calculatedHash !== hash) {
+    if(calculatedHash !== hash){
       return null;
     }
 
-    const userString = params.get("user");
+    const userString =
+      params.get("user");
 
-    if (!userString) {
+    if(!userString){
       return null;
     }
 
-    const user = JSON.parse(userString);
+    const user =
+      JSON.parse(userString);
 
     return user;
 
-  } catch (error) {
+  }catch(error){
 
     console.error(
       "Telegram validation error:",
@@ -60,19 +79,20 @@ function validateTelegramInitData(initData, botToken) {
     );
 
     return null;
+
   }
+
 }
 
 
-async function getContent() {
+async function getContent(){
 
   const response =
     await fetch(
       `${process.env.SUPABASE_URL}/rest/v1/site_content?id=eq.1&select=*`,
       {
-        method: "GET",
-
-        headers: {
+        method:"GET",
+        headers:{
           apikey:
             process.env.SUPABASE_SECRET_KEY,
 
@@ -82,19 +102,28 @@ async function getContent() {
       }
     );
 
-  const data = await response.json();
+  const data =
+    await response.json();
 
-  if (!response.ok) {
-    throw new Error(JSON.stringify(data));
+  if(!response.ok){
+
+    throw new Error(
+      JSON.stringify(data)
+    );
+
   }
 
   return data[0] || null;
+
 }
 
 
-export default async function handler(req, res) {
+export default async function handler(
+  req,
+  res
+){
 
-  try {
+  try{
 
     const initData =
       req.headers["x-telegram-init-data"];
@@ -105,53 +134,38 @@ export default async function handler(req, res) {
         process.env.BOT_TOKEN
       );
 
-    if (!user) {
+    if(!user){
 
       return res.status(401).json({
-        error:
-          "Telegram authorization failed"
+        error:"Telegram authorization failed"
       });
 
     }
 
-    if (String(user.id) !== ADMIN_ID) {
+    if(String(user.id) !== ADMIN_ID){
 
       return res.status(403).json({
-        error:
-          "You are not administrator"
+        error:"You are not administrator"
       });
 
     }
 
 
-    /*
-     * GET
-     */
-
-    if (req.method === "GET") {
+    if(req.method === "GET"){
 
       const content =
         await getContent();
 
       return res.status(200).json({
-
-        isAdmin: true,
-
-        userId:
-          user.id,
-
-        content:
-          content
-
+        isAdmin:true,
+        userId:user.id,
+        content:content
       });
+
     }
 
 
-    /*
-     * POST
-     */
-
-    if (req.method === "POST") {
+    if(req.method === "POST"){
 
       const allowedFields = [
 
@@ -174,29 +188,28 @@ export default async function handler(req, res) {
 
       ];
 
-
       const updates = {};
 
+      for(const field of allowedFields){
 
-      for (const field of allowedFields) {
-
-        if (
+        if(
           req.body &&
           req.body[field] !== undefined
-        ) {
+        ){
 
           updates[field] =
             String(req.body[field]);
 
         }
+
       }
 
-
-      if (Object.keys(updates).length === 0) {
+      if(
+        Object.keys(updates).length === 0
+      ){
 
         return res.status(400).json({
-          error:
-            "No fields to update"
+          error:"No fields to update"
         });
 
       }
@@ -206,10 +219,9 @@ export default async function handler(req, res) {
         await fetch(
           `${process.env.SUPABASE_URL}/rest/v1/site_content?id=eq.1`,
           {
-            method: "PATCH",
+            method:"PATCH",
 
-            headers: {
-
+            headers:{
               apikey:
                 process.env.SUPABASE_SECRET_KEY,
 
@@ -221,12 +233,10 @@ export default async function handler(req, res) {
 
               Prefer:
                 "return=representation"
-
             },
 
             body:
               JSON.stringify(updates)
-
           }
         );
 
@@ -235,69 +245,51 @@ export default async function handler(req, res) {
         await response.json();
 
 
-      if (!response.ok) {
+      if(!response.ok){
 
         return res.status(500).json({
-
-          error:
-            "Supabase error",
-
-          details:
-            data
-
+          error:"Supabase error",
+          details:data
         });
 
       }
 
 
-      if (
+      if(
         !Array.isArray(data) ||
         data.length === 0
-      ) {
+      ){
 
         return res.status(500).json({
-
           error:
             "Supabase did not update row with id=1"
-
         });
 
       }
 
 
       return res.status(200).json({
-
-        success: true,
-
-        data:
-          data[0]
-
+        success:true,
+        data:data[0]
       });
 
     }
 
 
     return res.status(405).json({
-
-      error:
-        "Method not allowed"
-
+      error:"Method not allowed"
     });
 
 
-  } catch (error) {
+  }catch(error){
 
     console.error(error);
 
     return res.status(500).json({
-
-      error:
-        "Internal server error",
-
-      details:
-        error.message
-
+      error:"Internal server error",
+      details:error.message
     });
 
   }
+
 }
