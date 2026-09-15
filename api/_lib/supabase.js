@@ -26,29 +26,72 @@ function authHeaders(extra){
 
 /* Turns a raw Supabase REST/Storage error body into a message an admin
    can actually act on, instead of every caller propagating a generic
-   500 "Internal server error". The two cases below are exactly the
+   500 "Internal server error". The known cases below are exactly the
    one-time manual setup steps documented in README.md (the bucket and
    the portfolio tables) and are the most likely real-world cause of a
    failure here - everything else still surfaces Supabase's own message
-   rather than being swallowed. */
-function buildSupabaseErrorMessage(status, data){
+   rather than being swallowed.
+
+   `requestLabel` identifies which exact outgoing request failed (e.g.
+   "Storage: create signed upload URL", "DB: PATCH site_content") and is
+   prefixed onto every message, so a failure reported by an admin can be
+   traced to one call site without needing Vercel log access - this is
+   deliberately part of the error text returned to the client, never a
+   secret or Telegram initData.
+
+   The raw {status, code, message, details, hint} is always logged via
+   console.error (never suppressed), and the raw `message`/`error`/`hint`
+   string is always appended to the friendly text rather than replacing
+   it, so a pattern that isn't recognized below still shows everything
+   Supabase actually said. */
+function buildSupabaseErrorMessage(status, data, requestLabel, context){
 
   const raw =
     (data && (data.message || data.error || data.hint)) || "";
 
+  console.error(
+    "Supabase error [" + (requestLabel || "unknown request") + "]",
+    "HTTP " + status,
+    JSON.stringify(data)
+  );
+
+  const prefix = requestLabel ? `[${requestLabel}] ` : "";
+
   if(/bucket not found/i.test(raw)){
-    return `Storage bucket "${STORAGE_BUCKET}" не створено. Створіть публічний bucket "${STORAGE_BUCKET}" у Supabase Storage (Storage → New bucket → Public bucket).`;
+    return `${prefix}Storage bucket "${STORAGE_BUCKET}" не створено. Створіть публічний bucket "${STORAGE_BUCKET}" у Supabase Storage (Storage → New bucket → Public bucket). (${raw})`;
   }
 
   if(/could not find the table|schema cache|relation .* does not exist/i.test(raw)){
-    return "Таблиці портфоліо ще не створені в Supabase. Виконайте SQL з README.md (розділ \"Медіа сайту та портфоліо\").";
+    return `${prefix}Таблиці портфоліо ще не створені в Supabase. Виконайте SQL з README.md (розділ "Медіа сайту та портфоліо"). (${raw})`;
+  }
+
+  /* Supabase Storage's own "RelatedResourceNotFound" error (thrown on a
+     foreign-key violation when inserting/updating storage.objects, code
+     23503) - it reads exactly "The related resource does not exist" and,
+     unlike the plain-upload "Bucket not found" case above, is what some
+     Storage endpoints (including the signed-upload-url "sign" endpoint
+     used here) return when the bucket referenced in the request path
+     does not exist or its name doesn't match exactly (case, extra
+     spaces, a rename after this code was configured with "site-media"). */
+  if(
+    /related resource does not exist/i.test(raw) ||
+    (data && data.statusCode === "23503") ||
+    (data && data.code === "23503")
+  ){
+
+    if(context === "storage"){
+      return `${prefix}Storage bucket "${STORAGE_BUCKET}" не знайдено (Supabase: "${raw}"). Перевірте, що bucket у Supabase Storage називається саме "${STORAGE_BUCKET}" (без відмінностей у регістрі чи пробілів) і що він не був перейменований/видалений.`;
+    }
+
+    return `${prefix}Supabase не знайшов пов'язаний запис у базі даних (${raw}). Перевірте, що рядок site_content з id=1 та потрібні таблиці існують.`;
+
   }
 
   if(raw){
-    return raw;
+    return `${prefix}${raw}`;
   }
 
-  return `Supabase error (HTTP ${status})`;
+  return `${prefix}Supabase error (HTTP ${status})`;
 
 }
 
@@ -69,7 +112,7 @@ async function getSiteContentRow(){
   const data = await response.json().catch(function(){ return null; });
 
   if(!response.ok){
-    throw new Error(buildSupabaseErrorMessage(response.status, data));
+    throw new Error(buildSupabaseErrorMessage(response.status, data, "DB: GET site_content", "db"));
   }
 
   return data[0] || null;
@@ -122,7 +165,7 @@ async function patchSiteContent(contentI18nPatch, flatFields){
   const data = await response.json().catch(function(){ return null; });
 
   if(!response.ok){
-    throw new Error(buildSupabaseErrorMessage(response.status, data));
+    throw new Error(buildSupabaseErrorMessage(response.status, data, "DB: PATCH site_content", "db"));
   }
 
   if(!Array.isArray(data) || data.length === 0){
@@ -161,7 +204,7 @@ async function pgRequest(table, { method, query, body, prefer }){
   const data = await response.json().catch(function(){ return null; });
 
   if(!response.ok){
-    throw new Error(buildSupabaseErrorMessage(response.status, data));
+    throw new Error(buildSupabaseErrorMessage(response.status, data, `DB: ${method} ${table}`, "db"));
   }
 
   return data;
@@ -186,7 +229,7 @@ async function createSignedUploadUrl(path){
   const data = await response.json().catch(function(){ return null; });
 
   if(!response.ok){
-    throw new Error(buildSupabaseErrorMessage(response.status, data));
+    throw new Error(buildSupabaseErrorMessage(response.status, data, "Storage: create signed upload URL", "storage"));
   }
 
   return data;
@@ -223,7 +266,7 @@ async function deleteStorageObjects(paths){
 
     if(!response.ok){
       const data = await response.json().catch(function(){ return null; });
-      console.error("Storage delete failed:", JSON.stringify(data));
+      console.error("Supabase error [Storage: delete objects]", "HTTP " + response.status, JSON.stringify(data));
     }
 
   }catch(error){
