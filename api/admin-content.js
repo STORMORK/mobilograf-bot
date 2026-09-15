@@ -2,89 +2,53 @@ const crypto = require("crypto");
 
 const ADMIN_ID = "1047945172";
 
-
-function validateTelegramInitData(
-  initData,
-  botToken
-) {
+function validateTelegramInitData(initData, botToken) {
 
   if (!initData || !botToken) {
     return null;
   }
 
-
   try {
 
-    const params =
-      new URLSearchParams(initData);
+    const params = new URLSearchParams(initData);
 
-
-    const hash =
-      params.get("hash");
-
+    const hash = params.get("hash");
 
     if (!hash) {
       return null;
     }
 
-
     params.delete("hash");
-
 
     const dataCheckString =
       Array.from(params.entries())
-        .sort(
-          ([a], [b]) =>
-            a.localeCompare(b)
-        )
-        .map(
-          ([key, value]) =>
-            `${key}=${value}`
-        )
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, value]) => `${key}=${value}`)
         .join("\n");
-
 
     const secretKey =
       crypto
-        .createHmac(
-          "sha256",
-          "WebAppData"
-        )
+        .createHmac("sha256", "WebAppData")
         .update(botToken)
         .digest();
 
-
     const calculatedHash =
       crypto
-        .createHmac(
-          "sha256",
-          secretKey
-        )
+        .createHmac("sha256", secretKey)
         .update(dataCheckString)
         .digest("hex");
 
-
-    if (
-      calculatedHash !== hash
-    ) {
-
+    if (calculatedHash !== hash) {
       return null;
-
     }
 
-
-    const userString =
-      params.get("user");
-
+    const userString = params.get("user");
 
     if (!userString) {
       return null;
     }
 
-
-    const user =
-      JSON.parse(userString);
-
+    const user = JSON.parse(userString);
 
     return user;
 
@@ -96,9 +60,7 @@ function validateTelegramInitData(
     );
 
     return null;
-
   }
-
 }
 
 
@@ -120,44 +82,28 @@ async function getContent() {
       }
     );
 
-
-  const data =
-    await response.json();
-
+  const data = await response.json();
 
   if (!response.ok) {
-
-    throw new Error(
-      JSON.stringify(data)
-    );
-
+    throw new Error(JSON.stringify(data));
   }
 
-
   return data[0] || null;
-
 }
 
 
-export default async function handler(
-  req,
-  res
-) {
+export default async function handler(req, res) {
 
   try {
 
     const initData =
-      req.headers[
-        "x-telegram-init-data"
-      ];
-
+      req.headers["x-telegram-init-data"];
 
     const user =
       validateTelegramInitData(
         initData,
         process.env.BOT_TOKEN
       );
-
 
     if (!user) {
 
@@ -168,11 +114,7 @@ export default async function handler(
 
     }
 
-
-    if (
-      String(user.id) !==
-      ADMIN_ID
-    ) {
+    if (String(user.id) !== ADMIN_ID) {
 
       return res.status(403).json({
         error:
@@ -191,7 +133,6 @@ export default async function handler(
       const content =
         await getContent();
 
-
       return res.status(200).json({
 
         isAdmin: true,
@@ -203,7 +144,6 @@ export default async function handler(
           content
 
       });
-
     }
 
 
@@ -215,18 +155,21 @@ export default async function handler(
 
       const allowedFields = [
 
-        "hero_title",
+        "hero_title_ua",
+        "hero_title_ru",
+        "hero_title_en",
 
-        "hero_text",
+        "hero_text_ua",
+        "hero_text_ru",
+        "hero_text_en",
 
-        "about_title",
+        "about_title_ua",
+        "about_title_ru",
+        "about_title_en",
 
         "phone",
-
         "telegram",
-
         "instagram",
-
         "location"
 
       ];
@@ -235,9 +178,7 @@ export default async function handler(
       const updates = {};
 
 
-      for (
-        const field of allowedFields
-      ) {
+      for (const field of allowedFields) {
 
         if (
           req.body &&
@@ -248,6 +189,15 @@ export default async function handler(
             String(req.body[field]);
 
         }
+      }
+
+
+      if (Object.keys(updates).length === 0) {
+
+        return res.status(400).json({
+          error:
+            "No fields to update"
+        });
 
       }
 
@@ -339,7 +289,6 @@ export default async function handler(
 
     console.error(error);
 
-
     return res.status(500).json({
 
       error:
@@ -351,5 +300,4 @@ export default async function handler(
     });
 
   }
-
 }
