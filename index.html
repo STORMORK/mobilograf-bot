@@ -662,12 +662,6 @@ return;
 
 }
 
-
-/*
-Передаємо Telegram initData
-адмін-панелі.
-*/
-
 const url =
 "/admin.html?initData=" +
 encodeURIComponent(initData);
@@ -688,6 +682,10 @@ document.getElementById("langButton");
 
 const langMenu =
 document.getElementById("langMenu");
+
+let currentLanguage = "ua";
+
+let siteContent = {};
 
 langButton.addEventListener(
 "click",
@@ -711,32 +709,536 @@ langMenu.style.display = "none";
 });
 
 
+/* =========================
+   ПЕРЕВОД
+========================= */
+
 const translations = {
 
 ua:{
-title:"Фото та відео, які продають",
-text:"Створюю якісний фото та відеоконтент для бізнесу, брендів і соціальних мереж.",
-services:"Що я роблю"
+
+heroTitle:
+"Фото та відео, які продають",
+
+heroText:
+"Створюю якісний фото та відеоконтент для бізнесу, брендів і соціальних мереж.",
+
+services:
+"Що я роблю",
+
+booking:
+"Замовити зйомку",
+
+portfolio:
+"Роботи",
+
+contacts:
+"Контакти",
+
+contactDefault:
+"Готовий обговорити вашу зйомку.",
+
+contact:
+"Зв'язатися",
+
+location:
+"📍 Локація",
+
+portfolioItems:[
+"Фото для бізнесу",
+"Reels",
+"Контент",
+"Реклама"
+],
+
+photoTitle:
+"📸 Фото",
+
+photoText:
+"Предметна, портретна та контентна фотографія для бізнесу і соцмереж.",
+
+videoTitle:
+"🎥 Відео",
+
+videoText:
+"Reels, короткі рекламні відео та відеоконтент для Instagram і TikTok.",
+
+contentTitle:
+"📱 Контент",
+
+contentText:
+"Повний контент для вашого бізнесу: фото, відео та готові матеріали.",
+
+modalTitle:
+"Замовити зйомку",
+
+name:
+"Ім'я",
+
+phone:
+"Телефон",
+
+date:
+"Бажана дата",
+
+service:
+"Послуга",
+
+comment:
+"Коментар",
+
+commentPlaceholder:
+"Розкажіть коротко про ваше замовлення...",
+
+submit:
+"Відправити заявку",
+
+servicesOptions:[
+"Фото",
+"Відео",
+"Контент",
+"Інше"
+]
+
 },
 
 ru:{
-title:"Фото и видео, которые продают",
-text:"Создаю качественный фото и видеоконтент для бизнеса, брендов и социальных сетей.",
-services:"Что я делаю"
+
+heroTitle:
+"Фото и видео, которые продают",
+
+heroText:
+"Создаю качественный фото и видеоконтент для бизнеса, брендов и социальных сетей.",
+
+services:
+"Что я делаю",
+
+booking:
+"Заказать съёмку",
+
+portfolio:
+"Работы",
+
+contacts:
+"Контакты",
+
+contactDefault:
+"Готов обсудить вашу съёмку.",
+
+contact:
+"Связаться",
+
+location:
+"📍 Локация",
+
+portfolioItems:[
+"Фото для бизнеса",
+"Reels",
+"Контент",
+"Реклама"
+],
+
+photoTitle:
+"📸 Фото",
+
+photoText:
+"Предметная, портретная и контентная фотография для бизнеса и соцсетей.",
+
+videoTitle:
+"🎥 Видео",
+
+videoText:
+"Reels, короткие рекламные видео и видеоконтент для Instagram и TikTok.",
+
+contentTitle:
+"📱 Контент",
+
+contentText:
+"Полный контент для вашего бизнеса: фото, видео и готовые материалы.",
+
+modalTitle:
+"Заказать съёмку",
+
+name:
+"Имя",
+
+phone:
+"Телефон",
+
+date:
+"Желаемая дата",
+
+service:
+"Услуга",
+
+comment:
+"Комментарий",
+
+commentPlaceholder:
+"Расскажите коротко о вашем заказе...",
+
+submit:
+"Отправить заявку",
+
+servicesOptions:[
+"Фото",
+"Видео",
+"Контент",
+"Другое"
+]
+
 },
 
 en:{
-title:"Photos and videos that sell",
-text:"I create high-quality photo and video content for businesses, brands and social media.",
-services:"What I do"
+
+heroTitle:
+"Photos and videos that sell",
+
+heroText:
+"I create high-quality photo and video content for businesses, brands and social media.",
+
+services:
+"What I do",
+
+booking:
+"Book a shoot",
+
+portfolio:
+"Portfolio",
+
+contacts:
+"Contacts",
+
+contactDefault:
+"Ready to discuss your shoot.",
+
+contact:
+"Contact",
+
+location:
+"📍 Location",
+
+portfolioItems:[
+"Business photography",
+"Reels",
+"Content",
+"Advertising"
+],
+
+photoTitle:
+"📸 Photography",
+
+photoText:
+"Product, portrait and content photography for businesses and social media.",
+
+videoTitle:
+"🎥 Video",
+
+videoText:
+"Reels, short advertising videos and video content for Instagram and TikTok.",
+
+contentTitle:
+"📱 Content",
+
+contentText:
+"Complete content for your business: photos, videos and ready-to-use materials.",
+
+modalTitle:
+"Book a shoot",
+
+name:
+"Name",
+
+phone:
+"Phone",
+
+date:
+"Preferred date",
+
+service:
+"Service",
+
+comment:
+"Comment",
+
+commentPlaceholder:
+"Tell us briefly about your order...",
+
+submit:
+"Send request",
+
+servicesOptions:[
+"Photography",
+"Video",
+"Content",
+"Other"
+]
+
 }
 
 };
 
 
+/* =========================
+   ПРИМЕНЕНИЕ ЯЗЫКА
+========================= */
+
+function applyLanguage(lang){
+
+currentLanguage = lang;
+
+const data =
+translations[lang];
+
+if(!data) return;
+
+
+/*
+   Сначала используем перевод
+   из Supabase, если он существует.
+*/
+
+const dbHeroTitle =
+siteContent["hero_title_" + lang];
+
+const dbHeroText =
+siteContent["hero_text_" + lang];
+
+const dbAboutTitle =
+siteContent["about_title_" + lang];
+
+
+document.getElementById(
+"heroTitle"
+).textContent =
+dbHeroTitle || data.heroTitle;
+
+
+document.getElementById(
+"heroText"
+).textContent =
+dbHeroText || data.heroText;
+
+
+document.getElementById(
+"servicesTitle"
+).textContent =
+dbAboutTitle || data.services;
+
+
+/* Кнопки */
+
+document.getElementById(
+"bookingButton"
+).textContent =
+data.booking;
+
+
+document.getElementById(
+"portfolioButton"
+).textContent =
+data.portfolio;
+
+
+/* Услуги */
+
+const cards =
+document.querySelectorAll(".card");
+
+if(cards.length >= 3){
+
+cards[0].querySelector("h3").textContent =
+data.photoTitle;
+
+cards[0].querySelector("p").textContent =
+data.photoText;
+
+cards[1].querySelector("h3").textContent =
+data.videoTitle;
+
+cards[1].querySelector("p").textContent =
+data.videoText;
+
+cards[2].querySelector("h3").textContent =
+data.contentTitle;
+
+cards[2].querySelector("p").textContent =
+data.contentText;
+
+}
+
+
+/* Портфолио */
+
+const portfolioTitle =
+document.querySelector(
+"#portfolioSection .section-title"
+);
+
+if(portfolioTitle){
+portfolioTitle.textContent =
+data.portfolio;
+}
+
+
+const portfolioItems =
+document.querySelectorAll(
+"#portfolioSection .portfolio-item"
+);
+
+data.portfolioItems.forEach(
+function(text,index){
+
+if(portfolioItems[index]){
+portfolioItems[index].textContent =
+text;
+}
+
+});
+
+
+/* Контакты */
+
+const contactTitle =
+document.querySelector(
+".contacts .section-title"
+);
+
+if(contactTitle){
+contactTitle.textContent =
+data.contacts;
+}
+
+
+/*
+   Не перезаписываем контактные данные
+   из Supabase, если они уже загружены.
+*/
+
+if(
+!siteContent.phone &&
+!siteContent.telegram &&
+!siteContent.instagram &&
+!siteContent.location
+){
+
+document.getElementById(
+"contactInfo"
+).textContent =
+data.contactDefault;
+
+}
+
+
+document.getElementById(
+"contactButton"
+).textContent =
+data.contact;
+
+
+document.getElementById(
+"locationButton"
+).textContent =
+data.location;
+
+
+/* Модальное окно */
+
+const modalTitle =
+document.querySelector(
+"#bookingModal .modal-head h2"
+);
+
+if(modalTitle){
+modalTitle.textContent =
+data.modalTitle;
+}
+
+
+const labels =
+document.querySelectorAll(
+"#bookingForm .form-group label"
+);
+
+if(labels.length >= 5){
+
+labels[0].textContent =
+data.name;
+
+labels[1].textContent =
+data.phone;
+
+labels[2].textContent =
+data.date;
+
+labels[3].textContent =
+data.service;
+
+labels[4].textContent =
+data.comment;
+
+}
+
+
+document.getElementById(
+"comment"
+).placeholder =
+data.commentPlaceholder;
+
+
+document.querySelector(
+'#bookingForm button[type="submit"]'
+).textContent =
+data.submit;
+
+
+/* Варианты услуги */
+
+const serviceSelect =
+document.getElementById("service");
+
+if(serviceSelect){
+
+const options =
+serviceSelect.querySelectorAll("option");
+
+data.servicesOptions.forEach(
+function(text,index){
+
+if(options[index]){
+options[index].textContent =
+text;
+}
+
+});
+
+}
+
+
+/* Кнопка языка */
+
+langButton.textContent =
+lang.toUpperCase() + " ▾";
+
+
+/* HTML language */
+
+document.documentElement.lang =
+lang === "ru"
+? "ru"
+: lang === "en"
+? "en"
+: "uk";
+
+}
+
+
+/* Выбор языка */
+
 document
 .querySelectorAll("[data-lang]")
-.forEach(function(button){
+.forEach(
+function(button){
 
 button.addEventListener(
 "click",
@@ -745,25 +1247,10 @@ function(){
 const lang =
 button.dataset.lang;
 
-const data =
-translations[lang];
+applyLanguage(lang);
 
-document.getElementById(
-"heroTitle"
-).textContent = data.title;
-
-document.getElementById(
-"heroText"
-).textContent = data.text;
-
-document.getElementById(
-"servicesTitle"
-).textContent = data.services;
-
-langButton.textContent =
-lang.toUpperCase() + " ▾";
-
-langMenu.style.display = "none";
+langMenu.style.display =
+"none";
 
 });
 
@@ -1026,35 +1513,24 @@ const data =
 await response.json();
 
 
-if(data.hero_title){
+/*
+   Сохраняем все данные Supabase.
+*/
 
-document.getElementById(
-"heroTitle"
-).textContent =
-data.hero_title;
-
-}
+siteContent = data;
 
 
-if(data.hero_text){
+/*
+   После загрузки применяем
+   выбранный язык.
+*/
 
-document.getElementById(
-"heroText"
-).textContent =
-data.hero_text;
-
-}
+applyLanguage(currentLanguage);
 
 
-if(data.about_title){
-
-document.getElementById(
-"servicesTitle"
-).textContent =
-data.about_title;
-
-}
-
+/*
+   Контактные данные.
+*/
 
 if(
 data.phone ||
@@ -1102,7 +1578,8 @@ data.location;
 
 document.getElementById(
 "contactInfo"
-).innerHTML = html;
+).innerHTML =
+html;
 
 }
 
@@ -1117,7 +1594,19 @@ error
 
 }
 
+
+/*
+   Запускаем загрузку.
+*/
+
 loadSiteContent();
+
+
+/*
+   Сразу устанавливаем UA.
+*/
+
+applyLanguage("ua");
 
 </script>
 
