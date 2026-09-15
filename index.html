@@ -1,1158 +1,1125 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 
-  <title>Мобілограф — Фото та відео</title>
+<title>Мобілограф</title>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+<style>
+*{box-sizing:border-box}
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #0b0b0d;
-      color: #fff;
-      line-height: 1.5;
-    }
+html{scroll-behavior:smooth}
 
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
+body{
+margin:0;
+color:#fff;
+font-family:Arial,Helvetica,sans-serif;
+background:
+radial-gradient(circle at 80% 10%,rgba(120,80,255,.18),transparent 35%),
+radial-gradient(circle at 10% 40%,rgba(0,180,255,.10),transparent 30%),
+#070708;
+min-height:100vh;
+}
 
-    button {
-      cursor: pointer;
-    }
+button,input,textarea,select{font:inherit}
 
-    .container {
-      width: min(1100px, 92%);
-      margin: auto;
-    }
+button{cursor:pointer}
 
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 100;
-      background: rgba(10,10,12,.88);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid #222;
-    }
+.container{
+width:min(1100px,calc(100% - 32px));
+margin:auto;
+}
 
-    nav {
-      min-height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+header{
+position:sticky;
+top:0;
+z-index:100;
+background:rgba(7,7,8,.82);
+backdrop-filter:blur(18px);
+border-bottom:1px solid rgba(255,255,255,.08);
+}
 
-    .logo {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 1px;
-    }
+.header-inner{
+min-height:68px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+}
 
-    .lang {
-      position: relative;
-    }
+.logo{
+font-size:17px;
+font-weight:900;
+letter-spacing:1px;
+}
 
-    .lang button {
-      background: #17171a;
-      color: white;
-      border: 1px solid #333;
-      border-radius: 10px;
-      padding: 9px 13px;
-    }
+.header-actions{
+display:flex;
+gap:8px;
+align-items:center;
+}
 
-    .lang-menu {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 45px;
-      background: #18181b;
-      border: 1px solid #333;
-      border-radius: 10px;
-      overflow: hidden;
-      min-width: 140px;
-    }
+.small-btn{
+border:1px solid #333;
+background:#151518;
+color:#fff;
+border-radius:12px;
+padding:10px 13px;
+}
 
-    .lang-menu.active {
-      display: block;
-    }
+#adminButton{
+display:none;
+}
 
-    .lang-menu button {
-      width: 100%;
-      border: 0;
-      border-radius: 0;
-      text-align: left;
-      background: transparent;
-      padding: 10px 14px;
-    }
+.hero{
+padding:85px 0 70px;
+}
 
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      background:
-        linear-gradient(90deg, rgba(0,0,0,.9), rgba(0,0,0,.35)),
-        url("https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1600&q=85")
-        center/cover;
-    }
+.hero h1{
+max-width:850px;
+margin:0 0 22px;
+font-size:clamp(44px,8vw,86px);
+line-height:.95;
+letter-spacing:-4px;
+}
 
-    .hero-content {
-      max-width: 700px;
-      padding-top: 70px;
-    }
+.hero p{
+max-width:680px;
+color:#aaa;
+font-size:19px;
+line-height:1.55;
+}
 
-    .hero h1 {
-      font-size: clamp(42px, 10vw, 82px);
-      line-height: .95;
-      margin-bottom: 25px;
-    }
+.buttons{
+display:flex;
+flex-wrap:wrap;
+gap:12px;
+margin-top:30px;
+}
 
-    .hero p {
-      font-size: 19px;
-      color: #c9c9ce;
-      margin-bottom: 30px;
-      max-width: 600px;
-    }
+.primary,
+.secondary{
+border-radius:14px;
+padding:15px 20px;
+font-weight:800;
+}
 
-    .btn {
-      display: inline-block;
-      border: 0;
-      border-radius: 12px;
-      padding: 14px 22px;
-      font-weight: 700;
-      background: #fff;
-      color: #080808;
-      margin-right: 8px;
-      margin-bottom: 10px;
-    }
+.primary{
+border:0;
+background:#fff;
+color:#000;
+}
 
-    .btn.secondary {
-      background: transparent;
-      color: white;
-      border: 1px solid #555;
-    }
+.secondary{
+border:1px solid #333;
+background:#151515;
+color:#fff;
+}
 
-    section {
-      padding: 80px 0;
-    }
+section{
+padding:65px 0;
+}
 
-    .section-title {
-      font-size: 36px;
-      margin-bottom: 30px;
-    }
+.section-title{
+font-size:38px;
+margin:0 0 30px;
+}
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
+.cards{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:15px;
+}
 
-    .card {
-      background: #151518;
-      border: 1px solid #29292d;
-      border-radius: 18px;
-      padding: 25px;
-    }
+.card{
+min-height:220px;
+padding:25px;
+border:1px solid #292929;
+border-radius:20px;
+background:rgba(17,17,18,.85);
+}
 
-    .card h3 {
-      margin-bottom: 10px;
-      font-size: 21px;
-    }
+.card h3{
+font-size:24px;
+margin-top:0;
+}
 
-    .card p {
-      color: #aaa;
-    }
+.card p{
+color:#999;
+line-height:1.5;
+}
 
-    .hidden-section {
-      display: none;
-    }
+.portfolio{
+display:none;
+}
 
-    .portfolio-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 15px;
-    }
+.portfolio-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:15px;
+}
 
-    .portfolio-item {
-      min-height: 220px;
-      border-radius: 18px;
-      background:
-        linear-gradient(135deg, #252529, #101012);
-      display: flex;
-      align-items: flex-end;
-      padding: 20px;
-      border: 1px solid #29292d;
-    }
+.portfolio-item{
+min-height:250px;
+border-radius:20px;
+border:1px solid #292929;
+background:linear-gradient(135deg,#202020,#090909);
+display:flex;
+align-items:end;
+padding:22px;
+font-size:20px;
+font-weight:800;
+}
 
-    .service-list {
-      display: grid;
-      gap: 12px;
-    }
+.contacts{
+border-top:1px solid #222;
+}
 
-    .service {
-      padding: 18px;
-      border-radius: 14px;
-      background: #151518;
-      border: 1px solid #29292d;
-    }
+.contact-box{
+border:1px solid #292929;
+background:#111;
+border-radius:20px;
+padding:25px;
+}
 
-    .contact-box {
-      background: #151518;
-      border: 1px solid #29292d;
-      border-radius: 18px;
-      padding: 25px;
-    }
+.contact-row{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-top:20px;
+}
 
-    footer {
-      padding: 35px 0;
-      color: #777;
-      border-top: 1px solid #222;
-      text-align: center;
-    }
+#contactInfo{
+color:#aaa;
+line-height:1.7;
+}
 
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 200;
-      background: rgba(0,0,0,.78);
-      padding: 20px;
-      align-items: center;
-      justify-content: center;
-    }
+footer{
+border-top:1px solid #222;
+padding:30px 0;
+color:#777;
+font-size:14px;
+}
 
-    .modal.active {
-      display: flex;
-    }
+.modal{
+display:none;
+position:fixed;
+inset:0;
+z-index:1000;
+background:rgba(0,0,0,.78);
+padding:20px;
+overflow-y:auto;
+}
 
-    .modal-box {
-      width: min(500px, 100%);
-      max-height: 90vh;
-      overflow-y: auto;
-      background: #151518;
-      border: 1px solid #333;
-      border-radius: 20px;
-      padding: 25px;
-      position: relative;
-    }
+.modal-box{
+max-width:560px;
+margin:45px auto;
+background:#111;
+border:1px solid #333;
+border-radius:22px;
+padding:25px;
+}
 
-    .close {
-      position: absolute;
-      right: 15px;
-      top: 12px;
-      background: transparent;
-      border: 0;
-      color: white;
-      font-size: 30px;
-    }
+.modal-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+}
 
-    .modal-box h2 {
-      margin-bottom: 20px;
-      padding-right: 30px;
-    }
+.modal-head h2{
+margin:0;
+}
 
-    .form-group {
-      margin-bottom: 14px;
-    }
+.close{
+width:40px;
+height:40px;
+border-radius:10px;
+border:1px solid #333;
+background:#191919;
+color:#fff;
+font-size:22px;
+}
 
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      color: #bbb;
-      font-size: 14px;
-    }
+.form-group{
+margin-top:16px;
+}
 
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      background: #0d0d0f;
-      border: 1px solid #333;
-      color: white;
-      border-radius: 10px;
-      padding: 12px;
-      outline: none;
-    }
+.form-group label{
+display:block;
+margin-bottom:7px;
+color:#aaa;
+font-size:14px;
+}
 
-    .form-group textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
+.form-group input,
+.form-group textarea,
+.form-group select{
+width:100%;
+border:1px solid #333;
+border-radius:12px;
+padding:13px;
+background:#090909;
+color:#fff;
+outline:none;
+}
 
-    .form-message {
-      margin-top: 15px;
-      display: none;
-      padding: 12px;
-      border-radius: 10px;
-      background: #202024;
-    }
+.form-group textarea{
+min-height:120px;
+resize:vertical;
+}
 
-    #adminBtn {
-      display: none;
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      z-index: 150;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 1px solid #444;
-      background: #17171a;
-      color: white;
-      font-size: 22px;
-    }
+.form-message{
+margin-top:15px;
+line-height:1.4;
+}
 
-    @media (max-width: 700px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
+.lang-wrap{
+position:relative;
+}
 
-      .portfolio-grid {
-        grid-template-columns: 1fr;
-      }
+.lang-menu{
+display:none;
+position:absolute;
+right:0;
+top:48px;
+width:120px;
+background:#151515;
+border:1px solid #333;
+border-radius:12px;
+overflow:hidden;
+z-index:200;
+}
 
-      section {
-        padding: 60px 0;
-      }
+.lang-menu button{
+width:100%;
+padding:11px;
+border:0;
+background:transparent;
+color:#fff;
+text-align:left;
+}
 
-      .hero h1 {
-        font-size: 48px;
-      }
-    }
-  </style>
+@media(max-width:700px){
+
+.cards{
+grid-template-columns:1fr;
+}
+
+.portfolio-grid{
+grid-template-columns:1fr;
+}
+
+.hero{
+padding-top:55px;
+}
+
+.hero h1{
+letter-spacing:-2px;
+}
+
+}
+</style>
 </head>
 
 <body>
 
 <header>
-  <div class="container">
-    <nav>
+<div class="container header-inner">
 
-      <div class="logo" id="logo">
-        МОБІЛОГРАФ
-      </div>
+<div class="logo">
+МОБІЛОГРАФ
+</div>
 
-      <div class="lang">
+<div class="header-actions">
 
-        <button id="langBtn">
-          UA ▾
-        </button>
+<button id="adminButton" class="small-btn">
+⚙ Адмін
+</button>
 
-        <div class="lang-menu" id="langMenu">
+<div class="lang-wrap">
 
-          <button data-lang="ua">
-            Українська
-          </button>
+<button id="langButton" class="small-btn">
+UA ▾
+</button>
 
-          <button data-lang="ru">
-            Русский
-          </button>
+<div id="langMenu" class="lang-menu">
 
-          <button data-lang="en">
-            English
-          </button>
+<button data-lang="ua">Українська</button>
+<button data-lang="ru">Русский</button>
+<button data-lang="en">English</button>
 
-        </div>
+</div>
+</div>
 
-      </div>
-
-    </nav>
-  </div>
+</div>
+</div>
 </header>
 
 
 <main>
 
-  <!-- HERO -->
+<section class="hero">
 
-  <section class="hero">
+<div class="container">
 
-    <div class="container">
+<h1 id="heroTitle">
+Фото та відео, які продають
+</h1>
 
-      <div class="hero-content">
+<p id="heroText">
+Створюю якісний фото та відеоконтент для бізнесу,
+брендів і соціальних мереж.
+</p>
 
-        <h1 id="heroTitle">
-          Створюю кадри,<br>
-          які хочеться запам'ятати
-        </h1>
+<div class="buttons">
 
-        <p id="heroText">
-          Фото та відеозйомка для особливих моментів,
-          творчих ідей та професійного контенту.
-        </p>
+<button id="bookingButton" class="primary">
+Замовити зйомку
+</button>
 
-        <button class="btn" id="bookingBtn">
-          Забронювати зйомку
-        </button>
+<button id="portfolioButton" class="secondary">
+Роботи
+</button>
 
-        <button class="btn secondary" id="portfolioBtn">
-          Мої роботи
-        </button>
+</div>
 
-      </div>
+</div>
+</section>
 
-    </div>
 
-  </section>
+<section>
 
+<div class="container">
 
-  <!-- SERVICES -->
+<h2 class="section-title" id="servicesTitle">
+Що я роблю
+</h2>
 
-  <section>
+<div class="cards">
 
-    <div class="container">
+<div class="card">
+<h3>📸 Фото</h3>
+<p>
+Предметна, портретна та контентна фотографія
+для бізнесу і соцмереж.
+</p>
+</div>
 
-      <h2 class="section-title" id="aboutTitle">
-        Що я створюю
-      </h2>
+<div class="card">
+<h3>🎥 Відео</h3>
+<p>
+Reels, короткі рекламні відео та відеоконтент
+для Instagram і TikTok.
+</p>
+</div>
 
-      <div class="cards">
+<div class="card">
+<h3>📱 Контент</h3>
+<p>
+Повний контент для вашого бізнесу:
+фото, відео та готові матеріали.
+</p>
+</div>
 
-        <div class="card">
+</div>
+</div>
+</section>
 
-          <h3 id="card1Title">
-            📸 Портретні фотосесії
-          </h3>
 
-          <p id="card1Text">
-            Індивідуальні та сімейні фотосесії,
-            які передають ваш характер та емоції.
-          </p>
+<section id="portfolioSection" class="portfolio">
 
-        </div>
+<div class="container">
 
+<h2 class="section-title">
+Роботи
+</h2>
 
-        <div class="card">
+<div class="portfolio-grid">
 
-          <h3 id="card2Title">
-            🎥 Відеозйомка
-          </h3>
+<div class="portfolio-item">
+Фото для бізнесу
+</div>
 
-          <p id="card2Text">
-            Живі та атмосферні відео
-            для особистих і професійних проєктів.
-          </p>
+<div class="portfolio-item">
+Reels
+</div>
 
-        </div>
+<div class="portfolio-item">
+Контент
+</div>
 
+<div class="portfolio-item">
+Реклама
+</div>
 
-        <div class="card">
+</div>
 
-          <h3 id="card3Title">
-            📱 Reels та контент
-          </h3>
+</div>
+</section>
 
-          <p id="card3Text">
-            Динамічні відео для Instagram,
-            TikTok та інших соціальних мереж.
-          </p>
 
-        </div>
+<section class="contacts">
 
-      </div>
+<div class="container">
 
-    </div>
+<div class="contact-box">
 
-  </section>
+<h2 class="section-title">
+Контакти
+</h2>
 
+<div id="contactInfo">
+Готовий обговорити вашу зйомку.
+</div>
 
-  <!-- PORTFOLIO -->
+<div class="contact-row">
 
-  <section
-    class="hidden-section"
-    id="portfolioSection">
+<button id="contactButton" class="primary">
+Зв'язатися
+</button>
 
-    <div class="container">
+<button id="locationButton" class="secondary">
+📍 Локація
+</button>
 
-      <h2
-        class="section-title"
-        id="portfolioTitle">
-        Мої роботи
-      </h2>
+</div>
 
-      <div class="portfolio-grid">
-
-        <div class="portfolio-item">
-          <strong id="portfolio1">
-            Портретна зйомка
-          </strong>
-        </div>
-
-        <div class="portfolio-item">
-          <strong id="portfolio2">
-            Love Story
-          </strong>
-        </div>
-
-        <div class="portfolio-item">
-          <strong id="portfolio3">
-            Reels
-          </strong>
-        </div>
-
-        <div class="portfolio-item">
-          <strong id="portfolio4">
-            Контент для бізнесу
-          </strong>
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- SERVICES LIST -->
-
-  <section>
-
-    <div class="container">
-
-      <h2
-        class="section-title"
-        id="servicesTitle">
-        Послуги
-      </h2>
-
-      <div class="service-list">
-
-        <div
-          class="service"
-          id="service1">
-          📸 Портретна фотосесія
-        </div>
-
-        <div
-          class="service"
-          id="service2">
-          🎥 Відеозйомка
-        </div>
-
-        <div
-          class="service"
-          id="service3">
-          💕 Love Story та сімейна зйомка
-        </div>
-
-        <div
-          class="service"
-          id="service4">
-          📱 Reels та короткі відео
-        </div>
-
-        <div
-          class="service"
-          id="service5">
-          ✨ Контент для особистого бренду
-        </div>
-
-        <div
-          class="service"
-          id="service6">
-          🏢 Контент для бізнесу
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-  <!-- CONTACT -->
-
-  <section>
-
-    <div class="container">
-
-      <div class="contact-box">
-
-        <h2
-          class="section-title"
-          id="contactTitle">
-          Готові створити щось особливе?
-        </h2>
-
-        <p
-          id="contactText"
-          style="color:#aaa;margin-bottom:20px;">
-          Розкажіть про вашу ідею —
-          разом підберемо формат зйомки.
-        </p>
-
-        <button
-          class="btn"
-          id="contactBtn">
-          Зв'язатися
-        </button>
-
-        <button
-          class="btn secondary"
-          id="locationBtn">
-          Локація
-        </button>
-
-
-        <div
-          id="contactInfo"
-          style="display:none;margin-top:20px;color:#bbb;">
-
-          <span id="contactTelegramLabel">
-            Telegram:
-          </span>
-          @EvgeniaKrupka<br>
-
-          <span id="contactInstagramLabel">
-            Instagram:
-          </span>
-          @EvgeniaKrupka<br>
-
-          <span id="contactPhoneLabel">
-            Телефон:
-          </span>
-          +380685343439
-
-        </div>
-
-
-        <div
-          id="locationInfo"
-          style="display:none;margin-top:20px;color:#bbb;">
-
-          Валки, Харківська область.
-          Можливий виїзд на локацію клієнта.
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
+</div>
+</div>
+</section>
 
 </main>
 
 
-<footer id="footer">
-  © 2026 Мобілограф. Усі права захищені.
+<footer>
+
+<div class="container">
+© 2026 Мобілограф
+</div>
+
 </footer>
 
 
-<!-- BOOKING MODAL -->
+<!-- ФОРМА ЗАМОВЛЕННЯ -->
 
-<div
-  class="modal"
-  id="bookingModal">
+<div id="bookingModal" class="modal">
 
-  <div class="modal-box">
+<div class="modal-box">
 
-    <button
-      class="close"
-      id="closeModal">
-      ×
-    </button>
+<div class="modal-head">
 
-    <h2 id="modalTitle">
-      Забронювати зйомку
-    </h2>
+<h2>
+Замовити зйомку
+</h2>
 
-
-    <form id="bookingForm">
-
-      <div class="form-group">
-
-        <label id="nameLabel">
-          Ваше ім'я
-        </label>
-
-        <input
-          type="text"
-          id="name"
-          placeholder="Ім'я"
-          required>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label id="phoneLabel">
-          Телефон
-        </label>
-
-        <input
-          type="tel"
-          id="phone"
-          placeholder="+380..."
-          required>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label id="dateLabel">
-          Бажана дата зйомки
-        </label>
-
-        <input
-          type="date"
-          id="date"
-          required>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label id="serviceLabel">
-          Оберіть послугу
-        </label>
-
-        <select id="service">
-
-          <option
-            value="Портретна фотосесія"
-            id="option1">
-            Портретна фотосесія
-          </option>
-
-          <option
-            value="Відеозйомка"
-            id="option2">
-            Відеозйомка
-          </option>
-
-          <option
-            value="Love Story"
-            id="option3">
-            Love Story
-          </option>
-
-          <option
-            value="Reels"
-            id="option4">
-            Reels
-          </option>
-
-          <option
-            value="Контент для бізнесу"
-            id="option5">
-            Контент для бізнесу
-          </option>
-
-          <option
-            value="Особистий бренд"
-            id="option6">
-            Особистий бренд
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label id="commentLabel">
-          Коментар
-        </label>
-
-        <textarea
-          id="comment"
-          placeholder="Розкажіть коротко про вашу ідею">
-        </textarea>
-
-      </div>
-
-
-      <button
-        type="submit"
-        class="btn"
-        id="submitBtn"
-        style="width:100%;">
-        Надіслати заявку
-      </button>
-
-
-      <div
-        class="form-message"
-        id="formMessage">
-      </div>
-
-    </form>
-
-  </div>
+<button id="closeModal" class="close">
+×
+</button>
 
 </div>
 
 
-<!-- ADMIN BUTTON -->
+<form id="bookingForm">
 
-<button id="adminBtn">
-  👤
+<div class="form-group">
+
+<label>Ім'я</label>
+
+<input id="name" type="text" required>
+
+</div>
+
+
+<div class="form-group">
+
+<label>Телефон</label>
+
+<input id="phone" type="tel" required>
+
+</div>
+
+
+<div class="form-group">
+
+<label>Бажана дата</label>
+
+<input id="date" type="date">
+
+</div>
+
+
+<div class="form-group">
+
+<label>Послуга</label>
+
+<select id="service">
+
+<option>Фото</option>
+<option>Відео</option>
+<option>Контент</option>
+<option>Інше</option>
+
+</select>
+
+</div>
+
+
+<div class="form-group">
+
+<label>Коментар</label>
+
+<textarea
+id="comment"
+placeholder="Розкажіть коротко про ваше замовлення..."
+></textarea>
+
+</div>
+
+
+<button
+class="primary"
+type="submit"
+style="width:100%;margin-top:20px;"
+>
+Відправити заявку
 </button>
+
+
+<div id="formMessage" class="form-message"></div>
+
+</form>
+
+</div>
+</div>
 
 
 <script>
 
-  const CHAT_ID = "1047945172";
+const tg =
+window.Telegram &&
+window.Telegram.WebApp
+? window.Telegram.WebApp
+: null;
 
+if(tg){
 
-  /* =========================
-     TRANSLATIONS
-  ========================= */
+tg.ready();
+tg.expand();
 
-  const translations = {
+}
 
-    ua: {
 
-      logo: "МОБІЛОГРАФ",
+/* =========================
+   АДМИН
+========================= */
 
-      heroTitle:
-        "Створюю кадри,<br>які хочеться запам'ятати",
+const ADMIN_ID = "1047945172";
 
-      heroText:
-        "Фото та відеозйомка для особливих моментів, творчих ідей та професійного контенту.",
+const adminButton =
+document.getElementById("adminButton");
 
-      booking:
-        "Забронювати зйомку",
+function getTelegramUser(){
 
-      portfolio:
-        "Мої роботи",
+if(!tg) return null;
 
-      aboutTitle:
-        "Що я створюю",
+return tg.initDataUnsafe &&
+tg.initDataUnsafe.user
+? tg.initDataUnsafe.user
+: null;
 
-      card1Title:
-        "📸 Портретні фотосесії",
+}
 
-      card1Text:
-        "Індивідуальні та сімейні фотосесії, які передають ваш характер та емоції.",
+const telegramUser =
+getTelegramUser();
 
-      card2Title:
-        "🎥 Відеозйомка",
+if(
+telegramUser &&
+String(telegramUser.id) === ADMIN_ID
+){
 
-      card2Text:
-        "Живі та атмосферні відео для особистих і професійних проєктів.",
+adminButton.style.display = "block";
 
-      card3Title:
-        "📱 Reels та контент",
+adminButton.addEventListener(
+"click",
+function(){
 
-      card3Text:
-        "Динамічні відео для Instagram, TikTok та інших соціальних мереж.",
+const initData =
+tg && tg.initData
+? tg.initData
+: "";
 
-      portfolioTitle:
-        "Мої роботи",
+if(!initData){
 
-      portfolio1:
-        "Портретна зйомка",
+alert(
+"Відкрити адмін-панель можна тільки через Telegram."
+);
 
-      portfolio2:
-        "Love Story",
+return;
 
-      portfolio3:
-        "Reels",
+}
 
-      portfolio4:
-        "Контент для бізнесу",
 
-      servicesTitle:
-        "Послуги",
+/*
+Передаємо Telegram initData
+адмін-панелі.
+*/
 
-      service1:
-        "📸 Портретна фотосесія",
+const url =
+"/admin.html?initData=" +
+encodeURIComponent(initData);
 
-      service2:
-        "🎥 Відеозйомка",
+window.location.href = url;
 
-      service3:
-        "💕 Love Story та сімейна зйомка",
+});
 
-      service4:
-        "📱 Reels та короткі відео",
+}
 
-      service5:
-        "✨ Контент для особистого бренду",
 
-      service6:
-        "🏢 Контент для бізнесу",
+/* =========================
+   ЯЗЫК
+========================= */
 
-      contactTitle:
-        "Готові створити щось особливе?",
+const langButton =
+document.getElementById("langButton");
 
-      contactText:
-        "Розкажіть про вашу ідею — разом підберемо формат зйомки.",
+const langMenu =
+document.getElementById("langMenu");
 
-      contact:
-        "Зв'язатися",
+langButton.addEventListener(
+"click",
+function(event){
 
-      location:
-        "Локація",
+event.stopPropagation();
 
-      telegramLabel:
-        "Telegram:",
+langMenu.style.display =
+langMenu.style.display === "block"
+? "none"
+: "block";
 
-      instagramLabel:
-        "Instagram:",
+});
 
-      phoneLabel:
-        "Телефон:",
+document.addEventListener(
+"click",
+function(){
 
-      locationText:
-        "Валки, Харківська область. Можливий виїзд на локацію клієнта.",
+langMenu.style.display = "none";
 
-      footer:
-        "© 2026 Мобілограф. Усі права захищені.",
+});
 
-      modalTitle:
-        "Забронювати зйомку",
 
-      nameLabel:
-        "Ваше ім'я",
+const translations = {
 
-      namePlaceholder:
-        "Ім'я",
+ua:{
+title:"Фото та відео, які продають",
+text:"Створюю якісний фото та відеоконтент для бізнесу, брендів і соціальних мереж.",
+services:"Що я роблю"
+},
 
-      phoneLabelForm:
-        "Телефон",
+ru:{
+title:"Фото и видео, которые продают",
+text:"Создаю качественный фото и видеоконтент для бизнеса, брендов и социальных сетей.",
+services:"Что я делаю"
+},
 
-      phonePlaceholder:
-        "+380...",
+en:{
+title:"Photos and videos that sell",
+text:"I create high-quality photo and video content for businesses, brands and social media.",
+services:"What I do"
+}
 
-      dateLabel:
-        "Бажана дата зйомки",
+};
 
-      serviceLabel:
-        "Оберіть послугу",
 
-      commentLabel:
-        "Коментар",
+document
+.querySelectorAll("[data-lang]")
+.forEach(function(button){
 
-      commentPlaceholder:
-        "Розкажіть коротко про вашу ідею",
+button.addEventListener(
+"click",
+function(){
 
-      submit:
-        "Надіслати заявку",
+const lang =
+button.dataset.lang;
 
-      sending:
-        "Відправляємо заявку...",
+const data =
+translations[lang];
 
-      success:
-        "✅ Заявку успішно надіслано!",
+document.getElementById(
+"heroTitle"
+).textContent = data.title;
 
-      error:
-        "❌ Не вдалося надіслати заявку. Спробуйте ще раз."
+document.getElementById(
+"heroText"
+).textContent = data.text;
 
-    },
+document.getElementById(
+"servicesTitle"
+).textContent = data.services;
 
+langButton.textContent =
+lang.toUpperCase() + " ▾";
 
-    ru: {
+langMenu.style.display = "none";
 
-      logo:
-        "МОБИЛОГРАФ",
+});
 
-      heroTitle:
-        "Создаю кадры,<br>которые хочется запомнить",
+});
 
-      heroText:
-        "Фото- и видеосъёмка для особенных моментов, творческих идей и профессионального контента.",
 
-      booking:
-        "Забронировать съёмку",
+/* =========================
+   ЗАКАЗ СЪЁМКИ
+========================= */
 
-      portfolio:
-        "Мои работы",
+const modal =
+document.getElementById("bookingModal");
 
-      aboutTitle:
-        "Что я создаю",
+const bookingButton =
+document.getElementById("bookingButton");
 
-      card1Title:
-        "📸 Портретные фотосессии",
+const closeModal =
+document.getElementById("closeModal");
 
-      card1Text:
-        "Индивидуальные и семейные фотосессии, которые передают ваш характер и эмоции.",
+bookingButton.addEventListener(
+"click",
+function(){
 
-      card2Title:
-        "🎥 Видеосъёмка",
+modal.style.display = "block";
 
-      card2Text:
-        "Живые и атмосферные видео для личных и профессиональных проектов.",
+});
 
-      card3Title:
-        "📱 Reels и контент",
 
-      card3Text:
-        "Динамичные видео для Instagram, TikTok и других социальных сетей.",
+closeModal.addEventListener(
+"click",
+function(){
 
-      portfolioTitle:
-        "Мои работы",
+modal.style.display = "none";
 
-      portfolio1:
-        "Портретная съёмка",
+});
 
-      portfolio2:
-        "Love Story",
 
-      portfolio3:
-        "Reels",
+modal.addEventListener(
+"click",
+function(event){
 
-      portfolio4:
-        "Контент для бизнеса",
+if(event.target === modal){
 
-      servicesTitle:
-        "Услуги",
+modal.style.display = "none";
 
-      service1:
-        "📸 Портретная фотосессия",
+}
 
-      service2:
-        "🎥 Видеосъёмка",
+});
 
-      service3:
-        "💕 Love Story и семейная съёмка",
 
-      service4:
-        "📱 Reels и короткие видео",
+/* =========================
+   РАБОТЫ
+========================= */
 
-      service5:
-        "✨ Контент для личного бренда",
+const portfolioButton =
+document.getElementById("portfolioButton");
 
-      service6:
-        "🏢 Контент для бизнеса",
+const portfolioSection =
+document.getElementById("portfolioSection");
 
-      contactTitle:
-        "Готовы создать что-то особенное?",
+portfolioButton.addEventListener(
+"click",
+function(){
 
-      contactText:
-        "Расскажите о вашей идее — вместе подберём формат съёмки.",
+portfolioSection.style.display =
+portfolioSection.style.display === "block"
+? "none"
+: "block";
 
-      contact:
-        "Связаться",
+if(
+portfolioSection.style.display === "block"
+){
 
-      location:
-        "Локация",
+portfolioSection.scrollIntoView({
+behavior:"smooth"
+});
 
-      telegramLabel:
-        "Telegram:",
+}
 
-      instagramLabel:
-        "Instagram:",
+});
 
-      phoneLabel:
-        "Телефон:",
 
-      locationText:
-        "Валки, Харьковская область. Возможен выезд на локацию клиента.",
+/* =========================
+   КОНТАКТЫ
+========================= */
 
-      footer:
-        "© 2026 Мобилограф. Все права защищены.",
+const contactButton =
+document.getElementById("contactButton");
 
-      modalTitle:
-        "Забронировать съёмку",
+const contactInfo =
+document.getElementById("contactInfo");
 
-      nameLabel:
-        "Ваше имя",
+contactButton.addEventListener(
+"click",
+function(){
 
-      namePlaceholder:
-        "Имя",
+contactInfo.innerHTML =
+"📱 Telegram: @mobilograf<br>" +
+"📞 Телефон: +380 00 000 00 00<br>" +
+"📸 Instagram: @mobilograf";
 
-      phoneLabelForm:
-        "Телефон",
+});
 
-      phonePlaceholder:
-        "+380...",
 
-      dateLabel:
-        "Желаемая дата съёмки",
+/* =========================
+   ЛОКАЦИЯ
+========================= */
 
-      serviceLabel:
-        "Выберите услугу",
+const locationButton =
+document.getElementById("locationButton");
 
-      commentLabel:
-        "Комментарий",
+locationButton.addEventListener(
+"click",
+function(){
 
-      commentPlaceholder:
-        "Расскажите коротко о вашей идее",
+contactInfo.innerHTML =
+"📍 Київ, Україна";
 
-      submit:
-        "Отправить заявку",
+});
 
-      sending:
-        "Отправляем заявку...",
 
-      success:
-        "✅ Заявка успешно отправлена!",
+/* =========================
+   ОТПРАВКА ЗАЯВКИ
+========================= */
 
-      error:
-        "❌ Не удалось отправить заявку. Попробуйте ещё раз."
+const bookingForm =
+document.getElementById("bookingForm");
 
-    },
+const formMessage =
+document.getElementById("formMessage");
 
+bookingForm.addEventListener(
+"submit",
+async function(event){
 
-    en: {
+event.preventDefault();
 
-      logo:
-        "MOBILEOGRAPHER",
+formMessage.textContent =
+"Відправляємо заявку...";
 
-      heroTitle:
-        "Creating frames<br>you'll want to remember",
 
-      heroText:
-        "Photo and video shooting for special moments, creative ideas and professional content.",
+const payload = {
 
-      booking:
-        "Book a shoot",
+name:
+document
+.getElementById("name")
+.value
+.trim(),
 
-      portfolio:
-        "My work",
+phone:
+document
+.getElementById("phone")
+.value
+.trim(),
 
-      aboutTitle:
-        "What I create",
+date:
+document
+.getElementById("date")
+.value,
 
-      card1Title:
-        "📸 Portrait photography",
+service:
+document
+.getElementById("service")
+.value,
 
-      card1Text:
-        "Individual and family photo sessions that capture your character and emotions.",
+comment:
+document
+.getElementById("comment")
+.value
+.trim()
 
-      card2Title:
-        "🎥 Video production",
+};
 
-      card2Text:
-        "Live and atmospheric videos for personal and professional projects.",
 
-      card3Title:
-        "📱 Reels & content",
+try{
 
-      card3Text:
-        "Dynamic videos for Instagram, TikTok and other social networks.",
+const response =
+await fetch(
+"/api/send-message.js",
+{
+method:"POST",
 
-      portfolioTitle:
-        "My work",
+headers:{
+"Content-Type":
+"application/json"
+},
 
-      portfolio1:
-        "Portrait photography",
+body:
+JSON.stringify(payload)
 
-      portfolio2:
-        "Love Story",
+}
+);
 
-      portfolio3:
-        "Reels",
 
-      portfolio4:
-        "Business conten
+const result =
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+result.error ||
+"Помилка відправлення"
+);
+
+}
+
+
+formMessage.textContent =
+"✅ Заявку успішно відправлено!";
+
+
+bookingForm.reset();
+
+
+setTimeout(
+function(){
+
+modal.style.display = "none";
+
+formMessage.textContent = "";
+
+},
+1800
+);
+
+
+}catch(error){
+
+console.error(error);
+
+formMessage.textContent =
+"❌ Не вдалося відправити заявку. Спробуйте ще раз.";
+
+}
+
+});
+
+
+/* =========================
+   ЗАГРУЗКА ДАННЫХ SUPABASE
+========================= */
+
+async function loadSiteContent(){
+
+try{
+
+const response =
+await fetch(
+"/api/site-content.js",
+{
+method:"GET",
+cache:"no-store"
+}
+);
+
+if(!response.ok) return;
+
+const data =
+await response.json();
+
+
+if(data.hero_title){
+
+document.getElementById(
+"heroTitle"
+).textContent =
+data.hero_title;
+
+}
+
+
+if(data.hero_text){
+
+document.getElementById(
+"heroText"
+).textContent =
+data.hero_text;
+
+}
+
+
+if(data.about_title){
+
+document.getElementById(
+"servicesTitle"
+).textContent =
+data.about_title;
+
+}
+
+
+if(
+data.phone ||
+data.telegram ||
+data.instagram ||
+data.location
+){
+
+let html = "";
+
+if(data.phone){
+
+html +=
+"📞 " +
+data.phone +
+"<br>";
+
+}
+
+if(data.telegram){
+
+html +=
+"📱 " +
+data.telegram +
+"<br>";
+
+}
+
+if(data.instagram){
+
+html +=
+"📸 " +
+data.instagram +
+"<br>";
+
+}
+
+if(data.location){
+
+html +=
+"📍 " +
+data.location;
+
+}
+
+document.getElementById(
+"contactInfo"
+).innerHTML = html;
+
+}
+
+}catch(error){
+
+console.error(
+"Помилка завантаження даних:",
+error
+);
+
+}
+
+}
+
+loadSiteContent();
+
+</script>
+
+</body>
+</html>
