@@ -872,16 +872,6 @@
 
       <div id="portfolioGallery" class="portfolio-gallery" hidden></div>
 
-      <div
-        id="portfolioPlaceholder"
-        class="portfolio-placeholder"
-        data-i18n="portfolio_placeholder">
-
-        Тут можна розмістити твої фотографії,
-        відео та Reels.
-
-      </div>
-
     </div>
 
   </section>
@@ -2023,9 +2013,6 @@
   const portfolioGallery =
     document.getElementById("portfolioGallery");
 
-  const portfolioPlaceholder =
-    document.getElementById("portfolioPlaceholder");
-
   const portfolioItemModal =
     document.getElementById("portfolioItemModal");
 
@@ -2054,13 +2041,11 @@
     if (!portfolioData || portfolioData.length === 0) {
 
       portfolioGallery.hidden = true;
-      portfolioPlaceholder.hidden = false;
 
       return;
 
     }
 
-    portfolioPlaceholder.hidden = true;
     portfolioGallery.hidden = false;
 
     portfolioData.forEach(function (item) {
