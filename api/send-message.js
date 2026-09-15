@@ -1,3 +1,5 @@
+const { getVerifiedTelegramUser } = require("./_lib/telegramAuth");
+
 /* =====================================
    CONFIG
 ===================================== */
@@ -109,7 +111,7 @@ function validateField(value, fieldName, maxLength, required) {
    TELEGRAM
 ===================================== */
 
-async function sendTelegramMessage(token, chatId, text) {
+async function sendTelegramMessage(token, chatId, text, replyMarkup) {
 
   const controller = new AbortController();
 
@@ -131,10 +133,12 @@ async function sendTelegramMessage(token, chatId, text) {
           "Content-Type": "application/json"
         },
 
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: text
-        }),
+        body: JSON.stringify(
+          Object.assign(
+            { chat_id: chatId, text: text },
+            replyMarkup ? { reply_markup: replyMarkup } : {}
+          )
+        ),
 
         signal: controller.signal
       }
@@ -147,6 +151,67 @@ async function sendTelegramMessage(token, chatId, text) {
     clearTimeout(timeoutId);
 
   }
+
+}
+
+
+/* =====================================
+   CLIENT TELEGRAM PROFILE
+
+   Formats the verified Telegram user (from getVerifiedTelegramUser() -
+   HMAC-checked initData, never anything from the request body) into
+   the block appended to the notification text, plus an optional inline
+   "Open Telegram" button when a username is available. A username is
+   optional in Telegram, so this never assumes one exists; when
+   initData is missing entirely (Mini App opened outside Telegram, or
+   an older client) the whole thing degrades to one line rather than
+   breaking the booking.
+===================================== */
+
+function buildTelegramProfileBlock(telegramUser) {
+
+  if (!telegramUser) {
+    return "📲 Telegram: данные недоступны";
+  }
+
+  const lines = [];
+
+  if (telegramUser.username) {
+    lines.push(`📲 Telegram: @${telegramUser.username}`);
+  } else {
+    lines.push("📲 Telegram: username не указан");
+  }
+
+  lines.push(`🆔 Telegram ID: ${telegramUser.id}`);
+
+  const fullName =
+    [telegramUser.first_name, telegramUser.last_name]
+      .filter(Boolean)
+      .join(" ");
+
+  if (fullName) {
+    lines.push(`Имя Telegram: ${fullName}`);
+  }
+
+  return lines.join("\n");
+
+}
+
+
+function buildTelegramReplyMarkup(telegramUser) {
+
+  if (!telegramUser || !telegramUser.username) {
+    return undefined;
+  }
+
+  return {
+    inline_keyboard: [[
+      {
+        text: "💬 Открыть Telegram",
+        url: `https://t.me/${telegramUser.username}`
+      }
+    ]]
+  };
 
 }
 
@@ -246,6 +311,13 @@ export default async function handler(req, res) {
     const notificationChatId =
       process.env.NOTIFICATION_CHAT_ID || "5904817027";
 
+    /* Who is actually submitting this, verified via Telegram's own
+       HMAC-signed initData (see _lib/telegramAuth.js) - never trusted
+       from req.body, which only ever carries name/phone/date/service/
+       comment above. null when the Mini App was opened outside
+       Telegram or sent no initData; the booking still goes through. */
+    const telegramUser = getVerifiedTelegramUser(req);
+
     const text =
 `📸 НОВАЯ ЗАЯВКА
 
@@ -258,7 +330,9 @@ export default async function handler(req, res) {
 🎬 Услуга: ${service || "Не указана"}
 
 💬 Комментарий:
-${comment || "Без комментария"}`;
+${comment || "Без комментария"}
+
+${buildTelegramProfileBlock(telegramUser)}`;
 
 
     let telegramResponse;
@@ -268,7 +342,8 @@ ${comment || "Без комментария"}`;
       telegramResponse = await sendTelegramMessage(
         token,
         notificationChatId,
-        text
+        text,
+        buildTelegramReplyMarkup(telegramUser)
       );
 
     } catch (fetchError) {

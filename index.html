@@ -2060,7 +2060,9 @@
 
               headers: {
                 "Content-Type":
-                  "application/json"
+                  "application/json",
+                "x-telegram-init-data":
+                  (tg && tg.initData) || ""
               },
 
               body:

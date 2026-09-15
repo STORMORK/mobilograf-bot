@@ -99,6 +99,26 @@ function validateTelegramInitData(initData, botToken){
 }
 
 
+/* Verifies Telegram initData the same way requireAdmin() does, but
+   without the admin check - for endpoints (like send-message.js) that
+   just need to know which real Telegram user is making the request,
+   not whether they're an administrator. Always returns the verified
+   user object or null; never throws, never trusts anything from the
+   request body - the only input is the signed x-telegram-init-data
+   header, HMAC-checked against BOT_TOKEN by validateTelegramInitData()
+   above. A missing/invalid/absent initData (e.g. the Mini App opened
+   outside Telegram) is not an error here - it just means "no verified
+   Telegram profile for this request". */
+function getVerifiedTelegramUser(req){
+
+  const initData =
+    req.headers["x-telegram-init-data"];
+
+  return validateTelegramInitData(initData, process.env.BOT_TOKEN);
+
+}
+
+
 /* Runs the same auth check every admin endpoint needs and returns either
    { user } or { error, status } so callers can just do:
      const auth = requireAdmin(req);
@@ -131,5 +151,6 @@ module.exports = {
   ADMIN_IDS,
   isAdmin,
   validateTelegramInitData,
-  requireAdmin
+  requireAdmin,
+  getVerifiedTelegramUser
 };
