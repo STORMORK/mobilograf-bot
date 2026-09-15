@@ -107,11 +107,102 @@ border-radius:13px;
 padding:15px;
 font-weight:800;
 font-size:16px;
+cursor:pointer;
+}
+
+.save:disabled{
+opacity:0.5;
 }
 
 #message{
 margin-top:15px;
 line-height:1.5;
+}
+
+.lang-bar{
+display:flex;
+align-items:center;
+flex-wrap:wrap;
+gap:8px;
+margin-bottom:20px;
+padding-bottom:18px;
+border-bottom:1px solid #242424;
+}
+
+.lang-bar-label{
+color:#aaa;
+font-size:13px;
+margin-right:4px;
+}
+
+.lang-tab{
+border:1px solid #333;
+border-radius:9px;
+background:#151515;
+color:#fff;
+padding:8px 13px;
+font-size:13px;
+cursor:pointer;
+}
+
+.lang-tab.active{
+background:#fff;
+color:#000;
+border-color:#fff;
+}
+
+.expand-toggle{
+margin-left:auto;
+background:transparent;
+border:0;
+color:#888;
+font-size:13px;
+cursor:pointer;
+text-decoration:underline;
+}
+
+.group{
+border:1px solid #242424;
+border-radius:16px;
+margin-bottom:14px;
+overflow:hidden;
+}
+
+.group summary{
+cursor:pointer;
+padding:15px 18px;
+font-weight:700;
+font-size:16px;
+background:#141414;
+list-style:none;
+}
+
+.group summary::-webkit-details-marker{
+display:none;
+}
+
+.group summary::after{
+content:"▸";
+float:right;
+color:#777;
+}
+
+.group[open] summary::after{
+content:"▾";
+}
+
+.group-body{
+padding:18px;
+}
+
+.copy-btn{
+border:0;
+background:transparent;
+color:#8ab4ff;
+font-size:12px;
+padding:6px 0 0;
+cursor:pointer;
+text-decoration:underline;
 }
 
 @media(max-width:600px){
@@ -167,101 +258,20 @@ class="card"
 style="display:none;"
 >
 
-<div class="field">
+<div class="lang-bar">
 
-<label>
-Заголовок
-</label>
+<span class="lang-bar-label">Мова редагування:</span>
 
-<input
-id="hero_title"
-type="text"
->
+<button type="button" class="lang-tab active" data-edit-lang="ua">🇺🇦 UA</button>
+<button type="button" class="lang-tab" data-edit-lang="ru">🇷🇺 RU</button>
+<button type="button" class="lang-tab" data-edit-lang="en">🇬🇧 EN</button>
 
-</div>
-
-
-<div class="field">
-
-<label>
-Текст під заголовком
-</label>
-
-<textarea
-id="hero_text"
-></textarea>
+<button type="button" id="expandToggle" class="expand-toggle">Розгорнути все</button>
 
 </div>
 
 
-<div class="field">
-
-<label>
-Заголовок блоку «Що я роблю»
-</label>
-
-<input
-id="about_title"
-type="text"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-Телефон
-</label>
-
-<input
-id="phone"
-type="text"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-Telegram
-</label>
-
-<input
-id="telegram"
-type="text"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-Instagram
-</label>
-
-<input
-id="instagram"
-type="text"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-Локація
-</label>
-
-<input
-id="location"
-type="text"
->
-
-</div>
+<div id="groups"></div>
 
 
 <button
@@ -269,7 +279,7 @@ id="saveButton"
 class="save"
 type="button"
 >
-Зберегти зміни
+💾 Зберегти всі зміни
 </button>
 
 
@@ -280,6 +290,7 @@ type="button"
 </div>
 
 
+<script src="/content-schema.js"></script>
 <script>
 
 const tg =
@@ -307,6 +318,12 @@ document.getElementById("message");
 
 const saveButton =
 document.getElementById("saveButton");
+
+const groupsContainer =
+document.getElementById("groups");
+
+const expandToggle =
+document.getElementById("expandToggle");
 
 
 const params =
@@ -402,7 +419,7 @@ panel.style.display =
 
 if(result.content){
 
-fillForm(
+initContentEditor(
 result.content
 );
 
@@ -421,62 +438,232 @@ status.innerHTML =
 }
 
 
-function fillForm(data){
+/* =====================================
+   UNIVERSAL CONTENT EDITOR
 
-document.getElementById(
-"hero_title"
-).value =
-data.hero_title || "";
+   Driven entirely by CONTENT_SCHEMA (content-schema.js, shared with
+   index.html). Adding a new editable text on the site = adding one
+   entry to that schema; this editor picks it up automatically, grouped
+   and with UA/RU/EN tabs, with no changes needed here.
+===================================== */
 
-
-document.getElementById(
-"hero_text"
-).value =
-data.hero_text || "";
-
-
-document.getElementById(
-"about_title"
-).value =
-data.about_title || "";
+let draft = {};
+let flatDraft = {};
+let activeEditLang = "ua";
+let allGroupsExpanded = false;
 
 
-document.getElementById(
-"phone"
-).value =
-data.phone !== null &&
-data.phone !== undefined
-? data.phone
-: "";
+function seedDraftFromContent(content){
+
+content = content || {};
+
+draft = {};
+
+getMultilingualContentSchema().forEach(function(item){
+
+draft[item.key] = {
+ua: resolveContentValue(content, item, "ua"),
+ru: resolveContentValue(content, item, "ru"),
+en: resolveContentValue(content, item, "en")
+};
+
+});
 
 
-document.getElementById(
-"telegram"
-).value =
-data.telegram !== null &&
-data.telegram !== undefined
-? data.telegram
-: "";
+flatDraft = {};
 
+getFlatContentSchema().forEach(function(item){
 
-document.getElementById(
-"instagram"
-).value =
-data.instagram !== null &&
-data.instagram !== undefined
-? data.instagram
-: "";
+const value = content[item.flatField];
 
+flatDraft[item.flatField] =
+value !== null && value !== undefined ? value : "";
 
-document.getElementById(
-"location"
-).value =
-data.location !== null &&
-data.location !== undefined
-? data.location
-: "";
+});
 
 }
+
+
+function createFieldElement(item){
+
+const wrapper = document.createElement("div");
+wrapper.className = "field";
+
+const label = document.createElement("label");
+label.textContent = item.label;
+wrapper.appendChild(label);
+
+
+if(item.multilingual === false){
+
+const input = document.createElement("input");
+input.type = "text";
+input.dataset.flatKey = item.flatField;
+
+input.addEventListener("input", function(){
+flatDraft[item.flatField] = input.value;
+});
+
+wrapper.appendChild(input);
+
+return wrapper;
+
+}
+
+
+const field =
+item.type === "textarea"
+? document.createElement("textarea")
+: document.createElement("input");
+
+if(field.tagName === "INPUT"){
+field.type = "text";
+}
+
+field.dataset.key = item.key;
+
+field.addEventListener("input", function(){
+draft[item.key][activeEditLang] = field.value;
+});
+
+wrapper.appendChild(field);
+
+
+const copyBtn = document.createElement("button");
+copyBtn.type = "button";
+copyBtn.className = "copy-btn";
+copyBtn.textContent = "📋 Скопіювати з UA в усі мови";
+
+copyBtn.addEventListener("click", function(){
+
+const uaValue = draft[item.key].ua;
+
+draft[item.key].ru = uaValue;
+draft[item.key].en = uaValue;
+
+refreshFieldValues();
+
+});
+
+wrapper.appendChild(copyBtn);
+
+
+return wrapper;
+
+}
+
+
+function buildGroupsDom(){
+
+groupsContainer.innerHTML = "";
+
+CONTENT_GROUPS.forEach(function(group, groupIndex){
+
+const items =
+CONTENT_SCHEMA.filter(function(item){
+return item.group === group.id;
+});
+
+if(items.length === 0){
+return;
+}
+
+const details = document.createElement("details");
+details.className = "group";
+details.open = groupIndex === 0;
+
+const summary = document.createElement("summary");
+summary.textContent = group.label;
+details.appendChild(summary);
+
+const body = document.createElement("div");
+body.className = "group-body";
+
+items.forEach(function(item){
+body.appendChild(createFieldElement(item));
+});
+
+details.appendChild(body);
+
+groupsContainer.appendChild(details);
+
+});
+
+}
+
+
+function refreshFieldValues(){
+
+document
+.querySelectorAll("[data-key]")
+.forEach(function(el){
+
+const key = el.dataset.key;
+
+if(draft[key]){
+el.value = draft[key][activeEditLang] || "";
+}
+
+});
+
+
+document
+.querySelectorAll("[data-flat-key]")
+.forEach(function(el){
+
+el.value = flatDraft[el.dataset.flatKey] || "";
+
+});
+
+}
+
+
+function initContentEditor(content){
+
+seedDraftFromContent(content);
+buildGroupsDom();
+refreshFieldValues();
+
+}
+
+
+document
+.querySelectorAll(".lang-tab")
+.forEach(function(button){
+
+button.addEventListener("click", function(){
+
+activeEditLang = button.dataset.editLang;
+
+document
+.querySelectorAll(".lang-tab")
+.forEach(function(btn){
+btn.classList.remove("active");
+});
+
+button.classList.add("active");
+
+refreshFieldValues();
+
+});
+
+});
+
+
+expandToggle.addEventListener("click", function(){
+
+allGroupsExpanded = !allGroupsExpanded;
+
+document
+.querySelectorAll(".group")
+.forEach(function(details){
+details.open = allGroupsExpanded;
+});
+
+expandToggle.textContent =
+allGroupsExpanded ? "Згорнути все" : "Розгорнути все";
+
+});
 
 
 saveButton.addEventListener(
@@ -497,44 +684,24 @@ message.textContent =
 "";
 
 
-const data = {
+const content_i18n = {};
 
-hero_title:
-document.getElementById(
-"hero_title"
-).value,
+Object.keys(draft).forEach(function(key){
 
-hero_text:
-document.getElementById(
-"hero_text"
-).value,
-
-about_title:
-document.getElementById(
-"about_title"
-).value,
-
-phone:
-document.getElementById(
-"phone"
-).value,
-
-telegram:
-document.getElementById(
-"telegram"
-).value,
-
-instagram:
-document.getElementById(
-"instagram"
-).value,
-
-location:
-document.getElementById(
-"location"
-).value
-
+content_i18n[key] = {
+ua: draft[key].ua,
+ru: draft[key].ru,
+en: draft[key].en
 };
+
+});
+
+
+const payload =
+Object.assign(
+{ content_i18n: content_i18n },
+flatDraft
+);
 
 
 try{
@@ -556,7 +723,7 @@ telegramInitData
 },
 
 body:
-JSON.stringify(data)
+JSON.stringify(payload)
 
 }
 );
@@ -568,9 +735,14 @@ await response.json();
 
 if(!response.ok){
 
+const detailsText =
+result && result.details
+? " (" + JSON.stringify(result.details) + ")"
+: "";
+
 throw new Error(
-result.error ||
-"Помилка збереження"
+(result && result.error || "Помилка збереження") +
+detailsText
 );
 
 }
@@ -585,9 +757,11 @@ throw new Error(
 }
 
 
-fillForm(
+seedDraftFromContent(
 result.data
 );
+
+refreshFieldValues();
 
 
 message.textContent =
@@ -620,9 +794,11 @@ verifyResponse.ok &&
 verifyResult.content
 ){
 
-fillForm(
+seedDraftFromContent(
 verifyResult.content
 );
+
+refreshFieldValues();
 
 }
 
@@ -642,7 +818,7 @@ saveButton.disabled =
 false;
 
 saveButton.textContent =
-"Зберегти зміни";
+"💾 Зберегти всі зміни";
 
 }
 

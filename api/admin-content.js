@@ -2,6 +2,79 @@ const crypto = require("crypto");
 
 const ADMIN_ID = "1047945172";
 
+const CONTENT_I18N_LANGS = ["ua", "ru", "en"];
+const MAX_CONTENT_I18N_BYTES = 200 * 1024;
+const MAX_CONTENT_I18N_FIELD_LENGTH = 5000;
+const MAX_CONTENT_I18N_KEY_LENGTH = 100;
+
+
+function isPlainObject(value){
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+
+/* Validates and sanitizes the universal content editor payload
+   (admin.html -> content-schema.js). Every key/value is type- and
+   size-checked before it ever reaches Supabase, so a malformed or
+   oversized payload is rejected with 400 instead of being stored. */
+function validateContentI18n(value){
+
+  if(!isPlainObject(value)){
+    return { error: "content_i18n must be an object" };
+  }
+
+  if(JSON.stringify(value).length > MAX_CONTENT_I18N_BYTES){
+    return { error: "content_i18n payload is too large" };
+  }
+
+  const sanitized = {};
+
+  for(const key of Object.keys(value)){
+
+    if(
+      typeof key !== "string" ||
+      key.length === 0 ||
+      key.length > MAX_CONTENT_I18N_KEY_LENGTH
+    ){
+      return { error: `Invalid content_i18n key: ${key}` };
+    }
+
+    const entry = value[key];
+
+    if(!isPlainObject(entry)){
+      return { error: `content_i18n["${key}"] must be an object` };
+    }
+
+    const sanitizedEntry = {};
+
+    for(const lang of CONTENT_I18N_LANGS){
+
+      const langValue = entry[lang];
+
+      if(langValue === undefined || langValue === null){
+        continue;
+      }
+
+      if(typeof langValue !== "string"){
+        return { error: `content_i18n["${key}"]["${lang}"] must be a string` };
+      }
+
+      if(langValue.length > MAX_CONTENT_I18N_FIELD_LENGTH){
+        return { error: `content_i18n["${key}"]["${lang}"] is too long` };
+      }
+
+      sanitizedEntry[lang] = langValue;
+
+    }
+
+    sanitized[key] = sanitizedEntry;
+
+  }
+
+  return { value: sanitized };
+
+}
+
 
 function validateTelegramInitData(
   initData,
@@ -203,6 +276,29 @@ export default async function handler(
         }
 
       }
+
+
+      if(
+        req.body &&
+        req.body.content_i18n !== undefined
+      ){
+
+        const validation =
+          validateContentI18n(req.body.content_i18n);
+
+        if(validation.error){
+
+          return res.status(400).json({
+            error: validation.error
+          });
+
+        }
+
+        updates.content_i18n =
+          validation.value;
+
+      }
+
 
       if(
         Object.keys(updates).length === 0

@@ -617,11 +617,11 @@
         MOBILOGRAPHER
       </div>
 
-      <h1 id="heroTitle">
+      <h1 id="heroTitle" data-i18n="hero_title">
         Фото та відео, які продають
       </h1>
 
-      <p id="heroText" class="hero-text">
+      <p id="heroText" class="hero-text" data-i18n="hero_text">
         Створюю стильний фото- та відеоконтент для брендів,
         бізнесу та соціальних мереж.
       </p>
@@ -653,7 +653,8 @@
 
     <h2
       id="aboutTitle"
-      class="section-title">
+      class="section-title"
+      data-i18n="about_title">
       Що я роблю
     </h2>
 
@@ -917,6 +918,7 @@
   </div>
 
 
+<script src="/content-schema.js"></script>
 <script>
 
   /* =====================================
@@ -983,7 +985,7 @@
           ) {
 
             alert(
-              UI_TEXT.admin_telegram_only_alert[currentLang]
+              t("admin_telegram_only_alert")
             );
 
             return;
@@ -1018,74 +1020,14 @@
 
   let currentLang = "ua";
 
-  /* Supabase currently stores only base (non-suffixed) fields, so without
-     these defaults every language falls back to the same untranslated
-     text and switching UA/RU/EN looks like it does nothing. A real
-     "<field>_<lang>" value from Supabase always wins over this. */
-  const DEFAULT_TEXT = {
-
-    hero_title: {
-      ua: "Фото та відео, які продають",
-      ru: "Фото и видео, которые продают",
-      en: "Photo and video that sell"
-    },
-
-    hero_text: {
-      ua: "Створюю стильний фото- та відеоконтент для брендів, бізнесу та соціальних мереж.",
-      ru: "Создаю стильный фото- и видеоконтент для брендов, бизнеса и социальных сетей.",
-      en: "I create stylish photo and video content for brands, businesses and social media."
-    },
-
-    about_title: {
-      ua: "Що я роблю",
-      ru: "Что я делаю",
-      en: "What I do"
-    }
-
-  };
-
-
-  function getText(field) {
-
-    const langField =
-      field + "_" + currentLang;
-
-
-    if (
-      siteContent[langField] !== null &&
-      siteContent[langField] !== undefined &&
-      siteContent[langField] !== ""
-    ) {
-
-      return siteContent[langField];
-
-    }
-
-
-    if (
-      DEFAULT_TEXT[field] &&
-      DEFAULT_TEXT[field][currentLang]
-    ) {
-
-      return DEFAULT_TEXT[field][currentLang];
-
-    }
-
-
-    return siteContent[field] || "";
-
-  }
-
-
-  /* =====================================
-     UI TRANSLATIONS
-
-     Static interface text that is NOT stored in Supabase (buttons, labels,
-     placeholders, messages). Keyed the same way as DEFAULT_TEXT above.
+  /* All editable UI text (buttons, labels, placeholders, messages, and the
+     legacy Supabase-linked hero/about fields) now lives in the shared
+     CONTENT_SCHEMA manifest (content-schema.js), loaded above. That file
+     is also read by admin.html, so a new admin-editable text = one new
+     entry there, with no further changes needed in either page.
      Booking form <option> "value" attributes are intentionally left in
      Ukrainian regardless of language, so submissions and the Telegram
-     notification stay consistent no matter which UI language was used.
-  ===================================== */
+     notification stay consistent no matter which UI language was used. */
 
   const LANG_TO_HTML_LANG = {
     ua: "uk",
@@ -1093,237 +1035,23 @@
     en: "en"
   };
 
-  const UI_TEXT = {
 
-    admin_button: {
-      ua: "⚙ Адмін",
-      ru: "⚙ Админ",
-      en: "⚙ Admin"
-    },
+  function t(key) {
 
-    admin_telegram_only_alert: {
-      ua: "Адмін-панель потрібно відкривати всередині Telegram.",
-      ru: "Админ-панель нужно открывать внутри Telegram.",
-      en: "The admin panel must be opened inside Telegram."
-    },
+    const schemaItem =
+      getContentSchemaByKey(key);
 
-    order_button: {
-      ua: "Замовити зйомку",
-      ru: "Заказать съёмку",
-      en: "Book a shoot"
-    },
-
-    portfolio_button_show: {
-      ua: "Дивитися роботи",
-      ru: "Смотреть работы",
-      en: "View works"
-    },
-
-    portfolio_button_hide: {
-      ua: "Сховати роботи",
-      ru: "Скрыть работы",
-      en: "Hide works"
-    },
-
-    portfolio_toggle_show: {
-      ua: "Показати роботи",
-      ru: "Показать работы",
-      en: "Show works"
-    },
-
-    about_text: {
-      ua: "Допомагаю бізнесу виглядати професійно в Instagram, TikTok та інших соціальних мережах.",
-      ru: "Помогаю бизнесу выглядеть профессионально в Instagram, TikTok и других социальных сетях.",
-      en: "I help businesses look professional on Instagram, TikTok and other social media."
-    },
-
-    service1_title: {
-      ua: "📸 Фото",
-      ru: "📸 Фото",
-      en: "📸 Photo"
-    },
-
-    service1_text: {
-      ua: "Предметна, lifestyle та контент-зйомка для вашого бренду.",
-      ru: "Предметная, lifestyle и контент-съёмка для вашего бренда.",
-      en: "Product, lifestyle and content photography for your brand."
-    },
-
-    service2_title: {
-      ua: "🎥 Відео",
-      ru: "🎥 Видео",
-      en: "🎥 Video"
-    },
-
-    service2_text: {
-      ua: "Короткі відео та Reels, які привертають увагу.",
-      ru: "Короткие видео и Reels, которые привлекают внимание.",
-      en: "Short videos and Reels that grab attention."
-    },
-
-    service3_title: {
-      ua: "📱 Контент",
-      ru: "📱 Контент",
-      en: "📱 Content"
-    },
-
-    service3_text: {
-      ua: "Готовий контент для Instagram, TikTok та реклами.",
-      ru: "Готовый контент для Instagram, TikTok и рекламы.",
-      en: "Ready-to-use content for Instagram, TikTok and ads."
-    },
-
-    portfolio_title: {
-      ua: "Портфоліо",
-      ru: "Портфолио",
-      en: "Portfolio"
-    },
-
-    portfolio_text: {
-      ua: "Приклади робіт та візуального контенту.",
-      ru: "Примеры работ и визуального контента.",
-      en: "Examples of work and visual content."
-    },
-
-    portfolio_placeholder: {
-      ua: "Тут можна розмістити твої фотографії, відео та Reels.",
-      ru: "Здесь можно разместить твои фотографии, видео и Reels.",
-      en: "Your photos, videos and Reels can go here."
-    },
-
-    contact_title: {
-      ua: "Контакти",
-      ru: "Контакты",
-      en: "Contacts"
-    },
-
-    contact_text: {
-      ua: "Зв'яжіться зі мною для обговорення зйомки.",
-      ru: "Свяжитесь со мной для обсуждения съёмки.",
-      en: "Get in touch to discuss your shoot."
-    },
-
-    contact_error: {
-      ua: "Контакти тимчасово недоступні.",
-      ru: "Контакты временно недоступны.",
-      en: "Contacts are temporarily unavailable."
-    },
-
-    contact_empty: {
-      ua: "Контактна інформація поки не додана.",
-      ru: "Контактная информация пока не добавлена.",
-      en: "Contact information hasn't been added yet."
-    },
-
-    footer_brand: {
-      ua: "Мобілограф",
-      ru: "Мобилограф",
-      en: "Mobilographer"
-    },
-
-    booking_modal_title: {
-      ua: "Замовити зйомку",
-      ru: "Заказать съёмку",
-      en: "Book a shoot"
-    },
-
-    form_label_name: {
-      ua: "Ім'я",
-      ru: "Имя",
-      en: "Name"
-    },
-
-    form_placeholder_name: {
-      ua: "Ваше ім'я",
-      ru: "Ваше имя",
-      en: "Your name"
-    },
-
-    form_label_phone: {
-      ua: "Телефон",
-      ru: "Телефон",
-      en: "Phone"
-    },
-
-    form_label_date: {
-      ua: "Дата зйомки",
-      ru: "Дата съёмки",
-      en: "Shoot date"
-    },
-
-    form_label_service: {
-      ua: "Послуга",
-      ru: "Услуга",
-      en: "Service"
-    },
-
-    form_option_photo: {
-      ua: "Фото",
-      ru: "Фото",
-      en: "Photo"
-    },
-
-    form_option_video: {
-      ua: "Відео",
-      ru: "Видео",
-      en: "Video"
-    },
-
-    form_option_photo_video: {
-      ua: "Фото + відео",
-      ru: "Фото + видео",
-      en: "Photo + video"
-    },
-
-    form_option_content: {
-      ua: "Контент для соцмереж",
-      ru: "Контент для соцсетей",
-      en: "Social media content"
-    },
-
-    form_label_comment: {
-      ua: "Коментар",
-      ru: "Комментарий",
-      en: "Comment"
-    },
-
-    form_placeholder_comment: {
-      ua: "Розкажіть коротко про вашу задачу...",
-      ru: "Расскажите коротко о вашей задаче...",
-      en: "Briefly describe what you need..."
-    },
-
-    form_submit: {
-      ua: "Відправити заявку",
-      ru: "Отправить заявку",
-      en: "Send request"
-    },
-
-    form_submitting: {
-      ua: "Відправляємо...",
-      ru: "Отправляем...",
-      en: "Sending..."
-    },
-
-    form_error_required: {
-      ua: "❌ Вкажіть ім'я та телефон.",
-      ru: "❌ Укажите имя и телефон.",
-      en: "❌ Please enter your name and phone number."
-    },
-
-    form_success: {
-      ua: "✅ Заявку успішно відправлено! Я зв'яжуся з вами.",
-      ru: "✅ Заявка успешно отправлена! Я свяжусь с вами.",
-      en: "✅ Request sent successfully! I'll be in touch."
-    },
-
-    form_error_generic: {
-      ua: "❌ Не вдалося відправити заявку. Спробуйте ще раз.",
-      ru: "❌ Не удалось отправить заявку. Попробуйте ещё раз.",
-      en: "❌ Couldn't send the request. Please try again."
+    if (!schemaItem) {
+      return "";
     }
 
-  };
+    return resolveContentValue(
+      siteContent,
+      schemaItem,
+      currentLang
+    );
+
+  }
 
 
   function applyUiTranslations() {
@@ -1336,10 +1064,10 @@
       .querySelectorAll("[data-i18n]")
       .forEach(function (el) {
 
-        const key = el.dataset.i18n;
+        const value = t(el.dataset.i18n);
 
-        if (UI_TEXT[key] && UI_TEXT[key][currentLang]) {
-          el.textContent = UI_TEXT[key][currentLang];
+        if (value) {
+          el.textContent = value;
         }
 
       });
@@ -1349,10 +1077,10 @@
       .querySelectorAll("[data-i18n-placeholder]")
       .forEach(function (el) {
 
-        const key = el.dataset.i18nPlaceholder;
+        const value = t(el.dataset.i18nPlaceholder);
 
-        if (UI_TEXT[key] && UI_TEXT[key][currentLang]) {
-          el.placeholder = UI_TEXT[key][currentLang];
+        if (value) {
+          el.placeholder = value;
         }
 
       });
@@ -1363,17 +1091,17 @@
 
     portfolioButton.textContent =
       portfolioOpen
-        ? UI_TEXT.portfolio_button_hide[currentLang]
-        : UI_TEXT.portfolio_button_show[currentLang];
+        ? t("portfolio_button_hide")
+        : t("portfolio_button_show");
 
     portfolioToggle.textContent =
       portfolioOpen
-        ? UI_TEXT.portfolio_button_hide[currentLang]
-        : UI_TEXT.portfolio_toggle_show[currentLang];
+        ? t("portfolio_button_hide")
+        : t("portfolio_toggle_show");
 
 
     if (!submitButton.disabled) {
-      submitButton.textContent = UI_TEXT.form_submit[currentLang];
+      submitButton.textContent = t("form_submit");
     }
 
   }
@@ -1382,46 +1110,6 @@
   function renderSite() {
 
     applyUiTranslations();
-
-    const heroTitle =
-      getText("hero_title");
-
-    const heroText =
-      getText("hero_text");
-
-    const aboutTitle =
-      getText("about_title");
-
-
-    if (heroTitle) {
-
-      document.getElementById(
-        "heroTitle"
-      ).textContent =
-        heroTitle;
-
-    }
-
-
-    if (heroText) {
-
-      document.getElementById(
-        "heroText"
-      ).textContent =
-        heroText;
-
-    }
-
-
-    if (aboutTitle) {
-
-      document.getElementById(
-        "aboutTitle"
-      ).textContent =
-        aboutTitle;
-
-    }
-
 
     renderContactInfo();
 
@@ -1465,7 +1153,7 @@
       document.getElementById(
         "contactInfo"
       ).innerHTML =
-        UI_TEXT.contact_error[currentLang];
+        t("contact_error");
 
     }
 
@@ -1689,7 +1377,7 @@
     if (!html) {
 
       html =
-        UI_TEXT.contact_empty[currentLang];
+        t("contact_empty");
 
     }
 
@@ -1895,7 +1583,7 @@
       if (!name || !phone) {
 
         formMessage.textContent =
-          UI_TEXT.form_error_required[currentLang];
+          t("form_error_required");
 
         return;
 
@@ -1906,7 +1594,7 @@
         true;
 
       submitButton.textContent =
-        UI_TEXT.form_submitting[currentLang];
+        t("form_submitting");
 
 
       formMessage.textContent =
@@ -1966,7 +1654,7 @@
 
 
         formMessage.textContent =
-          UI_TEXT.form_success[currentLang];
+          t("form_success");
 
 
         bookingForm.reset();
@@ -1993,7 +1681,7 @@
 
 
         formMessage.textContent =
-          UI_TEXT.form_error_generic[currentLang];
+          t("form_error_generic");
 
       }
 
@@ -2002,7 +1690,7 @@
         false;
 
       submitButton.textContent =
-        UI_TEXT.form_submit[currentLang];
+        t("form_submit");
 
     }
   );
