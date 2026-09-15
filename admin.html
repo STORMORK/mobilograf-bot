@@ -1396,11 +1396,22 @@ function createMediaBlockCard(block, mediaEntry){
 }
 
 
+/* "services" (Послуги) is intentionally not editable here - the site's
+   Photo/Video/Content cards in that section don't use a block
+   background, so it's hidden from this admin list only. It stays in
+   content-schema.js's MEDIA_BLOCKS so index.html's rendering and
+   media-commit.js's validation are unaffected. */
+const HIDDEN_MEDIA_BLOCK_IDS = ["services"];
+
 function renderMediaBlocks(content){
 
   mediaBlocksContainer.innerHTML = "";
 
   MEDIA_BLOCKS.forEach(function(block){
+
+    if(HIDDEN_MEDIA_BLOCK_IDS.indexOf(block.id) !== -1){
+      return;
+    }
 
     const mediaEntry = resolveBlockMedia(content, block.id);
     mediaBlocksContainer.appendChild(createMediaBlockCard(block, mediaEntry));
