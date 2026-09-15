@@ -54,11 +54,6 @@
       background: #111;
     }
 
-    /*
-      Размытая фотография.
-      Файл hero.jpg должен лежать рядом с index.html.
-    */
-
     .hero::before {
       content: "";
       position: absolute;
@@ -69,15 +64,15 @@
       background-position: center center;
       background-repeat: no-repeat;
 
+      /* ИЗМЕНЕНО: было 16px */
       filter: blur(5px);
+
       transform: scale(1.08);
 
       opacity: 0.82;
 
       z-index: 0;
     }
-
-    /* Затемнение поверх фотографии */
 
     .hero::after {
       content: "";
@@ -1018,7 +1013,6 @@
   ===================================== */
 
   let siteContent = {};
-
 
   let currentLang = "uk";
 
