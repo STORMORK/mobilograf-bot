@@ -8,11 +8,17 @@ export default async function handler(req, res) {
 
   try {
 
-    const { chatId, text } = req.body;
+    const {
+      name,
+      phone,
+      date,
+      service,
+      comment
+    } = req.body || {};
 
-    if (!chatId || !text) {
+    if (!name || !phone) {
       return res.status(400).json({
-        error: "chatId and text are required"
+        error: "Имя и телефон обязательны"
       });
     }
 
@@ -24,30 +30,58 @@ export default async function handler(req, res) {
       });
     }
 
+    const adminChatId = "1047945172";
+
+    const text =
+`📸 НОВАЯ ЗАЯВКА
+
+👤 Имя: ${name}
+
+📞 Телефон: ${phone}
+
+📅 Дата: ${date || "Не указана"}
+
+🎬 Услуга: ${service || "Не указана"}
+
+💬 Комментарий:
+${comment || "Без комментария"}`;
+
+
     const telegramResponse = await fetch(
       `https://api.telegram.org/bot${token}/sendMessage`,
       {
         method: "POST",
+
         headers: {
           "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
-          chat_id: chatId,
+          chat_id: adminChatId,
           text: text
         })
       }
     );
 
-    const data = await telegramResponse.json();
+
+    const data =
+      await telegramResponse.json();
+
 
     if (!telegramResponse.ok) {
+
       return res.status(502).json({
         error: "Telegram API error",
         details: data
       });
+
     }
 
-    return res.status(200).json(data);
+
+    return res.status(200).json({
+      success: true
+    });
+
 
   } catch (error) {
 
