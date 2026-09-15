@@ -1696,4 +1696,213 @@ location +
 '<a class="contact-link" href="https://www.google.com/maps/search/?api=1&query=' +
 encodeURIComponent(location) +
 '" target="_blank" rel="noopener noreferrer">' +
-'🗺 Відкрити в Google
+'🗺 Відкрити в Google Maps →' +
+'</a>';
+
+}else{
+
+contactInfo.textContent =
+translations[currentLanguage].contactDefault;
+
+}
+
+});
+
+
+/* =========================================
+   ФОРМА ЗАЯВКИ
+========================================= */
+
+const bookingForm =
+document.getElementById("bookingForm");
+
+const formMessage =
+document.getElementById("formMessage");
+
+
+bookingForm.addEventListener(
+"submit",
+async function(event){
+
+event.preventDefault();
+
+
+const data =
+translations[currentLanguage];
+
+
+formMessage.textContent =
+data.sending;
+
+
+const payload = {
+
+name:
+document
+.getElementById("name")
+.value
+.trim(),
+
+phone:
+document
+.getElementById("phone")
+.value
+.trim(),
+
+date:
+document
+.getElementById("date")
+.value,
+
+service:
+document
+.getElementById("service")
+.value,
+
+comment:
+document
+.getElementById("comment")
+.value
+.trim()
+
+};
+
+
+try{
+
+const response =
+await fetch(
+"/api/send-message.js",
+{
+method:"POST",
+
+headers:{
+"Content-Type":
+"application/json"
+},
+
+body:
+JSON.stringify(payload)
+
+}
+);
+
+
+const result =
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+result.error ||
+"Помилка відправлення"
+);
+
+}
+
+
+formMessage.textContent =
+data.success;
+
+
+bookingForm.reset();
+
+
+setTimeout(
+function(){
+
+modal.style.display =
+"none";
+
+formMessage.textContent =
+"";
+
+},
+1800
+);
+
+
+}catch(error){
+
+console.error(error);
+
+
+formMessage.textContent =
+data.error;
+
+}
+
+});
+
+
+/* =========================================
+   ЗАГРУЗКА SUPABASE
+========================================= */
+
+async function loadSiteContent(){
+
+try{
+
+const response =
+await fetch(
+"/api/site-content.js",
+{
+method:"GET",
+cache:"no-store"
+}
+);
+
+
+if(!response.ok){
+
+console.error(
+"Не вдалося завантажити site-content"
+);
+
+return;
+
+}
+
+
+const data =
+await response.json();
+
+
+siteContent = data || {};
+
+
+/* Применяем язык */
+
+applyLanguage(currentLanguage);
+
+
+/* Контакты */
+
+renderContactInfo();
+
+
+}catch(error){
+
+console.error(
+"Помилка завантаження даних:",
+error
+);
+
+}
+
+}
+
+
+/* =========================================
+   ЗАПУСК
+========================================= */
+
+applyLanguage("ua");
+
+loadSiteContent();
+
+</script>
+
+</body>
+</html>
