@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="uk">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
@@ -9,9 +10,14 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
-*{box-sizing:border-box}
 
-html{scroll-behavior:smooth}
+*{
+box-sizing:border-box;
+}
+
+html{
+scroll-behavior:smooth;
+}
 
 body{
 margin:0;
@@ -24,9 +30,20 @@ radial-gradient(circle at 10% 40%,rgba(0,180,255,.10),transparent 30%),
 min-height:100vh;
 }
 
-button,input,textarea,select{font:inherit}
+button,
+input,
+textarea,
+select{
+font:inherit;
+}
 
-button{cursor:pointer}
+button{
+cursor:pointer;
+}
+
+a{
+color:inherit;
+}
 
 .container{
 width:min(1100px,calc(100% - 32px));
@@ -194,7 +211,21 @@ margin-top:20px;
 
 #contactInfo{
 color:#aaa;
-line-height:1.7;
+line-height:1.8;
+}
+
+#contactInfo a{
+color:#fff;
+text-decoration:none;
+}
+
+#contactInfo a:hover{
+text-decoration:underline;
+}
+
+.contact-link{
+display:inline-block;
+margin:2px 0;
 }
 
 footer{
@@ -303,6 +334,10 @@ color:#fff;
 text-align:left;
 }
 
+.lang-menu button:hover{
+background:#222;
+}
+
 @media(max-width:700px){
 
 .cards{
@@ -322,12 +357,14 @@ letter-spacing:-2px;
 }
 
 }
+
 </style>
 </head>
 
 <body>
 
 <header>
+
 <div class="container header-inner">
 
 <div class="logo">
@@ -336,31 +373,56 @@ letter-spacing:-2px;
 
 <div class="header-actions">
 
-<button id="adminButton" class="small-btn">
+<button
+id="adminButton"
+class="small-btn"
+type="button"
+>
 ⚙ Адмін
 </button>
 
 <div class="lang-wrap">
 
-<button id="langButton" class="small-btn">
+<button
+id="langButton"
+class="small-btn"
+type="button"
+>
 UA ▾
 </button>
 
-<div id="langMenu" class="lang-menu">
+<div
+id="langMenu"
+class="lang-menu"
+>
 
-<button data-lang="ua">Українська</button>
-<button data-lang="ru">Русский</button>
-<button data-lang="en">English</button>
+<button type="button" data-lang="ua">
+Українська
+</button>
+
+<button type="button" data-lang="ru">
+Русский
+</button>
+
+<button type="button" data-lang="en">
+English
+</button>
 
 </div>
+
 </div>
 
 </div>
+
 </div>
+
 </header>
 
 
 <main>
+
+
+<!-- HERO -->
 
 <section class="hero">
 
@@ -377,60 +439,94 @@ UA ▾
 
 <div class="buttons">
 
-<button id="bookingButton" class="primary">
+<button
+id="bookingButton"
+class="primary"
+type="button"
+>
 Замовити зйомку
 </button>
 
-<button id="portfolioButton" class="secondary">
+<button
+id="portfolioButton"
+class="secondary"
+type="button"
+>
 Роботи
 </button>
 
 </div>
 
 </div>
+
 </section>
 
+
+<!-- SERVICES -->
 
 <section>
 
 <div class="container">
 
-<h2 class="section-title" id="servicesTitle">
+<h2
+class="section-title"
+id="servicesTitle"
+>
 Що я роблю
 </h2>
 
 <div class="cards">
 
+
 <div class="card">
+
 <h3>📸 Фото</h3>
+
 <p>
 Предметна, портретна та контентна фотографія
 для бізнесу і соцмереж.
 </p>
+
 </div>
 
+
 <div class="card">
+
 <h3>🎥 Відео</h3>
+
 <p>
 Reels, короткі рекламні відео та відеоконтент
 для Instagram і TikTok.
 </p>
+
 </div>
 
+
 <div class="card">
+
 <h3>📱 Контент</h3>
+
 <p>
 Повний контент для вашого бізнесу:
 фото, відео та готові матеріали.
 </p>
+
+</div>
+
+
 </div>
 
 </div>
-</div>
+
 </section>
 
 
-<section id="portfolioSection" class="portfolio">
+<!-- PORTFOLIO -->
+
+<section
+id="portfolioSection"
+class="portfolio"
+>
 
 <div class="container">
 
@@ -459,8 +555,11 @@ Reels
 </div>
 
 </div>
+
 </section>
 
+
+<!-- CONTACTS -->
 
 <section class="contacts">
 
@@ -478,18 +577,28 @@ Reels
 
 <div class="contact-row">
 
-<button id="contactButton" class="primary">
+<button
+id="contactButton"
+class="primary"
+type="button"
+>
 Зв'язатися
 </button>
 
-<button id="locationButton" class="secondary">
+<button
+id="locationButton"
+class="secondary"
+type="button"
+>
 📍 Локація
 </button>
 
 </div>
 
 </div>
+
 </div>
+
 </section>
 
 </main>
@@ -504,9 +613,12 @@ Reels
 </footer>
 
 
-<!-- ФОРМА ЗАМОВЛЕННЯ -->
+<!-- BOOKING MODAL -->
 
-<div id="bookingModal" class="modal">
+<div
+id="bookingModal"
+class="modal"
+>
 
 <div class="modal-box">
 
@@ -516,7 +628,11 @@ Reels
 Замовити зйомку
 </h2>
 
-<button id="closeModal" class="close">
+<button
+id="closeModal"
+class="close"
+type="button"
+>
 ×
 </button>
 
@@ -525,11 +641,16 @@ Reels
 
 <form id="bookingForm">
 
+
 <div class="form-group">
 
 <label>Ім'я</label>
 
-<input id="name" type="text" required>
+<input
+id="name"
+type="text"
+required
+>
 
 </div>
 
@@ -538,7 +659,11 @@ Reels
 
 <label>Телефон</label>
 
-<input id="phone" type="tel" required>
+<input
+id="phone"
+type="tel"
+required
+>
 
 </div>
 
@@ -547,7 +672,10 @@ Reels
 
 <label>Бажана дата</label>
 
-<input id="date" type="date">
+<input
+id="date"
+type="date"
+>
 
 </div>
 
@@ -589,21 +717,31 @@ style="width:100%;margin-top:20px;"
 </button>
 
 
-<div id="formMessage" class="form-message"></div>
+<div
+id="formMessage"
+class="form-message"
+></div>
+
 
 </form>
 
 </div>
+
 </div>
 
 
 <script>
+
+/* =========================================
+   TELEGRAM MINI APP
+========================================= */
 
 const tg =
 window.Telegram &&
 window.Telegram.WebApp
 ? window.Telegram.WebApp
 : null;
+
 
 if(tg){
 
@@ -613,28 +751,41 @@ tg.expand();
 }
 
 
-/* =========================
+/* =========================================
    АДМИН
-========================= */
+========================================= */
 
 const ADMIN_ID = "1047945172";
 
 const adminButton =
 document.getElementById("adminButton");
 
+
 function getTelegramUser(){
 
-if(!tg) return null;
+if(!tg){
 
-return tg.initDataUnsafe &&
-tg.initDataUnsafe.user
-? tg.initDataUnsafe.user
-: null;
+return null;
 
 }
 
+if(
+tg.initDataUnsafe &&
+tg.initDataUnsafe.user
+){
+
+return tg.initDataUnsafe.user;
+
+}
+
+return null;
+
+}
+
+
 const telegramUser =
 getTelegramUser();
+
 
 if(
 telegramUser &&
@@ -642,6 +793,7 @@ String(telegramUser.id) === ADMIN_ID
 ){
 
 adminButton.style.display = "block";
+
 
 adminButton.addEventListener(
 "click",
@@ -651,6 +803,7 @@ const initData =
 tg && tg.initData
 ? tg.initData
 : "";
+
 
 if(!initData){
 
@@ -662,9 +815,11 @@ return;
 
 }
 
+
 const url =
 "/admin.html?initData=" +
 encodeURIComponent(initData);
+
 
 window.location.href = url;
 
@@ -673,9 +828,9 @@ window.location.href = url;
 }
 
 
-/* =========================
+/* =========================================
    ЯЗЫК
-========================= */
+========================================= */
 
 const langButton =
 document.getElementById("langButton");
@@ -686,6 +841,7 @@ document.getElementById("langMenu");
 let currentLanguage = "ua";
 
 let siteContent = {};
+
 
 langButton.addEventListener(
 "click",
@@ -700,6 +856,7 @@ langMenu.style.display === "block"
 
 });
 
+
 document.addEventListener(
 "click",
 function(){
@@ -709,9 +866,9 @@ langMenu.style.display = "none";
 });
 
 
-/* =========================
-   ПЕРЕВОД
-========================= */
+/* =========================================
+   ПЕРЕВОДЫ
+========================================= */
 
 const translations = {
 
@@ -793,6 +950,15 @@ commentPlaceholder:
 submit:
 "Відправити заявку",
 
+sending:
+"Відправляємо заявку...",
+
+success:
+"✅ Заявку успішно відправлено!",
+
+error:
+"❌ Не вдалося відправити заявку. Спробуйте ще раз.",
+
 servicesOptions:[
 "Фото",
 "Відео",
@@ -801,6 +967,7 @@ servicesOptions:[
 ]
 
 },
+
 
 ru:{
 
@@ -880,6 +1047,15 @@ commentPlaceholder:
 submit:
 "Отправить заявку",
 
+sending:
+"Отправляем заявку...",
+
+success:
+"✅ Заявка успешно отправлена!",
+
+error:
+"❌ Не удалось отправить заявку. Попробуйте ещё раз.",
+
 servicesOptions:[
 "Фото",
 "Видео",
@@ -888,6 +1064,7 @@ servicesOptions:[
 ]
 
 },
+
 
 en:{
 
@@ -967,6 +1144,15 @@ commentPlaceholder:
 submit:
 "Send request",
 
+sending:
+"Sending request...",
+
+success:
+"✅ Request sent successfully!",
+
+error:
+"❌ Failed to send request. Please try again.",
+
 servicesOptions:[
 "Photography",
 "Video",
@@ -979,9 +1165,9 @@ servicesOptions:[
 };
 
 
-/* =========================
+/* =========================================
    ПРИМЕНЕНИЕ ЯЗЫКА
-========================= */
+========================================= */
 
 function applyLanguage(lang){
 
@@ -990,13 +1176,14 @@ currentLanguage = lang;
 const data =
 translations[lang];
 
-if(!data) return;
+if(!data){
+
+return;
+
+}
 
 
-/*
-   Сначала используем перевод
-   из Supabase, если он существует.
-*/
+/* Supabase */
 
 const dbHeroTitle =
 siteContent["hero_title_" + lang];
@@ -1007,6 +1194,8 @@ siteContent["hero_text_" + lang];
 const dbAboutTitle =
 siteContent["about_title_" + lang];
 
+
+/* Hero */
 
 document.getElementById(
 "heroTitle"
@@ -1020,13 +1209,15 @@ document.getElementById(
 dbHeroText || data.heroText;
 
 
+/* Services */
+
 document.getElementById(
 "servicesTitle"
 ).textContent =
 dbAboutTitle || data.services;
 
 
-/* Кнопки */
+/* Buttons */
 
 document.getElementById(
 "bookingButton"
@@ -1040,10 +1231,11 @@ document.getElementById(
 data.portfolio;
 
 
-/* Услуги */
+/* Cards */
 
 const cards =
 document.querySelectorAll(".card");
+
 
 if(cards.length >= 3){
 
@@ -1068,7 +1260,7 @@ data.contentText;
 }
 
 
-/* Портфолио */
+/* Portfolio */
 
 const portfolioTitle =
 document.querySelector(
@@ -1076,8 +1268,10 @@ document.querySelector(
 );
 
 if(portfolioTitle){
+
 portfolioTitle.textContent =
 data.portfolio;
+
 }
 
 
@@ -1086,46 +1280,32 @@ document.querySelectorAll(
 "#portfolioSection .portfolio-item"
 );
 
+
 data.portfolioItems.forEach(
 function(text,index){
 
 if(portfolioItems[index]){
+
 portfolioItems[index].textContent =
 text;
+
 }
 
 });
 
 
-/* Контакты */
+/* Contacts */
 
 const contactTitle =
 document.querySelector(
 ".contacts .section-title"
 );
 
+
 if(contactTitle){
+
 contactTitle.textContent =
 data.contacts;
-}
-
-
-/*
-   Не перезаписываем контактные данные
-   из Supabase, если они уже загружены.
-*/
-
-if(
-!siteContent.phone &&
-!siteContent.telegram &&
-!siteContent.instagram &&
-!siteContent.location
-){
-
-document.getElementById(
-"contactInfo"
-).textContent =
-data.contactDefault;
 
 }
 
@@ -1142,16 +1322,19 @@ document.getElementById(
 data.location;
 
 
-/* Модальное окно */
+/* Modal */
 
 const modalTitle =
 document.querySelector(
 "#bookingModal .modal-head h2"
 );
 
+
 if(modalTitle){
+
 modalTitle.textContent =
 data.modalTitle;
+
 }
 
 
@@ -1159,6 +1342,7 @@ const labels =
 document.querySelectorAll(
 "#bookingForm .form-group label"
 );
+
 
 if(labels.length >= 5){
 
@@ -1192,22 +1376,26 @@ document.querySelector(
 data.submit;
 
 
-/* Варианты услуги */
+/* Services options */
 
 const serviceSelect =
 document.getElementById("service");
+
 
 if(serviceSelect){
 
 const options =
 serviceSelect.querySelectorAll("option");
 
+
 data.servicesOptions.forEach(
 function(text,index){
 
 if(options[index]){
+
 options[index].textContent =
 text;
+
 }
 
 });
@@ -1215,13 +1403,13 @@ text;
 }
 
 
-/* Кнопка языка */
+/* Language button */
 
 langButton.textContent =
 lang.toUpperCase() + " ▾";
 
 
-/* HTML language */
+/* HTML lang */
 
 document.documentElement.lang =
 lang === "ru"
@@ -1233,7 +1421,9 @@ lang === "ru"
 }
 
 
-/* Выбор языка */
+/* =========================================
+   ВЫБОР ЯЗЫКА
+========================================= */
 
 document
 .querySelectorAll("[data-lang]")
@@ -1257,9 +1447,9 @@ langMenu.style.display =
 });
 
 
-/* =========================
-   ЗАКАЗ СЪЁМКИ
-========================= */
+/* =========================================
+   МОДАЛЬНОЕ ОКНО
+========================================= */
 
 const modal =
 document.getElementById("bookingModal");
@@ -1269,6 +1459,7 @@ document.getElementById("bookingButton");
 
 const closeModal =
 document.getElementById("closeModal");
+
 
 bookingButton.addEventListener(
 "click",
@@ -1301,9 +1492,9 @@ modal.style.display = "none";
 });
 
 
-/* =========================
-   РАБОТЫ
-========================= */
+/* =========================================
+   ПОРТФОЛИО
+========================================= */
 
 const portfolioButton =
 document.getElementById("portfolioButton");
@@ -1311,18 +1502,22 @@ document.getElementById("portfolioButton");
 const portfolioSection =
 document.getElementById("portfolioSection");
 
+
 portfolioButton.addEventListener(
 "click",
 function(){
 
+const isOpen =
+portfolioSection.style.display === "block";
+
+
 portfolioSection.style.display =
-portfolioSection.style.display === "block"
+isOpen
 ? "none"
 : "block";
 
-if(
-portfolioSection.style.display === "block"
-){
+
+if(!isOpen){
 
 portfolioSection.scrollIntoView({
 behavior:"smooth"
@@ -1333,9 +1528,9 @@ behavior:"smooth"
 });
 
 
-/* =========================
+/* =========================================
    КОНТАКТЫ
-========================= */
+========================================= */
 
 const contactButton =
 document.getElementById("contactButton");
@@ -1343,45 +1538,112 @@ document.getElementById("contactButton");
 const contactInfo =
 document.getElementById("contactInfo");
 
-contactButton.addEventListener(
-"click",
-function(){
 
-let html = "";
+function cleanTelegramUsername(username){
 
-if(siteContent.phone){
-
-html +=
-"📞 " +
-siteContent.phone +
-"<br>";
-
-}
-
-if(siteContent.telegram){
-
-const telegramUsername =
-siteContent.telegram
+return String(username || "")
 .replace("@","")
 .trim();
 
-html +=
-'📱 <a href="https://t.me/' +
-telegramUsername +
-'" target="_blank" rel="noopener noreferrer">' +
-siteContent.telegram +
-'</a><br>';
+}
+
+
+function cleanPhone(phone){
+
+return String(phone || "")
+.replace(/[^\d+]/g,"");
 
 }
+
+
+function renderContactInfo(){
+
+let html = "";
+
+
+if(siteContent.phone){
+
+const phone =
+String(siteContent.phone).trim();
+
+const phoneHref =
+cleanPhone(phone);
+
+
+html +=
+'<div class="contact-link">' +
+'📞 <a href="tel:' +
+phoneHref +
+'">' +
+phone +
+'</a>' +
+'</div><br>';
+
+}
+
+
+if(siteContent.telegram){
+
+const username =
+cleanTelegramUsername(
+siteContent.telegram
+);
+
+
+if(username){
+
+html +=
+'<div class="contact-link">' +
+'📱 <a href="https://t.me/' +
+encodeURIComponent(username) +
+'" target="_blank" rel="noopener noreferrer">' +
+siteContent.telegram +
+'</a>' +
+'</div><br>';
+
+}
+
+}
+
 
 if(siteContent.instagram){
 
+const instagram =
+String(siteContent.instagram).trim();
+
+
+let instagramUsername =
+instagram
+.replace("@","")
+.trim();
+
+
+if(instagramUsername){
+
 html +=
-"📸 " +
-siteContent.instagram +
-"<br>";
+'<div class="contact-link">' +
+'📸 <a href="https://instagram.com/' +
+encodeURIComponent(instagramUsername) +
+'" target="_blank" rel="noopener noreferrer">' +
+instagram +
+'</a>' +
+'</div><br>';
 
 }
+
+}
+
+
+if(siteContent.location){
+
+html +=
+'<div class="contact-link">' +
+'📍 ' +
+siteContent.location +
+'</div>';
+
+}
+
 
 if(html){
 
@@ -1395,15 +1657,27 @@ translations[currentLanguage].contactDefault;
 
 }
 
+}
+
+
+/* Кнопка связаться */
+
+contactButton.addEventListener(
+"click",
+function(){
+
+renderContactInfo();
+
 });
 
 
-/* =========================
+/* =========================================
    ЛОКАЦИЯ
-========================= */
+========================================= */
 
 const locationButton =
 document.getElementById("locationButton");
+
 
 locationButton.addEventListener(
 "click",
@@ -1411,223 +1685,15 @@ function(){
 
 if(siteContent.location){
 
+const location =
+String(siteContent.location).trim();
+
+
 contactInfo.innerHTML =
-"📍 " +
-siteContent.location;
-
-}else{
-
-contactInfo.textContent =
-translations[currentLanguage].contactDefault;
-
-}
-
-});
-
-
-/* =========================
-   ОТПРАВКА ЗАЯВКИ
-========================= */
-
-const bookingForm =
-document.getElementById("bookingForm");
-
-const formMessage =
-document.getElementById("formMessage");
-
-bookingForm.addEventListener(
-"submit",
-async function(event){
-
-event.preventDefault();
-
-formMessage.textContent =
-"Відправляємо заявку...";
-
-
-const payload = {
-
-name:
-document
-.getElementById("name")
-.value
-.trim(),
-
-phone:
-document
-.getElementById("phone")
-.value
-.trim(),
-
-date:
-document
-.getElementById("date")
-.value,
-
-service:
-document
-.getElementById("service")
-.value,
-
-comment:
-document
-.getElementById("comment")
-.value
-.trim()
-
-};
-
-
-try{
-
-const response =
-await fetch(
-"/api/send-message.js",
-{
-method:"POST",
-
-headers:{
-"Content-Type":
-"application/json"
-},
-
-body:
-JSON.stringify(payload)
-
-}
-);
-
-
-const result =
-await response.json();
-
-
-if(!response.ok){
-
-throw new Error(
-result.error ||
-"Помилка відправлення"
-);
-
-}
-
-
-formMessage.textContent =
-"✅ Заявку успішно відправлено!";
-
-
-bookingForm.reset();
-
-
-setTimeout(
-function(){
-
-modal.style.display = "none";
-
-formMessage.textContent = "";
-
-},
-1800
-);
-
-
-}catch(error){
-
-console.error(error);
-
-formMessage.textContent =
-"❌ Не вдалося відправити заявку. Спробуйте ще раз.";
-
-}
-
-});
-
-
-/* =========================
-   ЗАГРУЗКА ДАННЫХ SUPABASE
-========================= */
-
-async function loadSiteContent(){
-
-try{
-
-const response =
-await fetch(
-"/api/site-content.js",
-{
-method:"GET",
-cache:"no-store"
-}
-);
-
-if(!response.ok) return;
-
-const data =
-await response.json();
-
-
-/*
-   Сохраняем все данные Supabase.
-*/
-
-siteContent = data;
-
-
-/*
-   После загрузки применяем
-   выбранный язык.
-*/
-
-applyLanguage(currentLanguage);
-
-
-/*
-   Контактные данные.
-*/
-
-if(
-data.phone ||
-data.telegram ||
-data.instagram ||
-data.location
-){
-
-let html = "";
-
-if(data.phone){
-
-html +=
-"📞 " +
-data.phone +
-"<br>";
-
-}
-
-if(data.telegram){
-
-const telegramUsername =
-data.telegram
-.replace("@","")
-.trim();
-
-html +=
-'📱 <a href="https://t.me/' +
-telegramUsername +
+'📍 ' +
+location +
+'<br><br>' +
+'<a class="contact-link" href="https://www.google.com/maps/search/?api=1&query=' +
+encodeURIComponent(location) +
 '" target="_blank" rel="noopener noreferrer">' +
-data.telegram +
-'</a><br>';
-
-}
-
-if(data.instagram){
-
-html +=
-"📸 " +
-data.instagram +
-"<br>";
-
-}
-
-if(data.location){
-
-html
+'🗺 Відкрити в Google
