@@ -129,10 +129,10 @@
       background: transparent;
     }
 
-    /* hero.jpg no longer paints only here - it's the site-wide static
-       fallback background now (see SITE BACKGROUND VIDEO below), which
-       already covers the hero area too, so this section no longer
-       needs its own copy of it. Only the readability gradient stays. */
+    /* hero.jpg is still Hero's own fallback image - see HERO BACKGROUND
+       VIDEO below, which now applies it directly to .hero instead of
+       via a dedicated pseudo-element. Only the readability gradient
+       stays here. */
     .hero::after {
       content: "";
       position: absolute;
@@ -734,10 +734,10 @@
        positioned child, and the child-promotion rule only affects
        elements that already render normally in flow.
 
-       z-index:1 additionally keeps every section (and everything in it,
-       already promoted to z-index:2 below) above the site-wide
-       background video (see SITE BACKGROUND VIDEO below), which sits
-       fixed behind the whole page at a lower z-index.
+       z-index:1 additionally keeps each section's own content (already
+       promoted to z-index:2 below) above kraska.mp4, which now only
+       plays inside Hero at z-index:-1 (see HERO BACKGROUND VIDEO
+       below) - not a site-wide background.
     ========================= */
 
     #heroBlock,
@@ -751,7 +751,22 @@
       z-index: 1;
     }
 
-    #heroBlock > *:not(.block-media-layer):not(.block-media-gradient):not(.language),
+    /* Calm, solid backgrounds for every section except Hero (which has
+       its own kraska.mp4 layer below) - this is only the base color
+       admin-set per-block media (.block-media-layer, still absolutely
+       positioned above it) already covers when configured. */
+    #aboutBlock,
+    #servicesBlock,
+    #portfolioBlock,
+    #contactBlock {
+      background: #111111;
+    }
+
+    #footerBlock {
+      background: #0A0A0A;
+    }
+
+    #heroBlock > *:not(.block-media-layer):not(.block-media-gradient):not(.language):not(.hero-video-layer),
     #aboutBlock > *:not(.block-media-layer):not(.block-media-gradient),
     #servicesBlock > *:not(.block-media-layer):not(.block-media-gradient),
     #portfolioBlock > *:not(.block-media-layer):not(.block-media-gradient),
@@ -793,23 +808,28 @@
     }
 
     /* =========================
-       SITE BACKGROUND VIDEO
+       HERO BACKGROUND VIDEO
 
-       One shared kraska.mp4, fixed behind the entire page (not per
-       section - every block above just stacks above it via z-index:1/2
-       already in place for the admin-driven per-block media system,
-       which is untouched and still renders on top of this when set).
+       kraska.mp4 plays only inside Hero - an absolutely positioned
+       layer within #heroBlock (already position:relative), exactly
+       like the admin-driven .block-media-layer pattern but under its
+       own class so applyBlockMedia()'s cleanup (which only ever
+       touches .block-media-layer/.block-media-gradient) never removes
+       it. z-index:-1 keeps it below .block-media-layer's z-index:0, so
+       an admin-uploaded hero background (if ever set) still correctly
+       shows in front of this default video, same precedence every
+       other block already has over its own default look.
 
-       hero.jpg remains the site's static fallback image, now used
-       site-wide instead of only in .hero: prefers-reduced-motion skips
-       loading the video entirely (see the script near the end of the
-       page), and body.bg-video-unavailable is added by that same script
-       if the browser can't play mp4 or the file fails to load - either
-       way this same background-image rule is what shows through.
+       hero.jpg is the fallback here (poster attribute, plus this same
+       background-image applied straight to #heroBlock): prefers-
+       reduced-motion skips loading the video entirely (see the script
+       near the end of the page), and #heroBlock.hero-bg-video-
+       unavailable is added by that same script if the browser can't
+       play mp4 or the file fails to load.
     ========================= */
 
-    .site-background-video {
-      position: fixed;
+    .hero-video-layer {
+      position: absolute;
       inset: 0;
 
       width: 100%;
@@ -822,41 +842,28 @@
       pointer-events: none;
     }
 
-    .site-background-overlay {
-      position: fixed;
-      inset: 0;
-
-      background: rgba(0, 0, 0, 0.5);
-
-      z-index: 0;
-
-      pointer-events: none;
-    }
-
     @media (prefers-reduced-motion: reduce) {
 
-      .site-background-video {
+      .hero-video-layer {
         display: none;
       }
 
-      body {
+      .hero {
         background-image: url("hero.jpg");
         background-size: cover;
         background-position: center center;
-        background-attachment: fixed;
       }
 
     }
 
-    body.bg-video-unavailable .site-background-video {
+    #heroBlock.hero-bg-video-unavailable .hero-video-layer {
       display: none;
     }
 
-    body.bg-video-unavailable {
+    #heroBlock.hero-bg-video-unavailable {
       background-image: url("hero.jpg");
       background-size: cover;
       background-position: center center;
-      background-attachment: fixed;
     }
 
     /* =========================
@@ -967,22 +974,6 @@
 
 <body>
 
-  <!-- SITE BACKGROUND VIDEO (see SITE BACKGROUND VIDEO in <style> and
-       the script near the end of the page) -->
-  <video
-    id="siteBackgroundVideo"
-    class="site-background-video"
-    muted
-    loop
-    playsinline
-    autoplay
-    preload="auto"
-    poster="hero.jpg">
-  </video>
-
-  <div class="site-background-overlay"></div>
-
-
   <!-- ADMIN BUTTON -->
   <button id="adminButton" class="small-btn" data-i18n="admin_button">
     ⚙ Адмін
@@ -991,6 +982,20 @@
 
   <!-- HERO -->
   <header class="hero" id="heroBlock">
+
+    <!-- HERO BACKGROUND VIDEO (see HERO BACKGROUND VIDEO in <style> and
+         the script near the end of the page). Kraska.mp4 only plays
+         here - it is not a site-wide background. -->
+    <video
+      id="heroBackgroundVideo"
+      class="hero-video-layer"
+      muted
+      loop
+      playsinline
+      autoplay
+      preload="auto"
+      poster="hero.jpg">
+    </video>
 
     <div class="language">
       <button data-lang="ua" class="active">UA</button>
@@ -1357,30 +1362,34 @@
 
 
   /* =====================================
-     SITE BACKGROUND VIDEO
+     HERO BACKGROUND VIDEO
 
-     Loads kraska.mp4 into the single shared <video> (see <style> and
-     the top of <body>) only when there's a real reason to believe it
+     Loads kraska.mp4 into Hero's own <video> (see <style> and inside
+     #heroBlock above) only when there's a real reason to believe it
      will actually play smoothly: motion is allowed, and the browser
      claims mp4 support. Skips loading it entirely otherwise - CSS then
-     shows hero.jpg (the same image the hero section always used) as a
-     full-page static background instead, via body.bg-video-unavailable
-     or the prefers-reduced-motion rule. A later load/decode failure is
-     caught the same way, so hero.jpg is always the safety net, never a
-     broken or blank background.
+     shows hero.jpg on #heroBlock itself instead, via
+     #heroBlock.hero-bg-video-unavailable or the prefers-reduced-motion
+     rule. A later load/decode failure is caught the same way, so
+     hero.jpg is always Hero's safety net, never a broken or blank
+     background. This never touches any other section - kraska.mp4 is
+     Hero-only, not a site-wide background.
   ===================================== */
 
   (function () {
 
-    const bgVideo =
-      document.getElementById("siteBackgroundVideo");
+    const heroBgVideo =
+      document.getElementById("heroBackgroundVideo");
 
-    if (!bgVideo) {
+    if (!heroBgVideo) {
       return;
     }
 
+    const heroBlock =
+      document.getElementById("heroBlock");
+
     function useStaticFallback() {
-      document.body.classList.add("bg-video-unavailable");
+      heroBlock.classList.add("hero-bg-video-unavailable");
     }
 
     const prefersReducedMotion =
@@ -1392,18 +1401,18 @@
     }
 
     if (
-      typeof bgVideo.canPlayType !== "function" ||
-      !bgVideo.canPlayType("video/mp4")
+      typeof heroBgVideo.canPlayType !== "function" ||
+      !heroBgVideo.canPlayType("video/mp4")
     ) {
       useStaticFallback();
       return;
     }
 
-    bgVideo.addEventListener("error", useStaticFallback);
+    heroBgVideo.addEventListener("error", useStaticFallback);
 
-    bgVideo.src = "kraska.mp4";
+    heroBgVideo.src = "kraska.mp4";
 
-    bgVideo.play().catch(function () {});
+    heroBgVideo.play().catch(function () {});
 
   })();
 
