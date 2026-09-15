@@ -25,6 +25,7 @@ min-height:100vh;
 }
 
 button,input,textarea,select{font:inherit}
+
 button{cursor:pointer}
 
 .container{
@@ -196,11 +197,6 @@ color:#aaa;
 line-height:1.7;
 }
 
-#contactInfo a{
-color:#fff;
-text-decoration:none;
-}
-
 footer{
 border-top:1px solid #222;
 padding:30px 0;
@@ -346,15 +342,15 @@ letter-spacing:-2px;
 
 <div class="lang-wrap">
 
-<button id="langButton" class="small-btn" type="button">
+<button id="langButton" class="small-btn">
 UA ▾
 </button>
 
 <div id="langMenu" class="lang-menu">
 
-<button data-lang="ua" type="button">Українська</button>
-<button data-lang="ru" type="button">Русский</button>
-<button data-lang="en" type="button">English</button>
+<button data-lang="ua">Українська</button>
+<button data-lang="ru">Русский</button>
+<button data-lang="en">English</button>
 
 </div>
 </div>
@@ -381,11 +377,11 @@ UA ▾
 
 <div class="buttons">
 
-<button id="bookingButton" class="primary" type="button">
+<button id="bookingButton" class="primary">
 Замовити зйомку
 </button>
 
-<button id="portfolioButton" class="secondary" type="button">
+<button id="portfolioButton" class="secondary">
 Роботи
 </button>
 
@@ -482,11 +478,11 @@ Reels
 
 <div class="contact-row">
 
-<button id="contactButton" class="primary" type="button">
+<button id="contactButton" class="primary">
 Зв'язатися
 </button>
 
-<button id="locationButton" class="secondary" type="button">
+<button id="locationButton" class="secondary">
 📍 Локація
 </button>
 
@@ -520,7 +516,7 @@ Reels
 Замовити зйомку
 </h2>
 
-<button id="closeModal" class="close" type="button">
+<button id="closeModal" class="close">
 ×
 </button>
 
@@ -603,13 +599,6 @@ style="width:100%;margin-top:20px;"
 
 <script>
 
-"use strict";
-
-
-/* =========================
-   TELEGRAM
-========================= */
-
 const tg =
 window.Telegram &&
 window.Telegram.WebApp
@@ -617,65 +606,11 @@ window.Telegram.WebApp
 : null;
 
 if(tg){
-try{
+
 tg.ready();
 tg.expand();
-}catch(error){
-console.error("Telegram WebApp error:",error);
+
 }
-}
-
-
-/* =========================
-   ДАННЫЕ САЙТА
-========================= */
-
-let siteContent = {};
-let currentLanguage = "ua";
-
-
-/* =========================
-   ЭЛЕМЕНТЫ
-========================= */
-
-const adminButton =
-document.getElementById("adminButton");
-
-const langButton =
-document.getElementById("langButton");
-
-const langMenu =
-document.getElementById("langMenu");
-
-const bookingButton =
-document.getElementById("bookingButton");
-
-const portfolioButton =
-document.getElementById("portfolioButton");
-
-const portfolioSection =
-document.getElementById("portfolioSection");
-
-const contactButton =
-document.getElementById("contactButton");
-
-const locationButton =
-document.getElementById("locationButton");
-
-const contactInfo =
-document.getElementById("contactInfo");
-
-const modal =
-document.getElementById("bookingModal");
-
-const closeModal =
-document.getElementById("closeModal");
-
-const bookingForm =
-document.getElementById("bookingForm");
-
-const formMessage =
-document.getElementById("formMessage");
 
 
 /* =========================
@@ -684,18 +619,17 @@ document.getElementById("formMessage");
 
 const ADMIN_ID = "1047945172";
 
+const adminButton =
+document.getElementById("adminButton");
+
 function getTelegramUser(){
 
 if(!tg) return null;
 
-if(
-tg.initDataUnsafe &&
+return tg.initDataUnsafe &&
 tg.initDataUnsafe.user
-){
-return tg.initDataUnsafe.user;
-}
-
-return null;
+? tg.initDataUnsafe.user
+: null;
 
 }
 
@@ -743,31 +677,28 @@ window.location.href = url;
    ЯЗЫК
 ========================= */
 
+const langButton =
+document.getElementById("langButton");
+
+const langMenu =
+document.getElementById("langMenu");
+
+let currentLanguage = "ua";
+
+let siteContent = {};
+
 langButton.addEventListener(
 "click",
 function(event){
 
 event.stopPropagation();
 
-if(
+langMenu.style.display =
 langMenu.style.display === "block"
-){
-langMenu.style.display = "none";
-}else{
-langMenu.style.display = "block";
-}
+? "none"
+: "block";
 
 });
-
-
-langMenu.addEventListener(
-"click",
-function(event){
-
-event.stopPropagation();
-
-});
-
 
 document.addEventListener(
 "click",
@@ -1049,80 +980,23 @@ servicesOptions:[
 
 
 /* =========================
-   КОНТАКТЫ
-========================= */
-
-function renderContactData(){
-
-let html = "";
-
-if(siteContent.phone){
-
-html +=
-"📞 " +
-siteContent.phone +
-"<br>";
-
-}
-
-if(siteContent.telegram){
-
-const telegramUsername =
-String(siteContent.telegram)
-.replace("@","")
-.trim();
-
-if(telegramUsername){
-
-html +=
-'📱 <a href="https://t.me/' +
-telegramUsername +
-'" class="telegram-profile-link">' +
-siteContent.telegram +
-'</a><br>';
-
-}
-
-}
-
-if(siteContent.instagram){
-
-html +=
-"📸 " +
-siteContent.instagram +
-"<br>";
-
-}
-
-if(html){
-
-contactInfo.innerHTML = html;
-
-}else{
-
-contactInfo.textContent =
-translations[currentLanguage].contactDefault;
-
-}
-
-}
-
-
-/* =========================
    ПРИМЕНЕНИЕ ЯЗЫКА
 ========================= */
 
 function applyLanguage(lang){
+
+currentLanguage = lang;
 
 const data =
 translations[lang];
 
 if(!data) return;
 
-currentLanguage = lang;
 
-
-/* Заголовок */
+/*
+   Сначала используем перевод
+   из Supabase, если он существует.
+*/
 
 const dbHeroTitle =
 siteContent["hero_title_" + lang];
@@ -1154,10 +1028,15 @@ dbAboutTitle || data.services;
 
 /* Кнопки */
 
-bookingButton.textContent =
+document.getElementById(
+"bookingButton"
+).textContent =
 data.booking;
 
-portfolioButton.textContent =
+
+document.getElementById(
+"portfolioButton"
+).textContent =
 data.portfolio;
 
 
@@ -1230,27 +1109,36 @@ contactTitle.textContent =
 data.contacts;
 }
 
+
+/*
+   Не перезаписываем контактные данные
+   из Supabase, если они уже загружены.
+*/
+
 if(
-siteContent.phone ||
-siteContent.telegram ||
-siteContent.instagram ||
-siteContent.location
+!siteContent.phone &&
+!siteContent.telegram &&
+!siteContent.instagram &&
+!siteContent.location
 ){
 
-renderContactData();
-
-}else{
-
-contactInfo.textContent =
+document.getElementById(
+"contactInfo"
+).textContent =
 data.contactDefault;
 
 }
 
 
-contactButton.textContent =
+document.getElementById(
+"contactButton"
+).textContent =
 data.contact;
 
-locationButton.textContent =
+
+document.getElementById(
+"locationButton"
+).textContent =
 data.location;
 
 
@@ -1304,7 +1192,7 @@ document.querySelector(
 data.submit;
 
 
-/* Варианты услуг */
+/* Варианты услуги */
 
 const serviceSelect =
 document.getElementById("service");
@@ -1327,11 +1215,13 @@ text;
 }
 
 
-/* Язык */
+/* Кнопка языка */
 
 langButton.textContent =
 lang.toUpperCase() + " ▾";
 
+
+/* HTML language */
 
 document.documentElement.lang =
 lang === "ru"
@@ -1371,6 +1261,15 @@ langMenu.style.display =
    ЗАКАЗ СЪЁМКИ
 ========================= */
 
+const modal =
+document.getElementById("bookingModal");
+
+const bookingButton =
+document.getElementById("bookingButton");
+
+const closeModal =
+document.getElementById("closeModal");
+
 bookingButton.addEventListener(
 "click",
 function(){
@@ -1406,21 +1305,24 @@ modal.style.display = "none";
    РАБОТЫ
 ========================= */
 
+const portfolioButton =
+document.getElementById("portfolioButton");
+
+const portfolioSection =
+document.getElementById("portfolioSection");
+
 portfolioButton.addEventListener(
 "click",
 function(){
 
+portfolioSection.style.display =
+portfolioSection.style.display === "block"
+? "none"
+: "block";
+
 if(
 portfolioSection.style.display === "block"
 ){
-
-portfolioSection.style.display =
-"none";
-
-}else{
-
-portfolioSection.style.display =
-"block";
 
 portfolioSection.scrollIntoView({
 behavior:"smooth"
@@ -1435,60 +1337,99 @@ behavior:"smooth"
    КОНТАКТЫ
 ========================= */
 
+const contactButton =
+document.getElementById("contactButton");
+
+const contactInfo =
+document.getElementById("contactInfo");
+
 contactButton.addEventListener(
 "click",
 function(){
 
-renderContactData();
+let html = "";
 
-});
+if(siteContent.phone){
 
+html +=
+"📞 " +
+siteContent.phone +
+"<br>";
 
-/* =========================
-   TELEGRAM-ПРОФИЛЬ
-========================= */
+}
 
-document.addEventListener(
-"click",
-function(event){
+if(siteContent.telegram){
 
-const link =
-event.target.closest(
-".telegram-profile-link"
-);
-
-if(!link) return;
-
-event.preventDefault();
-
-if(!siteContent.telegram) return;
-
-const username =
-String(siteContent.telegram)
+const telegramUsername =
+siteContent.telegram
 .replace("@","")
 .trim();
 
-if(!username) return;
+html +=
+'📱 <a href="#" id="telegramProfileLink">' +
+siteContent.telegram +
+'</a><br>';
+
+}
+
+if(siteContent.instagram){
+
+html +=
+"📸 " +
+siteContent.instagram +
+"<br>";
+
+}
+
+if(html){
+
+contactInfo.innerHTML =
+html;
+
+const telegramLink =
+document.getElementById(
+"telegramProfileLink"
+);
+
+if(telegramLink && siteContent.telegram){
+
+telegramLink.addEventListener(
+"click",
+function(event){
+
+event.preventDefault();
+
+const telegramUsername =
+siteContent.telegram
+.replace("@","")
+.trim();
 
 const url =
 "https://t.me/" +
-username;
+telegramUsername;
 
 if(
 window.Telegram &&
 window.Telegram.WebApp &&
-typeof window.Telegram.WebApp.openTelegramLink === "function"
+window.Telegram.WebApp.openTelegramLink
 ){
 
 window.Telegram.WebApp.openTelegramLink(url);
 
 }else{
 
-window.open(
-url,
-"_blank",
-"noopener,noreferrer"
-);
+window.open(url,"_blank");
+
+}
+
+});
+
+}
+
+}else{
+
+contactInfo.textContent =
+translations[currentLanguage].contactDefault;
 
 }
 
@@ -1498,6 +1439,9 @@ url,
 /* =========================
    ЛОКАЦИЯ
 ========================= */
+
+const locationButton =
+document.getElementById("locationButton");
 
 locationButton.addEventListener(
 "click",
@@ -1522,6 +1466,12 @@ translations[currentLanguage].contactDefault;
 /* =========================
    ОТПРАВКА ЗАЯВКИ
 ========================= */
+
+const bookingForm =
+document.getElementById("bookingForm");
+
+const formMessage =
+document.getElementById("formMessage");
 
 bookingForm.addEventListener(
 "submit",
@@ -1610,4 +1560,68 @@ bookingForm.reset();
 setTimeout(
 function(){
 
-modal.style
+modal.style.display = "none";
+
+formMessage.textContent = "";
+
+},
+1800
+);
+
+
+}catch(error){
+
+console.error(error);
+
+formMessage.textContent =
+"❌ Не вдалося відправити заявку. Спробуйте ще раз.";
+
+}
+
+});
+
+
+/* =========================
+   ЗАГРУЗКА ДАННЫХ SUPABASE
+========================= */
+
+async function loadSiteContent(){
+
+try{
+
+const response =
+await fetch(
+"/api/site-content.js",
+{
+method:"GET",
+cache:"no-store"
+}
+);
+
+if(!response.ok) return;
+
+const data =
+await response.json();
+
+
+/*
+   Сохраняем все данные Supabase.
+*/
+
+siteContent = data;
+
+
+/*
+   После загрузки применяем
+   выбранный язык.
+*/
+
+applyLanguage(currentLanguage);
+
+
+/*
+   Контактные данные.
+*/
+
+if(
+d
