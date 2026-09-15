@@ -1015,6 +1015,32 @@
 
   let currentLang = "ua";
 
+  /* Supabase currently stores only base (non-suffixed) fields, so without
+     these defaults every language falls back to the same untranslated
+     text and switching UA/RU/EN looks like it does nothing. A real
+     "<field>_<lang>" value from Supabase always wins over this. */
+  const DEFAULT_TEXT = {
+
+    hero_title: {
+      ua: "Фото та відео, які продають",
+      ru: "Фото и видео, которые продают",
+      en: "Photo and video that sell"
+    },
+
+    hero_text: {
+      ua: "Створюю стильний фото- та відеоконтент для брендів, бізнесу та соціальних мереж.",
+      ru: "Создаю стильный фото- и видеоконтент для брендов, бизнеса и социальных сетей.",
+      en: "I create stylish photo and video content for brands, businesses and social media."
+    },
+
+    about_title: {
+      ua: "Що я роблю",
+      ru: "Что я делаю",
+      en: "What I do"
+    }
+
+  };
+
 
   function getText(field) {
 
@@ -1029,6 +1055,16 @@
     ) {
 
       return siteContent[langField];
+
+    }
+
+
+    if (
+      DEFAULT_TEXT[field] &&
+      DEFAULT_TEXT[field][currentLang]
+    ) {
+
+      return DEFAULT_TEXT[field][currentLang];
 
     }
 
