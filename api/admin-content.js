@@ -7,6 +7,16 @@ const MAX_CONTENT_I18N_BYTES = 200 * 1024;
 const MAX_CONTENT_I18N_FIELD_LENGTH = 5000;
 const MAX_CONTENT_I18N_KEY_LENGTH = 100;
 
+/* DeepL Free API. UA is the only language an admin edits; RU/EN are
+   derived automatically. Ukrainian ("UK") is DeepL's source code; DeepL
+   requires a regional variant for English as a *target* ("EN-US"/"EN-GB"),
+   plain "EN" is only valid as a source. */
+const DEEPL_API_URL = "https://api-free.deepl.com/v2/translate";
+const DEEPL_TIMEOUT_MS = 8000;
+const DEEPL_SOURCE_LANG = "UK";
+const DEEPL_TARGET_LANGS = { ru: "RU", en: "EN-US" };
+const DEEPL_MAX_BATCH_SIZE = 50;
+
 
 function isPlainObject(value){
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -72,6 +82,201 @@ function validateContentI18n(value){
   }
 
   return { value: sanitized };
+
+}
+
+
+/* Calls DeepL for one target language, chunking into batches of
+   DEEPL_MAX_BATCH_SIZE (DeepL's own per-request limit). Never logs or
+   returns the API key; only DeepL's own error message can surface. */
+async function translateBatch(texts, targetLang){
+
+  if(texts.length === 0){
+    return [];
+  }
+
+  const apiKey = process.env.DEEPL_API_KEY;
+
+  if(!apiKey){
+    throw new Error("DEEPL_API_KEY is not configured");
+  }
+
+  const results = [];
+
+  for(let offset = 0; offset < texts.length; offset += DEEPL_MAX_BATCH_SIZE){
+
+    const chunk =
+      texts.slice(offset, offset + DEEPL_MAX_BATCH_SIZE);
+
+    const controller = new AbortController();
+
+    const timeoutId = setTimeout(function(){
+      controller.abort();
+    }, DEEPL_TIMEOUT_MS);
+
+    try{
+
+      const response =
+        await fetch(
+          DEEPL_API_URL,
+          {
+            method: "POST",
+
+            headers: {
+              Authorization: `DeepL-Auth-Key ${apiKey}`,
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              text: chunk,
+              source_lang: DEEPL_SOURCE_LANG,
+              target_lang: targetLang
+            }),
+
+            signal: controller.signal
+          }
+        );
+
+      const data =
+        await response.json();
+
+      if(!response.ok){
+
+        throw new Error(
+          `DeepL API error (${response.status}): ` +
+          (data && data.message ? data.message : "unknown error")
+        );
+
+      }
+
+      if(!data || !Array.isArray(data.translations)){
+        throw new Error("Unexpected DeepL API response shape");
+      }
+
+      data.translations.forEach(function(item){
+        results.push(item.text);
+      });
+
+    } finally {
+
+      clearTimeout(timeoutId);
+
+    }
+
+  }
+
+  return results;
+
+}
+
+
+/* Diffs the incoming (already-validated) content_i18n against what is
+   currently stored, translates only the UA values that actually changed
+   (or are brand new), and fills ru/en for every key using this priority:
+     1. a fresh DeepL translation (only for changed UA values)
+     2. the value already stored in Supabase for that key
+     3. whatever the client sent (e.g. the schema's built-in default)
+     4. the ua text itself, so a field is never left blank
+   If DeepL fails, no ru/en value already in Supabase is ever overwritten -
+   only step 1 is skipped, translationError is returned so the caller can
+   surface a warning, and ua is still saved normally. */
+async function buildTranslatedContentI18n(existingContentI18n, incomingContentI18n){
+
+  existingContentI18n = existingContentI18n || {};
+
+  const keysToTranslate = [];
+  const textsToTranslate = [];
+
+  for(const key of Object.keys(incomingContentI18n)){
+
+    const newUa = incomingContentI18n[key].ua;
+
+    if(newUa === undefined){
+      continue;
+    }
+
+    const existingEntry = existingContentI18n[key];
+    const existingUa = existingEntry ? existingEntry.ua : undefined;
+
+    if(newUa !== existingUa){
+      keysToTranslate.push(key);
+      textsToTranslate.push(newUa);
+    }
+
+  }
+
+
+  let translatedByKey = {};
+  let translationError = null;
+
+  if(textsToTranslate.length > 0){
+
+    try{
+
+      const [translatedRu, translatedEn] =
+        await Promise.all([
+          translateBatch(textsToTranslate, DEEPL_TARGET_LANGS.ru),
+          translateBatch(textsToTranslate, DEEPL_TARGET_LANGS.en)
+        ]);
+
+      keysToTranslate.forEach(function(key, index){
+
+        translatedByKey[key] = {
+          ru: translatedRu[index],
+          en: translatedEn[index]
+        };
+
+      });
+
+    }catch(error){
+
+      console.error("DeepL translation failed:", error.message);
+      translationError = error.message;
+      translatedByKey = {};
+
+    }
+
+  }
+
+
+  const result = {};
+
+  for(const key of Object.keys(incomingContentI18n)){
+
+    const incomingEntry = incomingContentI18n[key];
+    const existingEntry = existingContentI18n[key] || {};
+    const translated = translatedByKey[key];
+
+    const finalUa =
+      incomingEntry.ua !== undefined
+        ? incomingEntry.ua
+        : existingEntry.ua;
+
+    const finalRu =
+      translated ? translated.ru :
+      existingEntry.ru !== undefined ? existingEntry.ru :
+      incomingEntry.ru !== undefined ? incomingEntry.ru :
+      finalUa;
+
+    const finalEn =
+      translated ? translated.en :
+      existingEntry.en !== undefined ? existingEntry.en :
+      incomingEntry.en !== undefined ? incomingEntry.en :
+      finalUa;
+
+    result[key] = {
+      ua: finalUa,
+      ru: finalRu,
+      en: finalEn
+    };
+
+  }
+
+  return {
+    content: result,
+    translationError: translationError,
+    translatedKeys: keysToTranslate
+  };
 
 }
 
@@ -278,6 +483,8 @@ export default async function handler(
       }
 
 
+      let translationWarning = null;
+
       if(
         req.body &&
         req.body.content_i18n !== undefined
@@ -294,8 +501,26 @@ export default async function handler(
 
         }
 
+        const existingContent =
+          await getContent();
+
+        const translationResult =
+          await buildTranslatedContentI18n(
+            (existingContent && existingContent.content_i18n) || {},
+            validation.value
+          );
+
         updates.content_i18n =
-          validation.value;
+          translationResult.content;
+
+        if(translationResult.translationError){
+
+          translationWarning =
+            "Не вдалося автоматично перекласти деякі поля " +
+            "(попередні RU/EN значення залишено без змін): " +
+            translationResult.translationError;
+
+        }
 
       }
 
@@ -366,7 +591,8 @@ export default async function handler(
 
       return res.status(200).json({
         success:true,
-        data:data[0]
+        data:data[0],
+        translationWarning:translationWarning
       });
 
     }
