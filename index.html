@@ -1360,10 +1360,17 @@ siteContent.phone +
 
 if(siteContent.telegram){
 
+const telegramUsername =
+siteContent.telegram
+.replace("@","")
+.trim();
+
 html +=
-"📱 " +
+'📱 <a href="https://t.me/' +
+telegramUsername +
+'" target="_blank" rel="noopener noreferrer">' +
 siteContent.telegram +
-"<br>";
+'</a><br>';
 
 }
 
@@ -1598,10 +1605,17 @@ data.phone +
 
 if(data.telegram){
 
+const telegramUsername =
+data.telegram
+.replace("@","")
+.trim();
+
 html +=
-"📱 " +
+'📱 <a href="https://t.me/' +
+telegramUsername +
+'" target="_blank" rel="noopener noreferrer">' +
 data.telegram +
-"<br>";
+'</a><br>';
 
 }
 
@@ -1616,45 +1630,4 @@ data.instagram +
 
 if(data.location){
 
-html +=
-"📍 " +
-data.location;
-
-}
-
-document.getElementById(
-"contactInfo"
-).innerHTML =
-html;
-
-}
-
-}catch(error){
-
-console.error(
-"Помилка завантаження даних:",
-error
-);
-
-}
-
-}
-
-
-/*
-   Запускаем загрузку.
-*/
-
-loadSiteContent();
-
-
-/*
-   Сразу устанавливаем UA.
-*/
-
-applyLanguage("ua");
-
-</script>
-
-</body>
-</html>
+html
