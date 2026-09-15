@@ -435,25 +435,37 @@
     document.getElementById(
       "phone"
     ).value =
-      data.phone || "";
+      data.phone !== null &&
+      data.phone !== undefined
+        ? data.phone
+        : "";
 
 
     document.getElementById(
       "telegram"
     ).value =
-      data.telegram || "";
+      data.telegram !== null &&
+      data.telegram !== undefined
+        ? data.telegram
+        : "";
 
 
     document.getElementById(
       "instagram"
     ).value =
-      data.instagram || "";
+      data.instagram !== null &&
+      data.instagram !== undefined
+        ? data.instagram
+        : "";
 
 
     document.getElementById(
       "location"
     ).value =
-      data.location || "";
+      data.location !== null &&
+      data.location !== undefined
+        ? data.location
+        : "";
 
   }
 
@@ -553,13 +565,59 @@
       }
 
 
+      if (
+        !result.data
+      ) {
+
+        throw new Error(
+          "Сервер не повернув збережені дані"
+        );
+
+      }
+
+
+      fillForm(
+        result.data
+      );
+
+
       message.textContent =
         "✅ Зміни успішно збережено!";
 
 
-      if (result.data) {
+      /*
+       * Повторно читаємо дані
+       * безпосередньо з сервера.
+       */
 
-        fillForm(result.data);
+      const verifyResponse =
+        await fetch(
+          "/api/admin-content.js",
+          {
+            method: "GET",
+
+            headers: {
+              "x-telegram-init-data":
+                telegramInitData
+            },
+
+            cache: "no-store"
+          }
+        );
+
+
+      const verifyResult =
+        await verifyResponse.json();
+
+
+      if (
+        verifyResponse.ok &&
+        verifyResult.content
+      ) {
+
+        fillForm(
+          verifyResult.content
+        );
 
       }
 
