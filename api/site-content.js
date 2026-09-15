@@ -1,16 +1,12 @@
-export default async function handler(req, res) {
+export default async function handler(req,res) {
 
-  if (req.method !== "GET") {
-
+  if(req.method !== "GET"){
     return res.status(405).json({
-      error:
-        "Method not allowed"
+      error:"Method not allowed"
     });
-
   }
 
-
-  try {
+  try{
 
     const supabaseUrl =
       process.env.SUPABASE_URL;
@@ -18,77 +14,48 @@ export default async function handler(req, res) {
     const supabaseKey =
       process.env.SUPABASE_SECRET_KEY;
 
-
-    if (
-      !supabaseUrl ||
-      !supabaseKey
-    ) {
+    if(!supabaseUrl || !supabaseKey){
 
       return res.status(500).json({
-
-        error:
-          "Supabase environment variables are missing"
-
+        error:"Supabase environment variables are missing"
       });
 
     }
-
 
     const response =
       await fetch(
         `${supabaseUrl}/rest/v1/site_content?id=eq.1&select=*`,
         {
-          method: "GET",
-
-          headers: {
-
-            apikey:
-              supabaseKey,
-
-            Authorization:
-              `Bearer ${supabaseKey}`
-
+          method:"GET",
+          headers:{
+            apikey:supabaseKey,
+            Authorization:`Bearer ${supabaseKey}`
           }
         }
       );
 
-
     const data =
       await response.json();
 
-
-    if (!response.ok) {
+    if(!response.ok){
 
       return res.status(500).json({
-
-        error:
-          "Supabase error",
-
-        details:
-          data
-
+        error:"Supabase error",
+        details:data
       });
 
     }
 
-
     return res.status(200).json(
-
       data[0] || {}
-
     );
 
-
-  } catch (error) {
+  }catch(error){
 
     console.error(error);
 
-
     return res.status(500).json({
-
-      error:
-        "Internal server error"
-
+      error:"Internal server error"
     });
 
   }
