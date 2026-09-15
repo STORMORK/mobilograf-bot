@@ -310,6 +310,106 @@ border-color:#5a2323;
 color:#ff8a8a;
 }
 
+.calendar-header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+margin-bottom:14px;
+}
+
+.calendar-month-label{
+font-size:16px;
+font-weight:700;
+text-align:center;
+flex:1;
+}
+
+.calendar-weekdays,
+.calendar-grid{
+display:grid;
+grid-template-columns:repeat(7,1fr);
+gap:6px;
+}
+
+.calendar-weekdays{
+margin-bottom:6px;
+}
+
+.calendar-weekdays div{
+text-align:center;
+font-size:12px;
+color:#777;
+padding:4px 0;
+}
+
+.calendar-day{
+aspect-ratio:1;
+display:flex;
+align-items:center;
+justify-content:center;
+border:1px solid #292929;
+border-radius:10px;
+background:#1a1a1a;
+color:#fff;
+font-size:14px;
+cursor:pointer;
+padding:0;
+}
+
+.calendar-day:disabled{
+cursor:default;
+opacity:0.4;
+}
+
+.calendar-day-empty{
+visibility:hidden;
+cursor:default;
+}
+
+.calendar-day-today{
+border-color:#8ab4ff;
+color:#8ab4ff;
+font-weight:700;
+}
+
+.calendar-day-busy{
+background:#5a2323;
+border-color:#5a2323;
+color:#ff8a8a;
+font-weight:700;
+}
+
+.calendar-legend{
+display:flex;
+gap:18px;
+margin-top:14px;
+font-size:12px;
+color:#999;
+flex-wrap:wrap;
+}
+
+.calendar-legend-item{
+display:flex;
+align-items:center;
+gap:6px;
+}
+
+.calendar-dot{
+width:10px;
+height:10px;
+border-radius:50%;
+display:inline-block;
+}
+
+.calendar-dot-busy{
+background:#ff8a8a;
+}
+
+.calendar-dot-today{
+border:1px solid #8ab4ff;
+}
+
 .portfolio-item summary{
 display:flex;
 align-items:center;
@@ -485,6 +585,35 @@ style="margin:0;"
 
 </div>
 
+
+<div
+id="calendarSection"
+class="section-card"
+style="display:none;"
+>
+
+<h2>📅 Календар зайнятості</h2>
+
+<div class="calendar-header">
+
+<button type="button" id="calendarPrevMonth" class="media-btn">←</button>
+<div id="calendarMonthLabel" class="calendar-month-label"></div>
+<button type="button" id="calendarNextMonth" class="media-btn">→</button>
+
+</div>
+
+<div id="calendarWeekdays" class="calendar-weekdays"></div>
+<div id="calendarGrid" class="calendar-grid"></div>
+
+<div class="calendar-legend">
+<span class="calendar-legend-item"><span class="calendar-dot calendar-dot-busy"></span> Зайнято</span>
+<span class="calendar-legend-item"><span class="calendar-dot calendar-dot-today"></span> Сьогодні</span>
+</div>
+
+<div id="calendarMessage" class="media-status"></div>
+
+</div>
+
 </div>
 
 
@@ -537,6 +666,27 @@ document.getElementById("portfolioItems");
 
 const addPortfolioItemButton =
 document.getElementById("addPortfolioItemButton");
+
+const calendarSection =
+document.getElementById("calendarSection");
+
+const calendarMonthLabel =
+document.getElementById("calendarMonthLabel");
+
+const calendarWeekdaysContainer =
+document.getElementById("calendarWeekdays");
+
+const calendarGridContainer =
+document.getElementById("calendarGrid");
+
+const calendarPrevMonthButton =
+document.getElementById("calendarPrevMonth");
+
+const calendarNextMonthButton =
+document.getElementById("calendarNextMonth");
+
+const calendarMessage =
+document.getElementById("calendarMessage");
 
 
 const params =
@@ -635,6 +785,9 @@ mediaSection.style.display =
 portfolioSection.style.display =
 "block";
 
+calendarSection.style.display =
+"block";
+
 
 if(result.content){
 
@@ -650,6 +803,8 @@ result.content
 
 
 loadPortfolioItems();
+
+loadCalendar();
 
 
 }catch(error){
@@ -2001,6 +2156,209 @@ addPortfolioItemButton.addEventListener("click", async function(){
   }
 
   addPortfolioItemButton.disabled = false;
+
+});
+
+
+/* =====================================
+   CALENDAR (📅 Календар зайнятості)
+
+   Stores one row per busy date in Supabase's busy_dates table (see
+   README.md). index.html's booking form reads the same dates (via the
+   public api/busy-dates.js) to grey out/reject them - this admin view
+   is the only place that writes to the table.
+===================================== */
+
+let calendarBusyDates = new Set();
+let calendarViewYear = null;
+let calendarViewMonth = null;
+
+const CALENDAR_WEEKDAY_LABELS = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
+
+const CALENDAR_MONTH_LABELS = [
+  "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
+  "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"
+];
+
+
+function calendarPad2(n){
+  return n < 10 ? "0" + n : String(n);
+}
+
+
+function calendarDateKey(year, month, day){
+  return year + "-" + calendarPad2(month + 1) + "-" + calendarPad2(day);
+}
+
+
+function calendarTodayKey(){
+  const now = new Date();
+  return calendarDateKey(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+
+async function loadCalendar(){
+
+  const now = new Date();
+  calendarViewYear = now.getFullYear();
+  calendarViewMonth = now.getMonth();
+
+  try{
+
+    const response =
+      await fetch("/api/admin-busy-dates.js", {
+        method: "GET",
+        headers: adminJsonHeaders(),
+        cache: "no-store"
+      });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      calendarMessage.textContent = "❌ " + buildErrorMessage(data, "Не вдалося завантажити календар");
+      calendarBusyDates = new Set();
+    }else{
+      calendarMessage.textContent = "";
+      calendarBusyDates = new Set(data.dates || []);
+    }
+
+  }catch(error){
+
+    calendarMessage.textContent = "❌ Помилка з'єднання з сервером";
+    calendarBusyDates = new Set();
+
+  }
+
+  renderCalendar();
+
+}
+
+
+function renderCalendar(){
+
+  calendarMonthLabel.textContent =
+    CALENDAR_MONTH_LABELS[calendarViewMonth] + " " + calendarViewYear;
+
+  calendarWeekdaysContainer.innerHTML = "";
+
+  CALENDAR_WEEKDAY_LABELS.forEach(function(label){
+    const cell = document.createElement("div");
+    cell.textContent = label;
+    calendarWeekdaysContainer.appendChild(cell);
+  });
+
+  calendarGridContainer.innerHTML = "";
+
+  const firstOfMonth = new Date(calendarViewYear, calendarViewMonth, 1);
+  const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+
+  /* Date.getDay(): 0=Sun..6=Sat - shifted so the grid starts on Monday. */
+  const firstWeekday = (firstOfMonth.getDay() + 6) % 7;
+
+  for(let i = 0; i < firstWeekday; i++){
+    const filler = document.createElement("div");
+    filler.className = "calendar-day calendar-day-empty";
+    calendarGridContainer.appendChild(filler);
+  }
+
+  const todayKey = calendarTodayKey();
+
+  for(let day = 1; day <= daysInMonth; day++){
+
+    const key = calendarDateKey(calendarViewYear, calendarViewMonth, day);
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "calendar-day";
+    btn.textContent = String(day);
+
+    if(key === todayKey){
+      btn.classList.add("calendar-day-today");
+    }
+
+    if(calendarBusyDates.has(key)){
+      btn.classList.add("calendar-day-busy");
+    }
+
+    btn.addEventListener("click", function(){
+      toggleCalendarBusyDate(key, btn);
+    });
+
+    calendarGridContainer.appendChild(btn);
+
+  }
+
+}
+
+
+async function toggleCalendarBusyDate(key, btn){
+
+  const wasBusy = calendarBusyDates.has(key);
+  const action = wasBusy ? "remove" : "add";
+
+  btn.disabled = true;
+
+  try{
+
+    const response =
+      await fetch("/api/admin-busy-dates.js", {
+        method: "POST",
+        headers: adminJsonHeaders(),
+        body: JSON.stringify({ action: action, date: key })
+      });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      calendarMessage.textContent = "❌ " + buildErrorMessage(data, "Не вдалося оновити дату");
+      btn.disabled = false;
+      return;
+    }
+
+    calendarMessage.textContent = "";
+
+    if(wasBusy){
+      calendarBusyDates.delete(key);
+    }else{
+      calendarBusyDates.add(key);
+    }
+
+    renderCalendar();
+
+  }catch(error){
+
+    calendarMessage.textContent = "❌ Помилка з'єднання з сервером";
+    btn.disabled = false;
+
+  }
+
+}
+
+
+calendarPrevMonthButton.addEventListener("click", function(){
+
+  calendarViewMonth -= 1;
+
+  if(calendarViewMonth < 0){
+    calendarViewMonth = 11;
+    calendarViewYear -= 1;
+  }
+
+  renderCalendar();
+
+});
+
+
+calendarNextMonthButton.addEventListener("click", function(){
+
+  calendarViewMonth += 1;
+
+  if(calendarViewMonth > 11){
+    calendarViewMonth = 0;
+    calendarViewYear += 1;
+  }
+
+  renderCalendar();
 
 });
 

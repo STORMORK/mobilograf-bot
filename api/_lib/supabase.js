@@ -62,7 +62,7 @@ function buildSupabaseErrorMessage(status, data, requestLabel, context){
   }
 
   if(/could not find the table|schema cache|relation .* does not exist/i.test(raw)){
-    return `${prefix}Таблиці портфоліо ще не створені в Supabase. Виконайте SQL з README.md (розділ "Медіа сайту та портфоліо"). (${raw})`;
+    return `${prefix}Потрібна таблиця ще не створена в Supabase. Виконайте відповідний SQL з README.md. (${raw})`;
   }
 
   /* Supabase Storage's own "RelatedResourceNotFound" error (thrown on a

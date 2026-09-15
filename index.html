@@ -524,6 +524,117 @@
       resize: vertical;
     }
 
+    .date-calendar {
+      margin-top: 10px;
+
+      padding: 12px;
+
+      background: #080808;
+      border: 1px solid #292929;
+      border-radius: 14px;
+    }
+
+    .date-calendar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+
+      margin-bottom: 10px;
+    }
+
+    .date-calendar-nav-btn {
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #1a1a1a;
+      color: #fff;
+
+      min-width: 34px;
+      min-height: 34px;
+
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .date-calendar-label {
+      flex: 1;
+
+      text-align: center;
+
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .date-calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .date-calendar-weekdays {
+      margin-bottom: 5px;
+    }
+
+    .date-calendar-weekdays div {
+      text-align: center;
+
+      color: #777;
+      font-size: 11px;
+    }
+
+    .date-calendar-day {
+      aspect-ratio: 1;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border: 1px solid #292929;
+      border-radius: 8px;
+      background: #1a1a1a;
+      color: #fff;
+
+      font-size: 13px;
+      padding: 0;
+
+      cursor: pointer;
+    }
+
+    .date-calendar-day:disabled {
+      cursor: default;
+      opacity: 0.35;
+    }
+
+    .date-calendar-day-empty {
+      visibility: hidden;
+      cursor: default;
+    }
+
+    .date-calendar-day-today {
+      border-color: #fff;
+      font-weight: 700;
+    }
+
+    .date-calendar-day-busy {
+      background: #5a2323;
+      border-color: #5a2323;
+      color: #ff8a8a;
+    }
+
+    .date-calendar-day-selected {
+      background: #fff;
+      border-color: #fff;
+      color: #000;
+      font-weight: 700;
+    }
+
+    .date-calendar-message {
+      margin-top: 8px;
+
+      color: #ff8a8a;
+      font-size: 13px;
+    }
+
     .submit-button {
       width: 100%;
 
@@ -1008,6 +1119,10 @@
           <input
             id="date"
             type="date">
+
+          <div id="dateCalendar" class="date-calendar"></div>
+
+          <div id="dateCalendarMessage" class="date-calendar-message"></div>
 
         </div>
 
@@ -1852,6 +1967,273 @@
         t("form_submit");
 
     }
+  );
+
+
+  /* =====================================
+     BOOKING DATE AVAILABILITY
+
+     Fetches busy dates from api/busy-dates.js (public, same graceful
+     "empty list on any failure" fallback as api/portfolio-list.js) and
+     renders a small calendar under the date field so a client can see
+     which dates are already booked before picking one. Past and busy
+     dates are disabled in this calendar, and the native #date input's
+     own "change" event is validated the same way, so a date typed or
+     picked via the browser's own date-picker icon is checked too, not
+     only a date clicked here.
+  ===================================== */
+
+  let bookingBusyDates = new Set();
+
+  const dateInput =
+    document.getElementById("date");
+
+  const dateCalendarEl =
+    document.getElementById("dateCalendar");
+
+  const dateCalendarMessageEl =
+    document.getElementById("dateCalendarMessage");
+
+  let dateCalendarViewYear = null;
+  let dateCalendarViewMonth = null;
+
+  const DATE_CALENDAR_WEEKDAYS =
+    ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
+
+  const DATE_CALENDAR_MONTHS = [
+    "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
+    "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"
+  ];
+
+
+  function dateCalendarPad2(n) {
+    return n < 10 ? "0" + n : String(n);
+  }
+
+
+  function dateCalendarKey(year, month, day) {
+    return year + "-" + dateCalendarPad2(month + 1) + "-" + dateCalendarPad2(day);
+  }
+
+
+  function dateCalendarTodayKey() {
+    const now = new Date();
+    return dateCalendarKey(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
+
+  if (dateInput) {
+    dateInput.min = dateCalendarTodayKey();
+  }
+
+
+  async function loadBookingBusyDates() {
+
+    try {
+
+      const response =
+        await fetch("/api/busy-dates.js", { cache: "no-store" });
+
+      const data = await response.json();
+
+      bookingBusyDates =
+        new Set(Array.isArray(data) ? data : []);
+
+    } catch (error) {
+
+      bookingBusyDates = new Set();
+
+    }
+
+    const now = new Date();
+    dateCalendarViewYear = now.getFullYear();
+    dateCalendarViewMonth = now.getMonth();
+
+    renderDateCalendar();
+
+  }
+
+
+  function renderDateCalendar() {
+
+    if (!dateCalendarEl || dateCalendarViewYear === null) {
+      return;
+    }
+
+    dateCalendarEl.innerHTML = "";
+
+    const nav = document.createElement("div");
+    nav.className = "date-calendar-nav";
+
+    const prevBtn = document.createElement("button");
+    prevBtn.type = "button";
+    prevBtn.className = "date-calendar-nav-btn";
+    prevBtn.textContent = "←";
+
+    prevBtn.addEventListener("click", function () {
+
+      dateCalendarViewMonth -= 1;
+
+      if (dateCalendarViewMonth < 0) {
+        dateCalendarViewMonth = 11;
+        dateCalendarViewYear -= 1;
+      }
+
+      renderDateCalendar();
+
+    });
+
+    const label = document.createElement("div");
+    label.className = "date-calendar-label";
+    label.textContent =
+      DATE_CALENDAR_MONTHS[dateCalendarViewMonth] + " " + dateCalendarViewYear;
+
+    const nextBtn = document.createElement("button");
+    nextBtn.type = "button";
+    nextBtn.className = "date-calendar-nav-btn";
+    nextBtn.textContent = "→";
+
+    nextBtn.addEventListener("click", function () {
+
+      dateCalendarViewMonth += 1;
+
+      if (dateCalendarViewMonth > 11) {
+        dateCalendarViewMonth = 0;
+        dateCalendarViewYear += 1;
+      }
+
+      renderDateCalendar();
+
+    });
+
+    nav.appendChild(prevBtn);
+    nav.appendChild(label);
+    nav.appendChild(nextBtn);
+    dateCalendarEl.appendChild(nav);
+
+    const weekdaysRow = document.createElement("div");
+    weekdaysRow.className = "date-calendar-grid date-calendar-weekdays";
+
+    DATE_CALENDAR_WEEKDAYS.forEach(function (day) {
+      const cell = document.createElement("div");
+      cell.textContent = day;
+      weekdaysRow.appendChild(cell);
+    });
+
+    dateCalendarEl.appendChild(weekdaysRow);
+
+    const grid = document.createElement("div");
+    grid.className = "date-calendar-grid";
+
+    const firstOfMonth =
+      new Date(dateCalendarViewYear, dateCalendarViewMonth, 1);
+
+    const daysInMonth =
+      new Date(dateCalendarViewYear, dateCalendarViewMonth + 1, 0).getDate();
+
+    const firstWeekday = (firstOfMonth.getDay() + 6) % 7;
+
+    for (let i = 0; i < firstWeekday; i++) {
+      const filler = document.createElement("div");
+      filler.className = "date-calendar-day date-calendar-day-empty";
+      grid.appendChild(filler);
+    }
+
+    const todayKey = dateCalendarTodayKey();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+
+      const key = dateCalendarKey(dateCalendarViewYear, dateCalendarViewMonth, day);
+
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "date-calendar-day";
+      cell.textContent = String(day);
+
+      const isPast = key < todayKey;
+      const isBusy = bookingBusyDates.has(key);
+
+      if (key === todayKey) {
+        cell.classList.add("date-calendar-day-today");
+      }
+
+      if (dateInput && dateInput.value === key) {
+        cell.classList.add("date-calendar-day-selected");
+      }
+
+      if (isPast || isBusy) {
+
+        cell.classList.add(isBusy ? "date-calendar-day-busy" : "date-calendar-day-past");
+        cell.disabled = true;
+
+      } else {
+
+        cell.addEventListener("click", function () {
+
+          if (dateInput) {
+            dateInput.value = key;
+          }
+
+          if (dateCalendarMessageEl) {
+            dateCalendarMessageEl.textContent = "";
+          }
+
+          renderDateCalendar();
+
+        });
+
+      }
+
+      grid.appendChild(cell);
+
+    }
+
+    dateCalendarEl.appendChild(grid);
+
+  }
+
+
+  if (dateInput) {
+
+    dateInput.addEventListener("change", function () {
+
+      const value = dateInput.value;
+
+      if (!value) {
+        return;
+      }
+
+      if (value < dateCalendarTodayKey() || bookingBusyDates.has(value)) {
+
+        dateInput.value = "";
+
+        if (dateCalendarMessageEl) {
+          dateCalendarMessageEl.textContent = t("form_date_unavailable");
+        }
+
+        renderDateCalendar();
+
+        return;
+
+      }
+
+      if (dateCalendarMessageEl) {
+        dateCalendarMessageEl.textContent = "";
+      }
+
+      dateCalendarViewYear = Number(value.slice(0, 4));
+      dateCalendarViewMonth = Number(value.slice(5, 7)) - 1;
+
+      renderDateCalendar();
+
+    });
+
+  }
+
+
+  orderButton.addEventListener(
+    "click",
+    loadBookingBusyDates
   );
 
 

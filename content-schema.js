@@ -334,6 +334,18 @@ var CONTENT_SCHEMA = [
   },
 
   {
+    key: "form_date_unavailable",
+    group: "booking",
+    label: "Помилка: дата зайнята або в минулому",
+    type: "text",
+    defaults: {
+      ua: "Ця дата недоступна. Оберіть іншу дату в календарі.",
+      ru: "Эта дата недоступна. Выберите другую дату в календаре.",
+      en: "This date is unavailable. Please pick another date."
+    }
+  },
+
+  {
     key: "form_label_service",
     group: "booking",
     label: "Підпис поля «Послуга»",
