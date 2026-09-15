@@ -4,7 +4,44 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>Мобілограф</title>
+  <title>Мобілограф у Харкові та Валках — фото та відеозйомка</title>
+
+  <meta
+    name="description"
+    content="Мобілограф у Харкові та Валках: фото- та відеозйомка для бізнесу, соціальних мереж і особистих проєктів. Портфоліо робіт і онлайн-запис на зйомку.">
+
+  <link rel="canonical" href="https://mobilograf-bot.vercel.app/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mobilograf-bot.vercel.app/">
+  <meta property="og:site_name" content="Мобілограф">
+  <meta property="og:title" content="Мобілограф у Харкові та Валках — фото та відеозйомка">
+  <meta
+    property="og:description"
+    content="Фото- та відеозйомка для бізнесу, соціальних мереж і особистих проєктів у Харкові та Валках. Портфоліо робіт і онлайн-запис на зйомку.">
+  <meta property="og:image" content="https://mobilograf-bot.vercel.app/hero.jpg">
+  <meta property="og:locale" content="uk_UA">
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Мобілограф у Харкові та Валках — фото та відеозйомка">
+  <meta
+    name="twitter:description"
+    content="Фото- та відеозйомка для бізнесу, соціальних мереж і особистих проєктів у Харкові та Валках.">
+  <meta name="twitter:image" content="https://mobilograf-bot.vercel.app/hero.jpg">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    "name": "Мобілограф",
+    "description": "Мобілограф у Харкові та Валках: фото- та відеозйомка для бізнесу, соціальних мереж і особистих проєктів.",
+    "url": "https://mobilograf-bot.vercel.app/",
+    "image": "https://mobilograf-bot.vercel.app/hero.jpg",
+    "areaServed": ["Харків", "Валки"]
+  }
+  </script>
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
@@ -1064,8 +1101,8 @@
       </h1>
 
       <p id="heroText" class="hero-text" data-i18n="hero_text">
-        Створюю стильний фото- та відеоконтент для брендів,
-        бізнесу та соціальних мереж.
+        Мобілограф, який створює стильний фото- та відеоконтент
+        для брендів і бізнесу в Харкові та Валках.
       </p>
 
       <div class="hero-buttons">
@@ -1090,6 +1127,8 @@
   </header>
 
 
+  <main>
+
   <!-- ABOUT / SERVICES -->
   <section class="about" id="aboutBlock">
 
@@ -1102,7 +1141,8 @@
 
     <p class="section-text reveal" data-i18n="about_text" style="--reveal-delay:0.1s;">
       Допомагаю бізнесу виглядати професійно в Instagram,
-      TikTok та інших соціальних мережах.
+      TikTok та інших соціальних мережах завдяки якісній
+      фото- та відеозйомці.
     </p>
 
 
@@ -1119,7 +1159,7 @@
         </h3>
 
         <p data-i18n="service1_text">
-          Предметна, lifestyle та контент-зйомка
+          Предметна, lifestyle та мобільна зйомка
           для вашого бренду.
         </p>
 
@@ -1236,7 +1276,8 @@
     </h2>
 
     <p class="section-text reveal" data-i18n="contact_text" style="--reveal-delay:0.1s;">
-      Зв'яжіться зі мною для обговорення зйомки.
+      Працюю у Харкові та Валках — зв'яжіться зі мною
+      для обговорення зйомки для бізнесу.
     </p>
 
 
@@ -1252,6 +1293,8 @@
     </div>
 
   </section>
+
+  </main>
 
 
   <footer id="footerBlock">
@@ -2787,6 +2830,7 @@
 
       const media = item.portfolio_media || [];
       const cover = media[0];
+      const workTitle = portfolioText(item, "title") || "";
 
       if (cover) {
 
@@ -2800,6 +2844,10 @@
 
         if (cover.media_type === "video") {
           thumb.muted = true;
+        } else {
+          // Real portfolio work, not a decorative background - use its
+          // own title as alt text instead of leaving it empty/missing.
+          thumb.alt = workTitle;
         }
 
         card.appendChild(thumb);
@@ -2808,7 +2856,7 @@
 
       const titleEl = document.createElement("div");
       titleEl.className = "portfolio-card-title";
-      titleEl.textContent = portfolioText(item, "title") || "—";
+      titleEl.textContent = workTitle || "—";
       card.appendChild(titleEl);
 
       card.addEventListener("click", function () {
@@ -2826,8 +2874,10 @@
 
   function openPortfolioModal(item) {
 
+    const workTitle = portfolioText(item, "title");
+
     document.getElementById("portfolioModalTitle").textContent =
-      portfolioText(item, "title");
+      workTitle;
 
     document.getElementById("portfolioModalDescription").textContent =
       portfolioText(item, "description");
@@ -2856,7 +2906,9 @@
       } else {
 
         el = document.createElement("img");
-        el.alt = "";
+        // Real portfolio work, not a decorative background - use its
+        // own title as alt text instead of leaving it empty.
+        el.alt = workTitle || "";
 
       }
 

@@ -52,9 +52,9 @@ var CONTENT_SCHEMA = [
     type: "textarea",
     legacyFields: { ua: "hero_text_ua", ru: "hero_text_ru", en: "hero_text_en", base: "hero_text" },
     defaults: {
-      ua: "Створюю стильний фото- та відеоконтент для брендів, бізнесу та соціальних мереж.",
-      ru: "Создаю стильный фото- и видеоконтент для брендов, бизнеса и социальных сетей.",
-      en: "I create stylish photo and video content for brands, businesses and social media."
+      ua: "Мобілограф, який створює стильний фото- та відеоконтент для брендів і бізнесу в Харкові та Валках.",
+      ru: "Мобилограф, который создаёт стильный фото- и видеоконтент для брендов и бизнеса в Харькове и Валках.",
+      en: "A mobile photographer and videographer creating stylish photo and video content for brands and businesses in Kharkiv and Valky."
     }
   },
 
@@ -99,9 +99,9 @@ var CONTENT_SCHEMA = [
     label: "Опис",
     type: "textarea",
     defaults: {
-      ua: "Допомагаю бізнесу виглядати професійно в Instagram, TikTok та інших соціальних мережах.",
-      ru: "Помогаю бизнесу выглядеть профессионально в Instagram, TikTok и других социальных сетях.",
-      en: "I help businesses look professional on Instagram, TikTok and other social media."
+      ua: "Допомагаю бізнесу виглядати професійно в Instagram, TikTok та інших соціальних мережах завдяки якісній фото- та відеозйомці.",
+      ru: "Помогаю бизнесу выглядеть профессионально в Instagram, TikTok и других социальных сетях благодаря качественной фото- и видеосъёмке.",
+      en: "I help businesses look professional on Instagram, TikTok and other social media with quality photo and video shoots."
     }
   },
 
@@ -121,9 +121,9 @@ var CONTENT_SCHEMA = [
     label: "Послуга 1 — опис",
     type: "textarea",
     defaults: {
-      ua: "Предметна, lifestyle та контент-зйомка для вашого бренду.",
-      ru: "Предметная, lifestyle и контент-съёмка для вашего бренда.",
-      en: "Product, lifestyle and content photography for your brand."
+      ua: "Предметна, lifestyle та мобільна зйомка для вашого бренду.",
+      ru: "Предметная, lifestyle и мобильная съёмка для вашего бренда.",
+      en: "Product, lifestyle and mobile photography for your brand."
     }
   },
 
@@ -225,9 +225,9 @@ var CONTENT_SCHEMA = [
     label: "Опис розділу",
     type: "textarea",
     defaults: {
-      ua: "Зв'яжіться зі мною для обговорення зйомки.",
-      ru: "Свяжитесь со мной для обсуждения съёмки.",
-      en: "Get in touch to discuss your shoot."
+      ua: "Працюю у Харкові та Валках — зв'яжіться зі мною для обговорення зйомки для бізнесу.",
+      ru: "Работаю в Харькове и Валках — свяжитесь со мной для обсуждения съёмки для бизнеса.",
+      en: "Based in Kharkiv and Valky — get in touch to discuss a shoot for your business."
     }
   },
 
