@@ -1347,10 +1347,46 @@ contactButton.addEventListener(
 "click",
 function(){
 
+let html = "";
+
+if(siteContent.phone){
+
+html +=
+"📞 " +
+siteContent.phone +
+"<br>";
+
+}
+
+if(siteContent.telegram){
+
+html +=
+"📱 " +
+siteContent.telegram +
+"<br>";
+
+}
+
+if(siteContent.instagram){
+
+html +=
+"📸 " +
+siteContent.instagram +
+"<br>";
+
+}
+
+if(html){
+
 contactInfo.innerHTML =
-"📱 Telegram: @mobilograf<br>" +
-"📞 Телефон: +380 00 000 00 00<br>" +
-"📸 Instagram: @mobilograf";
+html;
+
+}else{
+
+contactInfo.textContent =
+translations[currentLanguage].contactDefault;
+
+}
 
 });
 
@@ -1366,8 +1402,18 @@ locationButton.addEventListener(
 "click",
 function(){
 
+if(siteContent.location){
+
 contactInfo.innerHTML =
-"📍 Київ, Україна";
+"📍 " +
+siteContent.location;
+
+}else{
+
+contactInfo.textContent =
+translations[currentLanguage].contactDefault;
+
+}
 
 });
 
