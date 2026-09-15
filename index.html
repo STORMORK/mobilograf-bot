@@ -751,19 +751,18 @@
       z-index: 1;
     }
 
-    /* Calm, solid backgrounds for every section except Hero (which has
-       its own kraska.mp4 layer below) - this is only the base color
-       admin-set per-block media (.block-media-layer, still absolutely
-       positioned above it) already covers when configured. */
+    /* Transparent so the fixed site-wide Fon.png (see SITE BACKGROUND
+       IMAGE below) shows through every section except Hero (which has
+       its own opaque kraska.mp4/hero.jpg layer). Admin-set per-block
+       media (.block-media-layer, absolutely positioned above this)
+       still fully covers Fon.png for that one section when configured,
+       exactly as before. */
     #aboutBlock,
     #servicesBlock,
     #portfolioBlock,
-    #contactBlock {
-      background: #111111;
-    }
-
+    #contactBlock,
     #footerBlock {
-      background: #0A0A0A;
+      background: transparent;
     }
 
     #heroBlock > *:not(.block-media-layer):not(.block-media-gradient):not(.language):not(.hero-video-layer),
@@ -864,6 +863,48 @@
       background-image: url("hero.jpg");
       background-size: cover;
       background-position: center center;
+    }
+
+    /* =========================
+       SITE BACKGROUND IMAGE
+
+       Fon.png, fixed behind the whole page at a lower z-index than
+       every section (z-index:1, see BLOCK BACKGROUND MEDIA above), so
+       it shows through About/Services/Portfolio/Contact/Footer, all
+       now transparent - and never through Hero, whose own opaque
+       kraska.mp4/hero.jpg layer fully covers it there regardless. Being
+       position:fixed (not scrolling with the page) is what keeps the
+       image continuous across every section boundary instead of each
+       section cropping/scaling its own independent copy.
+
+       A very light dark overlay above it keeps loose text (outside the
+       glassmorphism cards, which already have their own translucent
+       background) readable without hiding the image itself.
+    ========================= */
+
+    .site-background-image {
+      position: fixed;
+      inset: 0;
+
+      background-image: url("Fon.png");
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+
+      z-index: -1;
+
+      pointer-events: none;
+    }
+
+    .site-background-overlay {
+      position: fixed;
+      inset: 0;
+
+      background: rgba(0, 0, 0, 0.22);
+
+      z-index: 0;
+
+      pointer-events: none;
     }
 
     /* =========================
@@ -973,6 +1014,15 @@
 </head>
 
 <body>
+
+  <!-- SITE BACKGROUND IMAGE (see SITE BACKGROUND IMAGE in <style>).
+       Fon.png sits fixed behind every section except Hero - Hero's own
+       opaque kraska.mp4/hero.jpg layer fully covers this there, so it
+       naturally only ever shows through About/Services/Portfolio/
+       Contact/Footer without any extra scoping logic. -->
+  <div class="site-background-image"></div>
+  <div class="site-background-overlay"></div>
+
 
   <!-- ADMIN BUTTON -->
   <button id="adminButton" class="small-btn" data-i18n="admin_button">
