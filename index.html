@@ -1366,7 +1366,9 @@ siteContent.telegram
 .trim();
 
 html +=
-'📱 <a href="#" id="telegramProfileLink">' +
+'📱 <a href="https://t.me/' +
+telegramUsername +
+'" target="_blank" rel="noopener noreferrer">' +
 siteContent.telegram +
 '</a><br>';
 
@@ -1385,46 +1387,6 @@ if(html){
 
 contactInfo.innerHTML =
 html;
-
-const telegramLink =
-document.getElementById(
-"telegramProfileLink"
-);
-
-if(telegramLink && siteContent.telegram){
-
-telegramLink.addEventListener(
-"click",
-function(event){
-
-event.preventDefault();
-
-const telegramUsername =
-siteContent.telegram
-.replace("@","")
-.trim();
-
-const url =
-"https://t.me/" +
-telegramUsername;
-
-if(
-window.Telegram &&
-window.Telegram.WebApp &&
-window.Telegram.WebApp.openTelegramLink
-){
-
-window.Telegram.WebApp.openTelegramLink(url);
-
-}else{
-
-window.open(url,"_blank");
-
-}
-
-});
-
-}
 
 }else{
 
@@ -1624,4 +1586,48 @@ applyLanguage(currentLanguage);
 */
 
 if(
-d
+data.phone ||
+data.telegram ||
+data.instagram ||
+data.location
+){
+
+let html = "";
+
+if(data.phone){
+
+html +=
+"📞 " +
+data.phone +
+"<br>";
+
+}
+
+if(data.telegram){
+
+const telegramUsername =
+data.telegram
+.replace("@","")
+.trim();
+
+html +=
+'📱 <a href="https://t.me/' +
+telegramUsername +
+'" target="_blank" rel="noopener noreferrer">' +
+data.telegram +
+'</a><br>';
+
+}
+
+if(data.instagram){
+
+html +=
+"📸 " +
+data.instagram +
+"<br>";
+
+}
+
+if(data.location){
+
+html
