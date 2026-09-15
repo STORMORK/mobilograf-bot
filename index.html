@@ -1286,7 +1286,12 @@
      ADMIN
   ===================================== */
 
-  const ADMIN_ID = "1047945172";
+  /* Client-side only, purely for whether to show the "Admin" button -
+     it uses Telegram's own unsigned initDataUnsafe and grants no access
+     by itself. Every actual admin API call is still independently
+     verified server-side against ADMIN_IDS in api/_lib/telegramAuth.js,
+     which is the real (and only) access boundary. */
+  const ADMIN_IDS = ["1047945172", "5904817027"];
 
   const adminButton =
     document.getElementById("adminButton");
@@ -1316,7 +1321,7 @@
 
     if (
       user &&
-      String(user.id) === ADMIN_ID
+      ADMIN_IDS.includes(String(user.id))
     ) {
 
       adminButton.style.display =

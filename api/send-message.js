@@ -238,7 +238,13 @@ export default async function handler(req, res) {
       });
     }
 
-    const adminChatId = "1047945172";
+    /* Who receives new booking requests - independent from ADMIN_IDS in
+       _lib/telegramAuth.js (who can access the admin panel). Configurable
+       via NOTIFICATION_CHAT_ID so the recipient can change without a
+       code deploy; falls back to this numeric Telegram user ID if that
+       env var isn't set. */
+    const notificationChatId =
+      process.env.NOTIFICATION_CHAT_ID || "5904817027";
 
     const text =
 `📸 НОВАЯ ЗАЯВКА
@@ -261,7 +267,7 @@ ${comment || "Без комментария"}`;
 
       telegramResponse = await sendTelegramMessage(
         token,
-        adminChatId,
+        notificationChatId,
         text
       );
 

@@ -1,11 +1,23 @@
 const crypto = require("crypto");
 
 /* Shared by every admin API endpoint (admin-content.js and the new
-   media/portfolio endpoints). The HMAC algorithm and ADMIN_ID are
-   unchanged from the original admin-content.js - only relocated so new
-   endpoints don't duplicate security-critical code. */
+   media/portfolio endpoints). The HMAC algorithm is unchanged from the
+   original admin-content.js - only relocated so new endpoints don't
+   duplicate security-critical code.
 
-const ADMIN_ID = "1047945172";
+   ADMIN_IDS is the single list of Telegram user IDs allowed into the
+   admin panel and every protected endpoint - independent from
+   NOTIFICATION_CHAT_ID in api/send-message.js, which only controls
+   where new booking requests are delivered and has no bearing on who
+   can access the admin API. Adding/removing an administrator is a
+   one-line change here; nothing else needs to change. */
+
+const ADMIN_IDS = ["1047945172", "5904817027"];
+
+
+function isAdmin(userId){
+  return ADMIN_IDS.includes(String(userId));
+}
 
 
 function validateTelegramInitData(initData, botToken){
@@ -106,7 +118,7 @@ function requireAdmin(req){
     return { error: "Telegram authorization failed", status: 401 };
   }
 
-  if(String(user.id) !== ADMIN_ID){
+  if(!isAdmin(user.id)){
     return { error: "You are not administrator", status: 403 };
   }
 
@@ -116,7 +128,8 @@ function requireAdmin(req){
 
 
 module.exports = {
-  ADMIN_ID,
+  ADMIN_IDS,
+  isAdmin,
   validateTelegramInitData,
   requireAdmin
 };
