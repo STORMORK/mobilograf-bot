@@ -501,6 +501,22 @@
       border-color: #fff;
     }
 
+    .contact-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .contact-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
     /* =========================
        FOOTER
     ========================= */
@@ -1818,6 +1834,29 @@
   }
 
 
+  const TELEGRAM_ICON_SVG =
+    '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="12" fill="#229ED9"/>' +
+    '<path d="M17.86 7.2c.24-1.05-.55-1.62-1.4-1.28L5.6 10.03c-.86.34-.85 1.6.02 1.9l2.83.98.98 3.2c.22.71 1.14.9 1.6.32l1.5-1.87 2.9 2.15c.66.49 1.6.13 1.76-.68l1.67-8.83zM9.3 13.4l6.1-4.53-4.98 5.2-.2 2.15-.92-2.82z" fill="#fff"/>' +
+    '</svg>';
+
+  const INSTAGRAM_ICON_SVG =
+    '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">' +
+    '<defs>' +
+    '<linearGradient id="contactIgGradient" x1="0" y1="24" x2="24" y2="0" gradientUnits="userSpaceOnUse">' +
+    '<stop offset="0" stop-color="#FEDA75"/>' +
+    '<stop offset="0.3" stop-color="#F58529"/>' +
+    '<stop offset="0.6" stop-color="#DD2A7B"/>' +
+    '<stop offset="0.85" stop-color="#8134AF"/>' +
+    '<stop offset="1" stop-color="#515BD4"/>' +
+    '</linearGradient>' +
+    '</defs>' +
+    '<rect x="2.5" y="2.5" width="19" height="19" rx="6" fill="none" stroke="url(#contactIgGradient)" stroke-width="2"/>' +
+    '<circle cx="12" cy="12" r="5" fill="none" stroke="url(#contactIgGradient)" stroke-width="2"/>' +
+    '<circle cx="17.4" cy="6.6" r="1.3" fill="url(#contactIgGradient)"/>' +
+    '</svg>';
+
+
   function renderContactInfo() {
 
     const contactInfo =
@@ -1871,7 +1910,7 @@
 
       html +=
         '<div class="contact-link reveal" style="--reveal-delay:0.08s;">' +
-        '📱 ' +
+        '<span class="contact-icon">' + TELEGRAM_ICON_SVG + '</span>' +
         '<a href="' +
         telegramUrl +
         '" data-telegram-profile="true">' +
@@ -1912,7 +1951,7 @@
 
       html +=
         '<div class="contact-link reveal" style="--reveal-delay:0.16s;">' +
-        '📸 ' +
+        '<span class="contact-icon">' + INSTAGRAM_ICON_SVG + '</span>' +
         '<a href="' +
         instagramUrl +
         '" target="_blank">' +
