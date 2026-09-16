@@ -919,19 +919,20 @@
     /* =========================
        HERO BACKGROUND VIDEO
 
-       The default Hero video plays only inside Hero - an absolutely
-       positioned layer within #heroBlock (already position:relative),
-       under its own class (not .block-media-layer) so it's never
-       touched by any other section's cleanup logic. z-index:-1 keeps
-       it below an admin-uploaded Hero background (Фони -> Фон
-       першого блоку), which always shows in front of this default
-       video when set.
+       No default video ships with the project - #heroBlock starts
+       directly in its plain dark fallback state
+       (.hero-bg-video-unavailable, added unconditionally by the
+       script near the end of the page). This layer is only ever
+       populated by an admin-uploaded custom Hero video (Фони -> Фон
+       першого блоку, see applyHeroBackground()), which reuses this
+       exact element/class - an absolutely positioned layer within
+       #heroBlock (already position:relative), under its own class
+       (not .block-media-layer) so it's never touched by any other
+       section's cleanup logic. z-index:-1 keeps it below that
+       admin-uploaded background layer.
 
-       A plain dark background is the fallback here, applied straight to
-       #heroBlock: prefers-reduced-motion skips loading the video
-       entirely (see the script near the end of the page), and
-       #heroBlock.hero-bg-video-unavailable is added by that same script
-       if the browser can't play mp4 or the file fails to load.
+       #heroBlock.hero-bg-video-unavailable is also (re-)added if an
+       admin-uploaded video fails to load.
     ========================= */
 
     .hero-video-layer {
@@ -1235,8 +1236,10 @@
   <header class="hero" id="heroBlock">
 
     <!-- HERO BACKGROUND VIDEO (see HERO BACKGROUND VIDEO in <style> and
-         the script near the end of the page). Kraska.mp4 only plays
-         here - it is not a site-wide background. -->
+         the script near the end of the page). No default video ships
+         with the project - this element is only ever used for an
+         admin-uploaded custom Hero video (Фони -> Фон першого блоку),
+         never a site-wide background. -->
     <video
       id="heroBackgroundVideo"
       class="hero-video-layer"
@@ -1621,16 +1624,16 @@
   /* =====================================
      HERO BACKGROUND VIDEO
 
-     Loads kraska.mp4 into Hero's own <video> (see <style> and inside
-     #heroBlock above) only when there's a real reason to believe it
-     will actually play smoothly: motion is allowed, and the browser
-     claims mp4 support. Skips loading it entirely otherwise - CSS then
-     shows a plain dark background on #heroBlock itself instead, via
-     #heroBlock.hero-bg-video-unavailable or the prefers-reduced-motion
-     rule. A later load/decode failure is caught the same way, so
-     that plain background is always Hero's safety net, never a broken
-     or blank background. This never touches any other section -
-     kraska.mp4 is Hero-only, not a site-wide background.
+     No default video ships with the project, so Hero's own <video>
+     (see <style> and inside #heroBlock above) is left empty and the
+     plain dark fallback (#heroBlock.hero-bg-video-unavailable) is
+     applied immediately - no network request for a file that doesn't
+     exist. The "error" listener stays registered on the element
+     itself so this exact same safety net still catches a *later*
+     admin-uploaded Hero video (Фони -> Фон першого блоку) failing to
+     load - applyHeroBackground() reuses this element directly and
+     removes the class again once it applies one. This never touches
+     any other section - Hero's own background is not a site-wide one.
   ===================================== */
 
   (function () {
@@ -1649,27 +1652,9 @@
       heroBlock.classList.add("hero-bg-video-unavailable");
     }
 
-    const prefersReducedMotion =
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (prefersReducedMotion) {
-      return;
-    }
-
-    if (
-      typeof heroBgVideo.canPlayType !== "function" ||
-      !heroBgVideo.canPlayType("video/mp4")
-    ) {
-      useStaticFallback();
-      return;
-    }
-
     heroBgVideo.addEventListener("error", useStaticFallback);
 
-    heroBgVideo.src = "kraska.mp4";
-
-    heroBgVideo.play().catch(function () {});
+    useStaticFallback();
 
   })();
 
