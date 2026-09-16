@@ -4,6 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <script>
+    /* Kicks off the site-content request (which carries Фони ->
+       heroBg/restBg) as the very first thing on the page - before
+       telegram-web-app.js below, before the rest of <head>/<body> is
+       even parsed. loadSiteContent() further down reuses this exact
+       promise instead of starting a second, later request, so the
+       network round-trip for the background overlaps with the rest
+       of the page loading instead of only starting after it. Doesn't
+       block parsing/rendering - fetch() is async and this script has
+       no external src. */
+    window.__siteContentPromise =
+      fetch("/api/site-content.js", { method: "GET", cache: "no-store" })
+        .then(function (response) {
+
+          if (!response.ok) {
+            throw new Error("Не вдалося завантажити дані");
+          }
+
+          return response.json();
+
+        });
+  </script>
+
   <title>Мобілограф у Харкові та Валках — фото та відеозйомка</title>
 
   <meta
@@ -2070,25 +2093,35 @@
 
     try {
 
-      const response =
-        await fetch(
-          "/api/site-content.js",
-          {
-            method: "GET",
-            cache: "no-store"
-          }
-        );
-
-
-      if (!response.ok) {
-        throw new Error(
-          "Не вдалося завантажити дані"
-        );
-      }
-
-
+      /* Reuses the request already kicked off at the very top of
+         <head> (see window.__siteContentPromise there) instead of
+         starting a second, later one - by the time execution reaches
+         here, that request has often already resolved or is much
+         further along, so the background can be applied right away
+         instead of waiting on a fresh round-trip. Falls back to a
+         normal fetch with the exact same shape if that promise isn't
+         there for any reason. */
       siteContent =
-        await response.json();
+        await (
+          window.__siteContentPromise ||
+          fetch(
+            "/api/site-content.js",
+            {
+              method: "GET",
+              cache: "no-store"
+            }
+          ).then(function (response) {
+
+            if (!response.ok) {
+              throw new Error(
+                "Не вдалося завантажити дані"
+              );
+            }
+
+            return response.json();
+
+          })
+        );
 
 
       renderSite();
