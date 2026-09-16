@@ -588,7 +588,11 @@ var MEDIA_BLOCKS = [
      membership in this array), just rendered/consumed separately -
      see BACKGROUNDS in index.html and admin.html's "Фони" section. */
   { id: "heroBg", label: "🎬 Фон першого блоку (Hero)" },
-  { id: "restBg", label: "🌌 Фон інших блоків" }
+  { id: "restBg", label: "🌌 Фон інших блоків" },
+  /* ONE shared background for every "card"-style tile (service cards,
+     the contact card) and the booking modal - never a per-card
+     setting. See applyCardsBackground() in index.html. */
+  { id: "cardsBg", label: "🗂 Фон плашок" }
 ];
 
 

@@ -384,6 +384,9 @@
     }
 
     .service-card {
+      position: relative;
+      overflow: hidden;
+
       min-height: 190px;
 
       padding: 25px;
@@ -398,6 +401,17 @@
       transition:
         transform 0.2s ease,
         border-color 0.2s ease;
+    }
+
+    /* Admin-set "Фон плашок" (cardsBg) turns the glass tint transparent
+       so the inserted .block-media-layer/.block-media-gradient (same
+       pattern as the per-section media below) can actually show
+       through - see applyCardsBackground() near the end of the page.
+       Untouched (glass tint stays as-is) when no cardsBg is set. */
+    .service-card.has-cards-bg,
+    .contact-card.has-cards-bg,
+    .booking-modal-box.has-cards-bg {
+      background: transparent;
     }
 
     .service-card:hover {
@@ -473,6 +487,9 @@
     ========================= */
 
     .contact-card {
+      position: relative;
+      overflow: hidden;
+
       margin-top: 30px;
 
       padding: 30px;
@@ -573,6 +590,22 @@
 
       max-height: 90vh;
       overflow-y: auto;
+    }
+
+    /* "Замовити зйомку" only - the portfolio item modal keeps its own
+       .modal-box background untouched. position:relative lets
+       applyCardsBackground() insert the same .block-media-layer/
+       .block-media-gradient pattern used elsewhere; no overflow:hidden
+       here since the form still needs to scroll on short screens. */
+    .booking-modal-box {
+      position: relative;
+    }
+
+    .service-card > *:not(.block-media-layer):not(.block-media-gradient),
+    .contact-card > *:not(.block-media-layer):not(.block-media-gradient),
+    .booking-modal-box > *:not(.block-media-layer):not(.block-media-gradient) {
+      position: relative;
+      z-index: 2;
     }
 
     .modal-top {
@@ -1408,7 +1441,7 @@
     id="bookingModal"
     class="modal">
 
-    <div class="modal-box">
+    <div class="modal-box booking-modal-box">
 
       <div class="modal-top">
 
@@ -1788,6 +1821,8 @@
 
     applySiteBackground(siteContent);
 
+    applyCardsBackground(siteContent);
+
     applyBlockMedia(siteContent);
 
     renderPortfolioGallery();
@@ -1798,15 +1833,15 @@
   /* =====================================
      BACKGROUNDS (admin "Фони" section)
 
-     heroBg/restBg are plain MEDIA_BLOCKS entries (see
+     heroBg/restBg/cardsBg are plain MEDIA_BLOCKS entries (see
      content-schema.js) storing the *base* background itself, not an
      accent layered on top of one section the way applyBlockMedia's
      per-section overlays work. Applied here, after site content
      loads, on top of whatever the default kraska.mp4/Fon.png IIFEs
      below already started - same "admin content arrives slightly
      after first paint" timing every other admin-set media on this
-     page already uses. Absent/deleted -> both functions leave the
-     existing default completely alone.
+     page already uses. Absent/deleted -> all three functions leave
+     the existing default completely alone.
   ===================================== */
 
   function applyHeroBackground(content) {
@@ -1889,6 +1924,72 @@
         "url(\"" + customEntry.url + "\")";
 
     }
+
+  }
+
+
+  /* ONE shared background for every card-style tile (service cards,
+     the contact card) and the "Замовити зйомку" modal - reuses the
+     exact same .block-media-layer/.block-media-gradient insertion
+     applyBlockMedia() already uses for per-section media, just
+     targeting these elements instead. No cardsBg entry -> every
+     target keeps its default glass-card look untouched. */
+  function applyCardsBackground(content) {
+
+    const targets =
+      document.querySelectorAll(
+        ".service-card, .contact-card, .booking-modal-box"
+      );
+
+    const customEntry =
+      resolveBlockMedia(content, "cardsBg");
+
+    targets.forEach(function (el) {
+
+      el
+        .querySelectorAll(
+          ":scope > .block-media-layer, :scope > .block-media-gradient"
+        )
+        .forEach(function (node) {
+          node.remove();
+        });
+
+      el.classList.remove("has-cards-bg");
+
+      if (!customEntry) {
+        return;
+      }
+
+      el.classList.add("has-cards-bg");
+
+      let mediaEl;
+
+      if (customEntry.type === "video") {
+
+        mediaEl = document.createElement("video");
+        mediaEl.autoplay = true;
+        mediaEl.muted = true;
+        mediaEl.loop = true;
+        mediaEl.playsInline = true;
+
+      } else {
+
+        mediaEl = document.createElement("img");
+        mediaEl.alt = "";
+
+      }
+
+      mediaEl.src = customEntry.url;
+      mediaEl.className = "block-media-layer";
+
+      el.insertBefore(mediaEl, el.firstChild);
+
+      const gradient = document.createElement("div");
+      gradient.className = "block-media-gradient";
+
+      el.insertBefore(gradient, mediaEl.nextSibling);
+
+    });
 
   }
 
