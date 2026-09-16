@@ -128,6 +128,26 @@ var CONTENT_SCHEMA = [
   },
 
   {
+    key: "service2_title",
+    group: "services",
+    label: "Послуга 2 — заголовок",
+    type: "text",
+    defaults: { ua: "🏡 Family & Home", ru: "🏡 Family & Home", en: "🏡 Family & Home" }
+  },
+
+  {
+    key: "service2_text",
+    group: "services",
+    label: "Послуга 2 — опис",
+    type: "textarea",
+    defaults: {
+      ua: "про теплий світ вашої родини",
+      ru: "о тёплом мире вашей семьи",
+      en: "about the warm world of your family"
+    }
+  },
+
+  {
     key: "service3_title",
     group: "services",
     label: "Послуга 3 — заголовок",
