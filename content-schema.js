@@ -334,6 +334,18 @@ var CONTENT_SCHEMA = [
   },
 
   {
+    key: "form_placeholder_date",
+    group: "booking",
+    label: "Placeholder поля «Дата» (до вибору дати)",
+    type: "text",
+    defaults: {
+      ua: "Оберіть дату в календарі нижче",
+      ru: "Выберите дату в календаре ниже",
+      en: "Pick a date in the calendar below"
+    }
+  },
+
+  {
     key: "form_date_unavailable",
     group: "booking",
     label: "Помилка: дата зайнята або в минулому",
@@ -461,14 +473,6 @@ var CONTENT_SCHEMA = [
       ru: "Админ-панель нужно открывать внутри Telegram.",
       en: "The admin panel must be opened inside Telegram."
     }
-  },
-
-  {
-    key: "footer_brand",
-    group: "ui",
-    label: "Назва бренду у футері",
-    type: "text",
-    defaults: { ua: "Мобілограф", ru: "Мобилограф", en: "Mobilographer" }
   }
 
 ];

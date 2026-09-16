@@ -541,22 +541,6 @@
     }
 
     /* =========================
-       FOOTER
-    ========================= */
-
-    footer {
-      padding: 35px 20px;
-
-      text-align: center;
-
-      color: #666;
-
-      border-top: 1px solid #1c1c1c;
-
-      font-size: 13px;
-    }
-
-    /* =========================
        MODAL
     ========================= */
 
@@ -698,6 +682,10 @@
       font-size: 15px;
     }
 
+    #date {
+      cursor: pointer;
+    }
+
     .field textarea {
       min-height: 100px;
       resize: vertical;
@@ -723,15 +711,22 @@
     }
 
     .date-calendar-nav-btn {
+      flex: none;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
       border: 1px solid #333;
       border-radius: 8px;
       background: #1a1a1a;
       color: #fff;
 
-      min-width: 34px;
-      min-height: 34px;
+      width: 34px;
+      height: 34px;
 
-      font-size: 14px;
+      font-size: 15px;
+      line-height: 1;
       cursor: pointer;
     }
 
@@ -847,8 +842,8 @@
     /* =========================
        SECTION STACKING (needed for the fixed restBg layer below)
 
-       #aboutBlock/#servicesBlock/#portfolioBlock/#contactBlock/
-       #footerBlock stay transparent so the fixed site-wide background
+       #aboutBlock/#servicesBlock/#portfolioBlock/#contactBlock
+       stay transparent so the fixed site-wide background
        (SITE BACKGROUND IMAGE below - Фони -> Фон інших блоків) shows
        through them; #heroBlock never shows it since its own opaque
        video layer fully covers it regardless.
@@ -865,8 +860,7 @@
     #aboutBlock,
     #servicesBlock,
     #portfolioBlock,
-    #contactBlock,
-    #footerBlock {
+    #contactBlock {
       position: relative;
       overflow: hidden;
       z-index: 1;
@@ -875,8 +869,7 @@
     #aboutBlock,
     #servicesBlock,
     #portfolioBlock,
-    #contactBlock,
-    #footerBlock {
+    #contactBlock {
       background: transparent;
     }
 
@@ -884,8 +877,7 @@
     #aboutBlock > *:not(.block-media-layer):not(.block-media-gradient),
     #servicesBlock > *:not(.block-media-layer):not(.block-media-gradient),
     #portfolioBlock > *:not(.block-media-layer):not(.block-media-gradient),
-    #contactBlock > *:not(.block-media-layer):not(.block-media-gradient),
-    #footerBlock > *:not(.block-media-layer):not(.block-media-gradient) {
+    #contactBlock > *:not(.block-media-layer):not(.block-media-gradient) {
       position: relative;
       z-index: 2;
     }
@@ -1030,7 +1022,7 @@
        photo/gif/video, see BACKGROUNDS further down. Fixed behind the
        whole page at a lower z-index than every section (z-index:1, see
        BLOCK BACKGROUND MEDIA above), so it shows through
-       About/Services/Portfolio/Contact/Footer, all now transparent -
+       About/Services/Portfolio/Contact, all now transparent -
        and never through Hero, whose own opaque video layer fully
        covers it there regardless. Being position:fixed (not scrolling
        with the page) is what keeps the background continuous across
@@ -1298,7 +1290,7 @@
        Фони -> Фон інших блоків (restBg) sits fixed behind every
        section except Hero - Hero's own opaque video layer fully
        covers this there, so it naturally only ever shows through
-       About/Services/Portfolio/Contact/Footer without any extra
+       About/Services/Portfolio/Contact without any extra
        scoping logic. -->
   <div class="site-background-image"></div>
   <video
@@ -1557,11 +1549,6 @@
   </main>
 
 
-  <footer id="footerBlock">
-    © <span id="year"></span> <span data-i18n="footer_brand">Мобілограф</span>
-  </footer>
-
-
   <!-- BOOKING MODAL -->
 
   <div
@@ -1626,7 +1613,11 @@
 
           <input
             id="date"
-            type="date">
+            type="text"
+            inputmode="none"
+            readonly
+            data-i18n-placeholder="form_placeholder_date"
+            placeholder="Оберіть дату в календарі нижче">
 
           <div id="dateCalendar" class="date-calendar"></div>
 
@@ -1963,6 +1954,12 @@
 
     renderPortfolioGallery();
 
+    /* No-ops until the booking calendar has been opened at least once
+       (dateCalendarViewYear stays null until then) - keeps its month/
+       weekday names in sync with a language switch made while it's
+       already visible. */
+    renderDateCalendar();
+
   }
 
 
@@ -2063,6 +2060,18 @@
       return;
     }
 
+    /* Same reasoning as applyHeroBackground()'s appliedKey guard above -
+       renderSite() reruns on every language switch, and reassigning a
+       <video>'s .src (even to the same URL) aborts and restarts
+       playback from scratch every time without this. */
+    const appliedKey = customEntry.type + ":" + customEntry.url;
+
+    if (bgVideoEl.dataset.appliedRestBg === appliedKey) {
+      return;
+    }
+
+    bgVideoEl.dataset.appliedRestBg = appliedKey;
+
     if (customEntry.type === "video") {
 
       bgImageEl.style.display = "none";
@@ -2097,10 +2106,24 @@
      on the target itself; it never touches any element other than
      `el`. Portfolio cards/viewer never call this - they use their own
      fixed dark-glass CSS instead (see .portfolio-card /
-     .portfolio-modal-box). */
+     .portfolio-modal-box).
+
+     applyBookingModalBackground() re-runs on every language switch via
+     renderSite(), same as the Hero/site background above - the
+     appliedKey guard below skips rebuilding this layer (and restarting
+     its video, if it's a video) when restBg hasn't actually changed. */
   function applyRestBgLayer(el, customEntry, options) {
 
     options = options || {};
+
+    const appliedKey =
+      customEntry ? customEntry.type + ":" + customEntry.url : "none";
+
+    if (el.dataset.appliedRestBgLayer === appliedKey) {
+      return;
+    }
+
+    el.dataset.appliedRestBgLayer = appliedKey;
 
     el
       .querySelectorAll(
@@ -2885,11 +2908,11 @@
      Fetches busy dates from api/busy-dates.js (public, same graceful
      "empty list on any failure" fallback as api/portfolio-list.js) and
      renders a small calendar under the date field so a client can see
-     which dates are already booked before picking one. Past and busy
-     dates are disabled in this calendar, and the native #date input's
-     own "change" event is validated the same way, so a date typed or
-     picked via the browser's own date-picker icon is checked too, not
-     only a date clicked here.
+     which dates are already booked before picking one. #date is
+     readonly text (not a native type="date" input) precisely so a day
+     can only ever be chosen by clicking a cell in this calendar - past
+     and busy cells are rendered disabled with no click handler at all,
+     so there's no separate native-picker path left to validate.
   ===================================== */
 
   let bookingBusyDates = new Set();
@@ -2906,13 +2929,32 @@
   let dateCalendarViewYear = null;
   let dateCalendarViewMonth = null;
 
-  const DATE_CALENDAR_WEEKDAYS =
-    ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"];
+  /* Calendar chrome (weekday/month names) isn't part of CONTENT_SCHEMA -
+     it's fixed UI vocabulary, not admin-editable site content - so it's
+     localized here the same way LANG_TO_HTML_LANG is, keyed directly by
+     currentLang instead of going through t(). */
+  const DATE_CALENDAR_WEEKDAYS_BY_LANG = {
+    ua: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"],
+    ru: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+    en: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"]
+  };
 
-  const DATE_CALENDAR_MONTHS = [
-    "Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
-    "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"
-  ];
+  const DATE_CALENDAR_MONTHS_BY_LANG = {
+    ua: ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень",
+      "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"],
+    ru: ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+      "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"],
+    en: ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"]
+  };
+
+  function dateCalendarWeekdays() {
+    return DATE_CALENDAR_WEEKDAYS_BY_LANG[currentLang] || DATE_CALENDAR_WEEKDAYS_BY_LANG.ua;
+  }
+
+  function dateCalendarMonths() {
+    return DATE_CALENDAR_MONTHS_BY_LANG[currentLang] || DATE_CALENDAR_MONTHS_BY_LANG.ua;
+  }
 
 
   function dateCalendarPad2(n) {
@@ -2928,11 +2970,6 @@
   function dateCalendarTodayKey() {
     const now = new Date();
     return dateCalendarKey(now.getFullYear(), now.getMonth(), now.getDate());
-  }
-
-
-  if (dateInput) {
-    dateInput.min = dateCalendarTodayKey();
   }
 
 
@@ -2995,7 +3032,7 @@
     const label = document.createElement("div");
     label.className = "date-calendar-label";
     label.textContent =
-      DATE_CALENDAR_MONTHS[dateCalendarViewMonth] + " " + dateCalendarViewYear;
+      dateCalendarMonths()[dateCalendarViewMonth] + " " + dateCalendarViewYear;
 
     const nextBtn = document.createElement("button");
     nextBtn.type = "button";
@@ -3023,7 +3060,7 @@
     const weekdaysRow = document.createElement("div");
     weekdaysRow.className = "date-calendar-grid date-calendar-weekdays";
 
-    DATE_CALENDAR_WEEKDAYS.forEach(function (day) {
+    dateCalendarWeekdays().forEach(function (day) {
       const cell = document.createElement("div");
       cell.textContent = day;
       weekdaysRow.appendChild(cell);
@@ -3098,44 +3135,6 @@
     }
 
     dateCalendarEl.appendChild(grid);
-
-  }
-
-
-  if (dateInput) {
-
-    dateInput.addEventListener("change", function () {
-
-      const value = dateInput.value;
-
-      if (!value) {
-        return;
-      }
-
-      if (value < dateCalendarTodayKey() || bookingBusyDates.has(value)) {
-
-        dateInput.value = "";
-
-        if (dateCalendarMessageEl) {
-          dateCalendarMessageEl.textContent = t("form_date_unavailable");
-        }
-
-        renderDateCalendar();
-
-        return;
-
-      }
-
-      if (dateCalendarMessageEl) {
-        dateCalendarMessageEl.textContent = "";
-      }
-
-      dateCalendarViewYear = Number(value.slice(0, 4));
-      dateCalendarViewMonth = Number(value.slice(5, 7)) - 1;
-
-      renderDateCalendar();
-
-    });
 
   }
 
@@ -3220,6 +3219,16 @@
 
   let portfolioData = [];
 
+  /* Tracks which portfolioData array renderPortfolioGallery() last built
+     full cards for - renderSite() calls it again on every language
+     switch, and this lets that call just refresh each card's title text
+     (see renderPortfolioGallery()) instead of destroying and recreating
+     every <img>/<video> element, which would re-fetch every thumbnail
+     and restart every card's video from scratch. Only a genuinely new
+     fetch (loadPortfolioGallery() assigning a new portfolioData array)
+     triggers a full rebuild. */
+  let portfolioGalleryRenderedFor = null;
+
   const portfolioGallery =
     document.getElementById("portfolioGallery");
 
@@ -3246,17 +3255,60 @@
       return;
     }
 
-    portfolioGallery.innerHTML = "";
-
     if (!portfolioData || portfolioData.length === 0) {
 
+      portfolioGallery.innerHTML = "";
       portfolioGallery.hidden = true;
+      portfolioGalleryRenderedFor = null;
 
       return;
 
     }
 
     portfolioGallery.hidden = false;
+
+    /* Same data as last full render (i.e. this call is only here because
+       of a language switch, not a fresh portfolio-list fetch) - update
+       each card's title/alt text in place and leave every thumbnail
+       image/video element untouched. */
+    if (portfolioGalleryRenderedFor === portfolioData) {
+
+      const cards =
+        portfolioGallery.querySelectorAll(".portfolio-card");
+
+      portfolioData.forEach(function (item, index) {
+
+        const card = cards[index];
+
+        if (!card) {
+          return;
+        }
+
+        const workTitle = portfolioText(item, "title") || "";
+
+        const titleEl =
+          card.querySelector(".portfolio-card-title");
+
+        if (titleEl) {
+          titleEl.textContent = workTitle || "—";
+        }
+
+        const thumb =
+          card.querySelector(".portfolio-card-thumb");
+
+        if (thumb && thumb.tagName === "IMG") {
+          thumb.alt = workTitle;
+        }
+
+      });
+
+      return;
+
+    }
+
+    portfolioGalleryRenderedFor = portfolioData;
+
+    portfolioGallery.innerHTML = "";
 
     portfolioData.forEach(function (item, index) {
 
@@ -3790,16 +3842,6 @@
     }
 
   }
-
-
-  /* =====================================
-     YEAR
-  ===================================== */
-
-  document.getElementById(
-    "year"
-  ).textContent =
-    new Date().getFullYear();
 
 
   /* =====================================
