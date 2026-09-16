@@ -595,6 +595,18 @@
       z-index: 2;
     }
 
+    /* The shared .modal scrim behind it (rgba(0,0,0,0.78) + blur(10px))
+       is already near-opaque black, so .portfolio-modal-box's own
+       backdrop-filter had almost no real page content left to reveal -
+       it just darkened an already-dark backdrop, reading as solid
+       black instead of glass. Lightening the scrim ONLY for this
+       modal's own id (never touching the shared .modal rule or
+       #bookingModal) is what actually fixes that, not the box's own
+       background/blur below, which were already correct. */
+    #portfolioItemModal.modal {
+      background: rgba(0, 0, 0, 0.35);
+    }
+
     /* Portfolio item viewer only - fixed dark-glass frame, same visual
        idea as .portfolio-card, entirely independent of restBg/any
        admin-set background (this modal never reads restBg). The
