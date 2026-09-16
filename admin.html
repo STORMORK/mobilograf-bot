@@ -2280,6 +2280,7 @@ function createPortfolioItemCard(item, index){
   const addMediaInput = document.createElement("input");
   addMediaInput.type = "file";
   addMediaInput.accept = "image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm";
+  addMediaInput.multiple = true;
   addMediaInput.hidden = true;
 
   const addMediaBtn = document.createElement("button");
@@ -2292,32 +2293,83 @@ function createPortfolioItemCard(item, index){
   const addMediaStatus = document.createElement("div");
   addMediaStatus.className = "media-status";
 
+  const MAX_MEDIA_FILES_PER_UPLOAD = 30;
+
   addMediaInput.addEventListener("change", async function(){
 
-    const file = addMediaInput.files[0];
+    const selectedFiles = Array.from(addMediaInput.files || []);
 
-    if(!file){
+    if(selectedFiles.length === 0){
       return;
     }
 
+    // All selected files are added to this same work (item.id never
+    // changes across the loop) - never a separate work per file.
+    const filesToUpload = selectedFiles.slice(0, MAX_MEDIA_FILES_PER_UPLOAD);
+    const skippedCount = selectedFiles.length - filesToUpload.length;
+
     addMediaBtn.disabled = true;
-    addMediaStatus.textContent = "Завантажуємо...";
 
-    try{
+    let uploadedCount = 0;
+    const errorMessages = [];
 
-      const newMedia = await uploadPortfolioMedia(item.id, file);
+    for(let i = 0; i < filesToUpload.length; i++){
 
-      item.portfolio_media = (item.portfolio_media || []).concat([newMedia]);
-      renderMediaList();
-      updateSummary();
+      addMediaStatus.textContent =
+        filesToUpload.length > 1
+          ? "Завантажуємо " + (i + 1) + " з " + filesToUpload.length + "..."
+          : "Завантажуємо...";
 
-      addMediaStatus.textContent = "✅ Додано";
+      try{
 
-    }catch(error){
+        const newMedia = await uploadPortfolioMedia(item.id, filesToUpload[i]);
 
-      addMediaStatus.textContent = "❌ " + error.message;
+        item.portfolio_media = (item.portfolio_media || []).concat([newMedia]);
+        renderMediaList();
+        updateSummary();
+
+        uploadedCount++;
+
+      }catch(error){
+
+        errorMessages.push(error.message);
+
+      }
 
     }
+
+    const messageParts = [];
+
+    if(errorMessages.length === 0){
+
+      messageParts.push(
+        uploadedCount > 1 ? "✅ Додано файлів: " + uploadedCount : "✅ Додано"
+      );
+
+    }else if(uploadedCount === 0 && errorMessages.length === 1){
+
+      // Exactly the original single-file failure message.
+      messageParts.push("❌ " + errorMessages[0]);
+
+    }else{
+
+      messageParts.push(
+        "⚠️ Додано: " + uploadedCount + ", помилок: " + errorMessages.length +
+        " (" + errorMessages[0] + ")"
+      );
+
+    }
+
+    if(skippedCount > 0){
+
+      messageParts.push(
+        "Вибрано " + selectedFiles.length + " файлів, максимум за один раз — " +
+        MAX_MEDIA_FILES_PER_UPLOAD + ". Пропущено: " + skippedCount + "."
+      );
+
+    }
+
+    addMediaStatus.textContent = messageParts.join(" ");
 
     addMediaBtn.disabled = false;
     addMediaInput.value = "";
