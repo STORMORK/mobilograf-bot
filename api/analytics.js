@@ -73,20 +73,10 @@ async function handleCollect(req, res){
 
   const telegramUser = getVerifiedTelegramUser(req);
 
-  /* TEMPORARY DIAGNOSTIC OVERRIDE - requested by the site owner to
-     verify analytics_events actually receives rows end-to-end.
-     1047945172 is treated as a regular user for analytics collection
-     ONLY - this does not touch isAdmin()/requireAdmin() (used by the
-     GET branch below and every other admin endpoint), so 1047945172
-     keeps full, unchanged admin-panel access everywhere else. MUST be
-     reverted to isAdmin(telegramUser.id) once the diagnosis is done. */
-  const isExcludedAdminForAnalytics =
-    telegramUser && String(telegramUser.id) === "5904817027";
-
   /* Either administrator - never counted, never stored, regardless of
      how the Mini App was opened (no "Адмін" button click required -
      this is a server-side identity check, not a client flag). */
-  if(isExcludedAdminForAnalytics){
+  if(telegramUser && isAdmin(telegramUser.id)){
     return res.status(200).json({ success: true, skipped: true });
   }
 
