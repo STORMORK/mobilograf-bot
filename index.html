@@ -20,16 +20,14 @@
   <meta
     property="og:description"
     content="Фото- та відеозйомка для бізнесу, соціальних мереж і особистих проєктів у Харкові та Валках. Портфоліо робіт і онлайн-запис на зйомку.">
-  <meta property="og:image" content="https://mobilograf-bot.vercel.app/hero.jpg">
   <meta property="og:locale" content="uk_UA">
 
   <!-- Twitter / X Card -->
-  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Мобілограф у Харкові та Валках — фото та відеозйомка">
   <meta
     name="twitter:description"
     content="Фото- та відеозйомка для бізнесу, соціальних мереж і особистих проєктів у Харкові та Валках.">
-  <meta name="twitter:image" content="https://mobilograf-bot.vercel.app/hero.jpg">
 
   <script type="application/ld+json">
   {
@@ -38,7 +36,6 @@
     "name": "Мобілограф",
     "description": "Мобілограф у Харкові та Валках: фото- та відеозйомка для бізнесу, соціальних мереж і особистих проєктів.",
     "url": "https://mobilograf-bot.vercel.app/",
-    "image": "https://mobilograf-bot.vercel.app/hero.jpg",
     "areaServed": ["Харків", "Валки"]
   }
   </script>
@@ -166,9 +163,9 @@
       background: transparent;
     }
 
-    /* hero.jpg is still Hero's own fallback image - see HERO BACKGROUND
-       VIDEO below, which now applies it directly to .hero instead of
-       via a dedicated pseudo-element. Only the readability gradient
+    /* Hero's own fallback (no image) - see HERO BACKGROUND VIDEO below,
+       which applies a plain dark background directly to .hero when the
+       video can't play. Only the readability gradient
        stays here. */
     .hero::after {
       content: "";
@@ -790,7 +787,7 @@
 
     /* Transparent so the fixed site-wide Fon.png (see SITE BACKGROUND
        IMAGE below) shows through every section except Hero (which has
-       its own opaque kraska.mp4/hero.jpg layer). Admin-set per-block
+       its own opaque kraska.mp4 layer). Admin-set per-block
        media (.block-media-layer, absolutely positioned above this)
        still fully covers Fon.png for that one section when configured,
        exactly as before. */
@@ -856,12 +853,11 @@
        shows in front of this default video, same precedence every
        other block already has over its own default look.
 
-       hero.jpg is the fallback here (poster attribute, plus this same
-       background-image applied straight to #heroBlock): prefers-
-       reduced-motion skips loading the video entirely (see the script
-       near the end of the page), and #heroBlock.hero-bg-video-
-       unavailable is added by that same script if the browser can't
-       play mp4 or the file fails to load.
+       A plain dark background is the fallback here, applied straight to
+       #heroBlock: prefers-reduced-motion skips loading the video
+       entirely (see the script near the end of the page), and
+       #heroBlock.hero-bg-video-unavailable is added by that same script
+       if the browser can't play mp4 or the file fails to load.
     ========================= */
 
     .hero-video-layer {
@@ -885,9 +881,7 @@
       }
 
       .hero {
-        background-image: url("hero.jpg");
-        background-size: cover;
-        background-position: center center;
+        background-color: #111111;
       }
 
     }
@@ -897,9 +891,7 @@
     }
 
     #heroBlock.hero-bg-video-unavailable {
-      background-image: url("hero.jpg");
-      background-size: cover;
-      background-position: center center;
+      background-color: #111111;
     }
 
     /* =========================
@@ -909,7 +901,7 @@
        every section (z-index:1, see BLOCK BACKGROUND MEDIA above), so
        it shows through About/Services/Portfolio/Contact/Footer, all
        now transparent - and never through Hero, whose own opaque
-       kraska.mp4/hero.jpg layer fully covers it there regardless. Being
+       kraska.mp4 layer fully covers it there regardless. Being
        position:fixed (not scrolling with the page) is what keeps the
        image continuous across every section boundary instead of each
        section cropping/scaling its own independent copy.
@@ -1054,7 +1046,7 @@
 
   <!-- SITE BACKGROUND IMAGE (see SITE BACKGROUND IMAGE in <style>).
        Fon.png sits fixed behind every section except Hero - Hero's own
-       opaque kraska.mp4/hero.jpg layer fully covers this there, so it
+       opaque kraska.mp4 layer fully covers this there, so it
        naturally only ever shows through About/Services/Portfolio/
        Contact/Footer without any extra scoping logic. -->
   <div class="site-background-image"></div>
@@ -1080,8 +1072,7 @@
       loop
       playsinline
       autoplay
-      preload="auto"
-      poster="hero.jpg">
+      preload="auto">
     </video>
 
     <div class="language">
@@ -1461,12 +1452,12 @@
      #heroBlock above) only when there's a real reason to believe it
      will actually play smoothly: motion is allowed, and the browser
      claims mp4 support. Skips loading it entirely otherwise - CSS then
-     shows hero.jpg on #heroBlock itself instead, via
+     shows a plain dark background on #heroBlock itself instead, via
      #heroBlock.hero-bg-video-unavailable or the prefers-reduced-motion
      rule. A later load/decode failure is caught the same way, so
-     hero.jpg is always Hero's safety net, never a broken or blank
-     background. This never touches any other section - kraska.mp4 is
-     Hero-only, not a site-wide background.
+     that plain background is always Hero's safety net, never a broken
+     or blank background. This never touches any other section -
+     kraska.mp4 is Hero-only, not a site-wide background.
   ===================================== */
 
   (function () {
