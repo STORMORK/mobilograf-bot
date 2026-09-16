@@ -547,6 +547,63 @@ font-size:14px;
 padding:16px 0;
 }
 
+.stat-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+}
+
+.stat-tile{
+border:1px solid #242424;
+border-radius:14px;
+background:#141414;
+padding:14px;
+}
+
+.stat-tile-value{
+font-size:22px;
+font-weight:800;
+}
+
+.stat-tile-label{
+color:#999;
+font-size:12px;
+margin-top:4px;
+line-height:1.4;
+}
+
+.stat-lang-row{
+display:flex;
+justify-content:space-between;
+padding:8px 0;
+border-bottom:1px solid #202020;
+font-size:14px;
+}
+
+.stat-lang-row:last-child{
+border-bottom:0;
+}
+
+.stat-chart{
+display:flex;
+align-items:flex-end;
+gap:3px;
+height:120px;
+padding:10px;
+border:1px solid #242424;
+border-radius:14px;
+background:#141414;
+overflow-x:auto;
+}
+
+.stat-chart-bar{
+flex:1 0 6px;
+min-width:6px;
+background:#fff;
+border-radius:3px 3px 0 0;
+opacity:0.85;
+}
+
 @media(max-width:600px){
 
 .top{
@@ -746,6 +803,42 @@ style="margin:0;"
 </div>
 
 
+<div id="statsMainSection" class="main-section">
+
+<button type="button" class="main-section-toggle">
+<span>📊 Статистика</span>
+<span class="main-section-arrow">▸</span>
+</button>
+
+<div class="main-section-body-wrap">
+<div class="main-section-body">
+
+<div id="statsSection">
+
+<p class="media-hint" style="margin-top:0;">
+Реальна серверна статистика відвідувань і дій — обидва адміністратори
+повністю виключені з будь-яких цифр нижче.
+</p>
+
+<div id="statsSummary" class="stat-grid"></div>
+
+<div id="statsLanguages" style="margin-top:18px;"></div>
+
+<div style="margin-top:22px;">
+<div class="media-type-line">Відвідувачі за останні 30 днів</div>
+<div id="statsDailyChart" class="stat-chart"></div>
+</div>
+
+<div id="statsMessage" class="media-status"></div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+
+
 </div>
 
 
@@ -822,6 +915,18 @@ document.getElementById("calendarNextMonth");
 
 const calendarMessage =
 document.getElementById("calendarMessage");
+
+const statsSummaryContainer =
+document.getElementById("statsSummary");
+
+const statsLanguagesContainer =
+document.getElementById("statsLanguages");
+
+const statsDailyChartContainer =
+document.getElementById("statsDailyChart");
+
+const statsMessage =
+document.getElementById("statsMessage");
 
 
 const params =
@@ -1010,6 +1115,8 @@ result.content
 loadPortfolioItems();
 
 loadCalendar();
+
+loadStats();
 
 
 }catch(error){
@@ -2710,6 +2817,161 @@ calendarNextMonthButton.addEventListener("click", function(){
   renderCalendar();
 
 });
+
+
+/* =====================================
+   STATISTICS (📊 Статистика)
+
+   Reads api/analytics-stats.js - admin-only (same requireAdmin() check
+   as every other admin endpoint here), real server-side aggregation
+   of analytics_events. Both administrators are excluded at write time
+   by api/analytics-collect.js itself (never written in the first
+   place), so nothing here needs to filter them out again. Loaded once
+   when the panel opens, same as loadPortfolioItems()/loadCalendar()
+   above - no polling, no extra requests.
+===================================== */
+
+function statTile(value, label){
+
+  const tile = document.createElement("div");
+  tile.className = "stat-tile";
+
+  const valueEl = document.createElement("div");
+  valueEl.className = "stat-tile-value";
+  valueEl.textContent = value;
+  tile.appendChild(valueEl);
+
+  const labelEl = document.createElement("div");
+  labelEl.className = "stat-tile-label";
+  labelEl.textContent = label;
+  tile.appendChild(labelEl);
+
+  return tile;
+
+}
+
+
+function renderStatsSummary(data){
+
+  statsSummaryContainer.innerHTML = "";
+
+  const tiles = [
+    [data.uniqueVisitors, "👥 Унікальні відвідувачі"],
+    [data.totalOpens, "👁 Всього відкриттів"],
+    [data.visitorsToday, "📅 Відвідувачі сьогодні"],
+    [data.visitors7d, "📈 Відвідувачі за 7 днів"],
+    [data.visitors30d, "📊 Відвідувачі за 30 днів"],
+    [data.portfolioViews, "🖼 Перегляди портфоліо"],
+    [data.itemOpens, "📸 Відкриття робіт"],
+    [data.orderOpens, "👆 Натискання «Замовити зйомку»"],
+    [data.orderSubmits, "📩 Відправлені заявки"],
+    [data.returningVisitors, "🔄 Постійні відвідувачі"]
+  ];
+
+  tiles.forEach(function(pair){
+    statsSummaryContainer.appendChild(statTile(pair[0], pair[1]));
+  });
+
+}
+
+
+function renderStatsLanguages(byLanguage){
+
+  statsLanguagesContainer.innerHTML = "";
+
+  const title = document.createElement("div");
+  title.className = "media-type-line";
+  title.textContent = "🌐 Мови інтерфейсу";
+  statsLanguagesContainer.appendChild(title);
+
+  const langLabels = { ua: "🇺🇦 UA", ru: "🇷🇺 RU", en: "🇬🇧 EN" };
+
+  ["ua", "ru", "en"].forEach(function(code){
+
+    const row = document.createElement("div");
+    row.className = "stat-lang-row";
+
+    const label = document.createElement("span");
+    label.textContent = langLabels[code];
+    row.appendChild(label);
+
+    const value = document.createElement("span");
+    value.textContent = (byLanguage && byLanguage[code]) || 0;
+    row.appendChild(value);
+
+    statsLanguagesContainer.appendChild(row);
+
+  });
+
+}
+
+
+function renderStatsChart(dailyVisitors){
+
+  statsDailyChartContainer.innerHTML = "";
+
+  const days = dailyVisitors || [];
+
+  if(days.length === 0){
+
+    const p = document.createElement("p");
+    p.className = "media-empty";
+    p.textContent = "Ще немає даних.";
+    statsDailyChartContainer.appendChild(p);
+
+    return;
+
+  }
+
+  const max =
+    Math.max.apply(null, days.map(function(day){ return day.count; })) || 1;
+
+  days.forEach(function(day){
+
+    const bar = document.createElement("div");
+    bar.className = "stat-chart-bar";
+    bar.style.height =
+      Math.max(4, Math.round((day.count / max) * 100)) + "%";
+    bar.title = day.date + ": " + day.count;
+
+    statsDailyChartContainer.appendChild(bar);
+
+  });
+
+}
+
+
+async function loadStats(){
+
+  try{
+
+    const response =
+      await fetch("/api/analytics-stats.js", {
+        method: "GET",
+        headers: { "x-telegram-init-data": telegramInitData },
+        cache: "no-store"
+      });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      statsMessage.textContent = "❌ " + buildErrorMessage(data, "Не вдалося завантажити статистику");
+      return;
+    }
+
+    statsMessage.textContent = "";
+
+    renderStatsSummary(data);
+    renderStatsLanguages(data.byLanguage);
+    renderStatsChart(data.dailyVisitors);
+
+  }catch(error){
+
+    statsMessage.textContent = "❌ Помилка з'єднання з сервером";
+
+  }
+
+}
 
 </script>
 
