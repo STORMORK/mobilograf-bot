@@ -384,9 +384,6 @@
     }
 
     .service-card {
-      position: relative;
-      overflow: hidden;
-
       min-height: 190px;
 
       padding: 25px;
@@ -401,17 +398,6 @@
       transition:
         transform 0.2s ease,
         border-color 0.2s ease;
-    }
-
-    /* Admin-set "Фон плашок" (cardsBg) turns the glass tint transparent
-       so the inserted .block-media-layer/.block-media-gradient (same
-       pattern as the per-section media below) can actually show
-       through - see applyCardsBackground() near the end of the page.
-       Untouched (glass tint stays as-is) when no cardsBg is set. */
-    .service-card.has-cards-bg,
-    .contact-card.has-cards-bg,
-    .booking-modal-box.has-cards-bg {
-      background: transparent;
     }
 
     .service-card:hover {
@@ -487,9 +473,6 @@
     ========================= */
 
     .contact-card {
-      position: relative;
-      overflow: hidden;
-
       margin-top: 30px;
 
       padding: 30px;
@@ -579,7 +562,7 @@
     .modal-box {
       width: min(520px, 100%);
 
-      background: url("Fon.png") center center / cover no-repeat;
+      background: linear-gradient(135deg, #121212, #080808);
 
       border: 1px solid #303030;
       border-radius: 22px;
@@ -592,18 +575,24 @@
       overflow-y: auto;
     }
 
-    /* "Замовити зйомку" only - the portfolio item modal keeps its own
-       .modal-box background untouched. position:relative lets
-       applyCardsBackground() insert the same .block-media-layer/
-       .block-media-gradient pattern used elsewhere; no overflow:hidden
-       here since the form still needs to scroll on short screens. */
+    /* "Замовити зйомку" only - the portfolio item modal keeps this
+       plain .modal-box background untouched. position:relative lets
+       applyBookingModalBackground() insert the same restBg
+       (.block-media-layer/.block-media-gradient) pattern used for the
+       rest of the site, plus a blurred .block-media-glass overlay so
+       the form stays readable over a busy photo/video; no
+       overflow:hidden here since the form still needs to scroll on
+       short screens. */
     .booking-modal-box {
       position: relative;
     }
 
-    .service-card > *:not(.block-media-layer):not(.block-media-gradient),
-    .contact-card > *:not(.block-media-layer):not(.block-media-gradient),
-    .booking-modal-box > *:not(.block-media-layer):not(.block-media-gradient) {
+    .booking-modal-box.has-rest-bg {
+      background: transparent;
+    }
+
+    .portfolio-card > *:not(.block-media-layer):not(.block-media-gradient),
+    .booking-modal-box > *:not(.block-media-layer):not(.block-media-gradient):not(.block-media-glass) {
       position: relative;
       z-index: 2;
     }
@@ -810,18 +799,20 @@
     }
 
     /* =========================
-       BLOCK BACKGROUND MEDIA
+       SECTION STACKING (needed for the fixed restBg layer below)
 
-       Applies to every MEDIA_BLOCKS section (content-schema.js). When no
-       media is set for a block, none of this changes how it looks today -
-       position:relative/overflow:hidden are no-ops without an absolutely
-       positioned child, and the child-promotion rule only affects
-       elements that already render normally in flow.
+       #aboutBlock/#servicesBlock/#portfolioBlock/#contactBlock/
+       #footerBlock stay transparent so the fixed site-wide background
+       (SITE BACKGROUND IMAGE below - Фони -> Фон інших блоків) shows
+       through them; #heroBlock never shows it since its own opaque
+       video layer fully covers it regardless.
 
-       z-index:1 additionally keeps each section's own content (already
-       promoted to z-index:2 below) above kraska.mp4, which now only
-       plays inside Hero at z-index:-1 (see HERO BACKGROUND VIDEO
-       below) - not a site-wide background.
+       position:relative + z-index:1 here, plus each section's own
+       content being promoted to z-index:2 below, is what keeps that
+       content painted above the fixed background/overlay (both
+       z-index <= 0) instead of behind it - without this, a plain
+       non-positioned section would paint behind those fixed layers per
+       normal CSS stacking order.
     ========================= */
 
     #heroBlock,
@@ -835,12 +826,6 @@
       z-index: 1;
     }
 
-    /* Transparent so the fixed site-wide Fon.png (see SITE BACKGROUND
-       IMAGE below) shows through every section except Hero (which has
-       its own opaque kraska.mp4 layer). Admin-set per-block
-       media (.block-media-layer, absolutely positioned above this)
-       still fully covers Fon.png for that one section when configured,
-       exactly as before. */
     #aboutBlock,
     #servicesBlock,
     #portfolioBlock,
@@ -890,18 +875,34 @@
         );
     }
 
+    /* Booking modal only (applyBookingModalBackground) - a stronger,
+       blurred glassmorphism layer on top of .block-media-gradient so
+       the form's inputs stay easily readable over a busy admin-set
+       photo/video, without darkening/blurring anything else on the
+       site. */
+    .block-media-glass {
+      position: absolute;
+      inset: 0;
+
+      z-index: 1;
+
+      pointer-events: none;
+
+      background: rgba(10, 10, 10, 0.45);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+    }
+
     /* =========================
        HERO BACKGROUND VIDEO
 
-       kraska.mp4 plays only inside Hero - an absolutely positioned
-       layer within #heroBlock (already position:relative), exactly
-       like the admin-driven .block-media-layer pattern but under its
-       own class so applyBlockMedia()'s cleanup (which only ever
-       touches .block-media-layer/.block-media-gradient) never removes
-       it. z-index:-1 keeps it below .block-media-layer's z-index:0, so
-       an admin-uploaded hero background (if ever set) still correctly
-       shows in front of this default video, same precedence every
-       other block already has over its own default look.
+       The default Hero video plays only inside Hero - an absolutely
+       positioned layer within #heroBlock (already position:relative),
+       under its own class (not .block-media-layer) so it's never
+       touched by any other section's cleanup logic. z-index:-1 keeps
+       it below an admin-uploaded Hero background (Фони -> Фон
+       першого блоку), which always shows in front of this default
+       video when set.
 
        A plain dark background is the fallback here, applied straight to
        #heroBlock: prefers-reduced-motion skips loading the video
@@ -975,16 +976,19 @@
     }
 
     /* =========================
-       SITE BACKGROUND IMAGE
+       SITE BACKGROUND IMAGE (Фони -> Фон інших блоків / restBg)
 
-       Fon.png, fixed behind the whole page at a lower z-index than
-       every section (z-index:1, see BLOCK BACKGROUND MEDIA above), so
-       it shows through About/Services/Portfolio/Contact/Footer, all
-       now transparent - and never through Hero, whose own opaque
-       kraska.mp4 layer fully covers it there regardless. Being
-       position:fixed (not scrolling with the page) is what keeps the
-       image continuous across every section boundary instead of each
-       section cropping/scaling its own independent copy.
+       A plain neutral gradient by default (no admin-set restBg yet) -
+       applySiteBackground() replaces this with the admin-uploaded
+       photo/gif/video, see BACKGROUNDS further down. Fixed behind the
+       whole page at a lower z-index than every section (z-index:1, see
+       BLOCK BACKGROUND MEDIA above), so it shows through
+       About/Services/Portfolio/Contact/Footer, all now transparent -
+       and never through Hero, whose own opaque video layer fully
+       covers it there regardless. Being position:fixed (not scrolling
+       with the page) is what keeps the background continuous across
+       every section boundary instead of each section cropping/scaling
+       its own independent copy.
 
        A very light dark overlay above it keeps loose text (outside the
        glassmorphism cards, which already have their own translucent
@@ -995,7 +999,7 @@
       position: fixed;
       inset: 0;
 
-      background-image: url("Fon.png");
+      background-image: linear-gradient(135deg, #121212, #080808);
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
@@ -1027,6 +1031,7 @@
     }
 
     .portfolio-card {
+      position: relative;
       cursor: pointer;
 
       border-radius: 16px;
@@ -1049,16 +1054,23 @@
       object-fit: cover;
       display: block;
 
-      background: url("Fon.png") center center / cover no-repeat;
+      background: #0a0a0a;
     }
 
+    /* Transparent by default (falls through to .portfolio-card's own
+       #111) - Фони -> Фон інших блоків (restBg) is inserted as this
+       card's own .block-media-layer/.block-media-gradient (see
+       applyRestBgLayer in renderPortfolioGallery) and only ever shows
+       through here, never through the opaque thumb above it. Its own
+       position:relative/z-index come from the shared child-promotion
+       rule next to .modal-box above. */
     .portfolio-card-title {
       padding: 12px 14px;
 
       font-size: 15px;
       font-weight: 700;
 
-      background: url("Fon.png") center center / cover no-repeat;
+      background: transparent;
     }
 
     .portfolio-modal-viewer {
@@ -1101,7 +1113,7 @@
 
       border-radius: 14px;
 
-      background: url("Fon.png") center center / cover no-repeat;
+      background: linear-gradient(135deg, #121212, #080808);
     }
 
     /* Its own pill below the viewer, not overlaid on the media
@@ -1171,10 +1183,11 @@
 <body>
 
   <!-- SITE BACKGROUND IMAGE (see SITE BACKGROUND IMAGE in <style>).
-       Fon.png sits fixed behind every section except Hero - Hero's own
-       opaque kraska.mp4 layer fully covers this there, so it
-       naturally only ever shows through About/Services/Portfolio/
-       Contact/Footer without any extra scoping logic. -->
+       Фони -> Фон інших блоків (restBg) sits fixed behind every
+       section except Hero - Hero's own opaque video layer fully
+       covers this there, so it naturally only ever shows through
+       About/Services/Portfolio/Contact/Footer without any extra
+       scoping logic. -->
   <div class="site-background-image"></div>
   <video
     class="site-background-video"
@@ -1821,9 +1834,7 @@
 
     applySiteBackground(siteContent);
 
-    applyCardsBackground(siteContent);
-
-    applyBlockMedia(siteContent);
+    applyBookingModalBackground(siteContent);
 
     renderPortfolioGallery();
 
@@ -1833,15 +1844,20 @@
   /* =====================================
      BACKGROUNDS (admin "Фони" section)
 
-     heroBg/restBg/cardsBg are plain MEDIA_BLOCKS entries (see
-     content-schema.js) storing the *base* background itself, not an
-     accent layered on top of one section the way applyBlockMedia's
-     per-section overlays work. Applied here, after site content
-     loads, on top of whatever the default kraska.mp4/Fon.png IIFEs
-     below already started - same "admin content arrives slightly
-     after first paint" timing every other admin-set media on this
-     page already uses. Absent/deleted -> all three functions leave
-     the existing default completely alone.
+     heroBg/restBg are plain MEDIA_BLOCKS entries (see content-schema.js)
+     storing the *base* background itself. heroBg replaces the default
+     Hero video, Hero-only. restBg is ONE shared source applied to
+     three places at once: applySiteBackground() (every other block),
+     applyBookingModalBackground() (the "Замовити зйомку" modal) and
+     renderPortfolioGallery()'s own per-card call to applyRestBgLayer()
+     (each portfolio work card's frame) - all three read the exact same
+     content_i18n.media.blocks.restBg entry, so replacing one file
+     changes all of them together. Applied here, after site content
+     loads, on top of whatever the default video/gradient already
+     started - same "admin content arrives slightly after first paint"
+     timing every other admin-set media on this page already uses.
+     Absent/deleted -> every one of these leaves its existing default
+     completely alone.
   ===================================== */
 
   function applyHeroBackground(content) {
@@ -1928,68 +1944,94 @@
   }
 
 
-  /* ONE shared background for every card-style tile (service cards,
-     the contact card) and the "Замовити зйомку" modal - reuses the
-     exact same .block-media-layer/.block-media-gradient insertion
-     applyBlockMedia() already uses for per-section media, just
-     targeting these elements instead. No cardsBg entry -> every
-     target keeps its default glass-card look untouched. */
-  function applyCardsBackground(content) {
+  /* Shared by applyBookingModalBackground() below and by
+     renderPortfolioGallery()'s per-card call further down - inserts
+     Фони -> Фон інших блоків (restBg) into an arbitrary element via
+     the same .block-media-layer/.block-media-gradient pattern used
+     for the site-wide background, clearing any previous layer first
+     so re-applying (e.g. after an admin change) never stacks up old
+     ones. options.glass additionally inserts .block-media-glass (a
+     blurred readability overlay) and only ever toggles "has-rest-bg"
+     on the target itself; it never touches any element other than
+     `el`. */
+  function applyRestBgLayer(el, customEntry, options) {
 
-    const targets =
-      document.querySelectorAll(
-        ".service-card, .contact-card, .booking-modal-box"
-      );
+    options = options || {};
 
-    const customEntry =
-      resolveBlockMedia(content, "cardsBg");
+    el
+      .querySelectorAll(
+        ":scope > .block-media-layer, :scope > .block-media-gradient, :scope > .block-media-glass"
+      )
+      .forEach(function (node) {
+        node.remove();
+      });
 
-    targets.forEach(function (el) {
+    el.classList.remove("has-rest-bg");
 
-      el
-        .querySelectorAll(
-          ":scope > .block-media-layer, :scope > .block-media-gradient"
-        )
-        .forEach(function (node) {
-          node.remove();
-        });
+    if (!customEntry) {
+      return;
+    }
 
-      el.classList.remove("has-cards-bg");
+    el.classList.add("has-rest-bg");
 
-      if (!customEntry) {
-        return;
-      }
+    let mediaEl;
 
-      el.classList.add("has-cards-bg");
+    if (customEntry.type === "video") {
 
-      let mediaEl;
+      mediaEl = document.createElement("video");
+      mediaEl.autoplay = true;
+      mediaEl.muted = true;
+      mediaEl.loop = true;
+      mediaEl.playsInline = true;
 
-      if (customEntry.type === "video") {
+    } else {
 
-        mediaEl = document.createElement("video");
-        mediaEl.autoplay = true;
-        mediaEl.muted = true;
-        mediaEl.loop = true;
-        mediaEl.playsInline = true;
+      mediaEl = document.createElement("img");
+      mediaEl.alt = "";
 
-      } else {
+    }
 
-        mediaEl = document.createElement("img");
-        mediaEl.alt = "";
+    mediaEl.src = customEntry.url;
+    mediaEl.className = "block-media-layer";
 
-      }
+    el.insertBefore(mediaEl, el.firstChild);
 
-      mediaEl.src = customEntry.url;
-      mediaEl.className = "block-media-layer";
+    const gradient = document.createElement("div");
+    gradient.className = "block-media-gradient";
 
-      el.insertBefore(mediaEl, el.firstChild);
+    el.insertBefore(gradient, mediaEl.nextSibling);
 
-      const gradient = document.createElement("div");
-      gradient.className = "block-media-gradient";
+    if (options.glass) {
 
-      el.insertBefore(gradient, mediaEl.nextSibling);
+      const glass = document.createElement("div");
+      glass.className = "block-media-glass";
 
-    });
+      el.insertBefore(glass, gradient.nextSibling);
+
+    }
+
+  }
+
+
+  /* "Замовити зйомку" only - reuses the exact same restBg source as
+     the site-wide background and the portfolio cards (see
+     BACKGROUNDS above), plus a blurred glass overlay so the form
+     stays readable over a busy photo/video. No custom restBg -> the
+     modal keeps its plain default look untouched. */
+  function applyBookingModalBackground(content) {
+
+    const bookingModalBox =
+      document.querySelector(".booking-modal-box");
+
+    if (!bookingModalBox) {
+      return;
+    }
+
+    applyRestBgLayer(
+      bookingModalBox,
+      resolveBlockMedia(content, "restBg"),
+      { glass: true }
+    );
 
   }
 
@@ -3005,92 +3047,6 @@
 
 
   /* =====================================
-     BLOCK BACKGROUND MEDIA
-
-     MEDIA_BLOCKS / resolveBlockMedia come from content-schema.js
-     (loaded above). One admin-uploaded image/gif/video per real visual
-     section, shared across UA/RU/EN. A block with no media saved keeps
-     its existing design untouched (this function simply does nothing
-     for it beyond clearing any previous layer).
-  ===================================== */
-
-  const MEDIA_BLOCK_ELEMENT_IDS = {
-    hero: "heroBlock",
-    about: "aboutBlock",
-    services: "servicesBlock",
-    portfolio: "portfolioBlock",
-    contact: "contactBlock",
-    footer: "footerBlock"
-  };
-
-
-  function applyBlockMedia(content) {
-
-    MEDIA_BLOCKS.forEach(function (block) {
-
-      const el =
-        document.getElementById(
-          MEDIA_BLOCK_ELEMENT_IDS[block.id]
-        );
-
-      if (!el) {
-        return;
-      }
-
-      el
-        .querySelectorAll(
-          ":scope > .block-media-layer, :scope > .block-media-gradient"
-        )
-        .forEach(function (node) {
-          node.remove();
-        });
-
-      const mediaEntry =
-        resolveBlockMedia(content, block.id);
-
-      if (!mediaEntry) {
-        return;
-      }
-
-      let mediaEl;
-
-      if (mediaEntry.type === "video") {
-
-        mediaEl = document.createElement("video");
-        mediaEl.autoplay = true;
-        mediaEl.muted = true;
-        mediaEl.loop = true;
-        mediaEl.playsInline = true;
-
-      } else {
-
-        mediaEl = document.createElement("img");
-        mediaEl.alt = "";
-
-      }
-
-      mediaEl.src = mediaEntry.url;
-      mediaEl.className = "block-media-layer";
-
-      el.insertBefore(mediaEl, el.firstChild);
-
-      /* hero already has its own dark gradient via .hero::after -
-         adding a second one here would double-darken it. */
-      if (block.id !== "hero") {
-
-        const gradient = document.createElement("div");
-        gradient.className = "block-media-gradient";
-
-        el.insertBefore(gradient, mediaEl.nextSibling);
-
-      }
-
-    });
-
-  }
-
-
-  /* =====================================
      PORTFOLIO GALLERY
 
      Reads api/portfolio-list.js (public, no auth) - a separate system
@@ -3194,6 +3150,12 @@
       titleEl.className = "portfolio-card-title";
       titleEl.textContent = workTitle || "—";
       card.appendChild(titleEl);
+
+      // Фони -> Фон інших блоків (restBg) - same source as the
+      // site-wide background and the booking modal, inserted as this
+      // card's own first child (behind the opaque thumb, visible only
+      // through the transparent title strip). See applyRestBgLayer.
+      applyRestBgLayer(card, resolveBlockMedia(siteContent, "restBg"));
 
       card.addEventListener("click", function () {
         openPortfolioModal(item);

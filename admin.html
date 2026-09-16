@@ -644,28 +644,6 @@ type="button"
 </div>
 
 
-<div id="mediaMainSection" class="main-section">
-
-<button type="button" class="main-section-toggle">
-<span>🎨 Медіа сайту</span>
-<span class="main-section-arrow">▸</span>
-</button>
-
-<div class="main-section-body-wrap">
-<div class="main-section-body">
-
-<div id="mediaSection">
-
-<div id="mediaBlocks"></div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-
-
 <div id="portfolioMainSection" class="main-section">
 
 <button type="button" class="main-section-toggle">
@@ -712,42 +690,17 @@ style="margin:0;"
 <div class="main-section-body">
 
 <p class="media-hint" style="margin-top:0;">
-Фон першого блоку (Hero), фон усіх інших блоків і фон плашок
-налаштовуються незалежно один від одного. «Фон інших блоків» — це
-ОДИН спільний фон для всіх блоків, крім Hero. «Фон плашок» — це ОДИН
-спільний фон для всіх карток сайту й вікна «Замовити зйомку». Жоден з
-них не робить окремий фон для кожного елемента.
+Фон першого блоку (Hero) і фон усіх інших блоків налаштовуються
+незалежно один від одного. «Фон інших блоків» — це ОДИН спільний фон,
+що одночасно застосовується до: всіх блоків сайту, крім Hero; рамок
+карток робіт у «Портфоліо»; вікна «Замовити зйомку». Ніякого окремого
+налаштування фону для портфоліо чи для вікна замовлення не потрібно —
+досить замінити один файл тут.
 </p>
 
 <div id="backgroundHeroContainer"></div>
 
 <div id="backgroundRestContainer"></div>
-
-<div id="backgroundPortfolioCoverPicker" class="sub-section">
-
-<button type="button" class="sub-section-toggle">
-<span>🖼 Фон з файлів портфоліо</span>
-<span class="sub-section-arrow">▸</span>
-</button>
-
-<div class="sub-section-body-wrap">
-<div class="sub-section-body">
-
-<p class="media-hint" style="margin-top:0;">
-Змінити обкладинку вже існуючої роботи портфоліо — обрати один з уже
-завантажених файлів ЦІЄЇ роботи як її обкладинку. Нову роботу це не
-створює, файли не завантажуються повторно, решта матеріалів роботи не
-змінюється.
-</p>
-
-<div id="backgroundPortfolioCoverList"></div>
-
-</div>
-</div>
-
-</div>
-
-<div id="backgroundCardsContainer"></div>
 
 </div>
 </div>
@@ -834,12 +787,6 @@ document.getElementById("groups");
 const expandToggle =
 document.getElementById("expandToggle");
 
-const mediaSection =
-document.getElementById("mediaSection");
-
-const mediaBlocksContainer =
-document.getElementById("mediaBlocks");
-
 const portfolioSection =
 document.getElementById("portfolioSection");
 
@@ -854,12 +801,6 @@ document.getElementById("backgroundHeroContainer");
 
 const backgroundRestContainer =
 document.getElementById("backgroundRestContainer");
-
-const backgroundCardsContainer =
-document.getElementById("backgroundCardsContainer");
-
-const backgroundPortfolioCoverListContainer =
-document.getElementById("backgroundPortfolioCoverList");
 
 const calendarSection =
 document.getElementById("calendarSection");
@@ -916,8 +857,8 @@ checkAdmin();
 
 
 /* =====================================
-   COLLAPSIBLE SECTIONS (Ред. текст / Медіа сайту / Календар, plus each
-   independent item inside them)
+   COLLAPSIBLE SECTIONS (Ред. текст / Портфоліо / Фони / Календар, plus
+   each independent item inside them)
 
    Plain buttons + a max-height/opacity transition rather than native
    <details> - <details> can't animate its own open/close, and this
@@ -1056,10 +997,6 @@ adminSections.style.display =
 if(result.content){
 
 initContentEditor(
-result.content
-);
-
-renderMediaBlocks(
 result.content
 );
 
@@ -1458,15 +1395,13 @@ saveButton.textContent =
 
 
 /* =====================================
-   SITE MEDIA (🎨 Медіа сайту)
+   MEDIA UPLOAD HELPERS
 
-   Driven by MEDIA_BLOCKS (content-schema.js) - the same 6 real visual
-   sections of index.html the text editor already groups content into,
-   minus "booking" (a modal, not a section) and "ui" (a floating
-   button), plus "footer" (a real section with no text group of its
-   own). Metadata lives at content_i18n.media.blocks.<id>, written by
-   api/media-commit.js after the browser uploads the file directly to
-   Supabase Storage via a signed URL from api/media-upload-url.js.
+   Shared plumbing for every admin feature that uploads a file straight
+   to Supabase Storage via a signed URL (api/media-upload-url.js +
+   api/media-commit.js for the "Фони" background blocks below,
+   api/portfolio-upload-url.js + api/portfolio-media.js for portfolio
+   work media further down) - not tied to any one feature itself.
 ===================================== */
 
 function adminJsonHeaders(){
@@ -1638,15 +1573,10 @@ function createMediaPreviewElement(mediaEntry){
 }
 
 
-let openMediaBlockId = null;
-
-
 function createMediaBlockCard(block, mediaEntry, options){
 
-  const onSaved = (options && options.onSaved) || renderMediaBlocks;
-  const onToggle = (options && options.onToggle) || function(isOpen){
-    openMediaBlockId = isOpen ? block.id : null;
-  };
+  const onSaved = (options && options.onSaved) || renderBackgroundBlocks;
+  const onToggle = (options && options.onToggle) || function(){};
 
   const card = document.createElement("div");
   card.className = "sub-section";
@@ -1871,73 +1801,20 @@ function createMediaBlockCard(block, mediaEntry, options){
 }
 
 
-/* "services" (Послуги) is intentionally not editable here - the site's
-   Photo/Video/Content cards in that section don't use a block
-   background, so it's hidden from this admin list only. heroBg/
-   restBg/cardsBg are also hidden here - they live in the separate
-   "Фони" section (renderBackgroundBlocks below), not "Медіа сайту".
-   All four stay in content-schema.js's MEDIA_BLOCKS so index.html's
-   rendering and media-commit.js's validation are unaffected. */
-const HIDDEN_MEDIA_BLOCK_IDS = ["services", "heroBg", "restBg", "cardsBg"];
-
-function renderMediaBlocks(content){
-
-  mediaBlocksContainer.innerHTML = "";
-
-  MEDIA_BLOCKS.forEach(function(block){
-
-    if(HIDDEN_MEDIA_BLOCK_IDS.indexOf(block.id) !== -1){
-      return;
-    }
-
-    const mediaEntry = resolveBlockMedia(content, block.id);
-    mediaBlocksContainer.appendChild(createMediaBlockCard(block, mediaEntry));
-
-  });
-
-  // Re-render (after an upload/delete) would otherwise always close
-  // every block again - reopen whichever one the admin was just
-  // working in, instantly (no animation needed for a restore).
-  if(openMediaBlockId){
-
-    const reopen =
-      mediaBlocksContainer.querySelector(
-        '[data-block-id="' + openMediaBlockId + '"]'
-      );
-
-    if(reopen){
-
-      const bodyWrap = reopen.querySelector(".sub-section-body-wrap");
-
-      reopen.classList.add("open");
-      bodyWrap.style.maxHeight = "none";
-
-    }
-
-  }
-
-}
-
-
 /* =====================================
    BACKGROUNDS (🌄 Фони)
 
-   Three site-wide default backgrounds, independent of each other and
-   of the per-section MEDIA_BLOCKS overlays above and of any single
-   work's own cover (see "Фон з файлів портфоліо" further down):
+   Two site-wide default backgrounds, independent of each other:
 
-   - heroBg replaces kraska.mp4 on the Hero block only.
-   - restBg replaces Fon.png behind every other block (ONE shared
-     file, not one per block).
-   - cardsBg is ONE shared background for every card-style tile
-     (service cards, the contact card) and the "Замовити зйомку"
-     modal - never a per-card setting.
+   - heroBg replaces the default Hero video, Hero-only.
+   - restBg is ONE shared background applied at once to every other
+     block, the portfolio work cards' own frames, and the "Замовити
+     зйомку" modal - never a separate setting per place.
 
    See BACKGROUNDS in index.html for how the public page consumes
    these. Same createMediaBlockCard() UI as the other media blocks,
    just rendered into their own containers with their own
-   onSaved/onToggle so re-rendering the "Медіа сайту" list never
-   touches these, and vice versa.
+   onSaved/onToggle.
 ===================================== */
 
 let openBackgroundBlockId = null;
@@ -1947,12 +1824,10 @@ function renderBackgroundBlocks(content){
 
   backgroundHeroContainer.innerHTML = "";
   backgroundRestContainer.innerHTML = "";
-  backgroundCardsContainer.innerHTML = "";
 
   const specs = [
-    { id: "heroBg", container: backgroundHeroContainer, defaultLabel: "стандартне відео kraska.mp4" },
-    { id: "restBg", container: backgroundRestContainer, defaultLabel: "стандартний синій (Fon.png)" },
-    { id: "cardsBg", container: backgroundCardsContainer, defaultLabel: "стандартний вигляд (без фонового зображення)" }
+    { id: "heroBg", container: backgroundHeroContainer, defaultLabel: "стандартне відео" },
+    { id: "restBg", container: backgroundRestContainer, defaultLabel: "стандартний вигляд (без фонового зображення)" }
   ];
 
   specs.forEach(function(spec){
@@ -1977,8 +1852,7 @@ function renderBackgroundBlocks(content){
 
     const containerById = {
       heroBg: backgroundHeroContainer,
-      restBg: backgroundRestContainer,
-      cardsBg: backgroundCardsContainer
+      restBg: backgroundRestContainer
     };
 
     const reopen =
@@ -1995,175 +1869,6 @@ function renderBackgroundBlocks(content){
     }
 
   }
-
-}
-
-
-/* =====================================
-   FONE З ФАЙЛІВ ПОРТФОЛІО (🖼)
-
-   Changes which already-uploaded file of an EXISTING work is used as
-   that work's own cover/thumbnail - a per-work setting, independent
-   of heroBg/restBg/cardsBg above. No upload, no new work: it just
-   reorders that work's own portfolio_media so the chosen file becomes
-   index 0, reusing reorderPortfolioMedia() exactly as the ↑/↓ buttons
-   inside "Портфоліо" already do (renderPortfolioGallery() on the
-   public site already treats media[0] as the card's cover).
-===================================== */
-
-function portfolioCoverWorkTitle(item){
-
-  return (
-    item.title_ua || item.title_ru || item.title_en || "Без назви"
-  );
-
-}
-
-
-async function setPortfolioCover(item, index, statusEl){
-
-  statusEl.textContent = "Застосовуємо...";
-
-  try{
-
-    await reorderPortfolioMedia(item, index, 0);
-
-    statusEl.textContent = "✅ Обкладинку змінено";
-
-  }catch(error){
-
-    statusEl.textContent =
-      "❌ " + (error && error.message ? error.message : "Помилка");
-
-  }
-
-  renderPortfolioCoverPicker();
-
-}
-
-
-function renderPortfolioCoverPicker(){
-
-  backgroundPortfolioCoverListContainer.innerHTML = "";
-
-  if(portfolioItems.length === 0){
-
-    const p = document.createElement("p");
-    p.className = "media-empty";
-    p.textContent = "Робіт у портфоліо ще немає.";
-    backgroundPortfolioCoverListContainer.appendChild(p);
-
-    return;
-
-  }
-
-  portfolioItems.forEach(function(item){
-
-    const media = item.portfolio_media || [];
-
-    const wrap = document.createElement("div");
-    wrap.style.marginBottom = "18px";
-    wrap.style.paddingBottom = "18px";
-    wrap.style.borderBottom = "1px solid #202020";
-
-    const title = document.createElement("div");
-    title.className = "media-type-line";
-    title.textContent = portfolioCoverWorkTitle(item);
-    wrap.appendChild(title);
-
-    if(media.length === 0){
-
-      const p = document.createElement("p");
-      p.className = "media-empty";
-      p.textContent = "У цієї роботи ще немає медіа.";
-      wrap.appendChild(p);
-
-      backgroundPortfolioCoverListContainer.appendChild(wrap);
-
-      return;
-
-    }
-
-    const statusEl = document.createElement("div");
-    statusEl.className = "media-status";
-
-    const coverRow = document.createElement("div");
-    coverRow.className = "portfolio-media-row";
-    coverRow.appendChild(createBackgroundPortfolioThumb(media[0]));
-
-    const coverInfo = document.createElement("div");
-    coverInfo.className = "portfolio-media-info";
-    coverInfo.textContent =
-      "Поточна обкладинка · " +
-      (media[0].file_name || media[0].media_type);
-    coverRow.appendChild(coverInfo);
-
-    wrap.appendChild(coverRow);
-
-    if(media.length > 1){
-
-      media.forEach(function(item2, index){
-
-        if(index === 0){
-          return;
-        }
-
-        const row = document.createElement("div");
-        row.className = "portfolio-media-row";
-        row.appendChild(createBackgroundPortfolioThumb(item2));
-
-        const info = document.createElement("div");
-        info.className = "portfolio-media-info";
-        info.textContent = item2.file_name || item2.media_type;
-        row.appendChild(info);
-
-        const controls = document.createElement("div");
-        controls.className = "portfolio-media-controls";
-
-        const setCoverBtn = document.createElement("button");
-        setCoverBtn.type = "button";
-        setCoverBtn.className = "media-btn";
-        setCoverBtn.textContent = "⭐ Зробити обкладинкою";
-        setCoverBtn.addEventListener("click", function(){
-          setPortfolioCover(item, index, statusEl);
-        });
-
-        controls.appendChild(setCoverBtn);
-        row.appendChild(controls);
-
-        wrap.appendChild(row);
-
-      });
-
-    }
-
-    wrap.appendChild(statusEl);
-
-    backgroundPortfolioCoverListContainer.appendChild(wrap);
-
-  });
-
-}
-
-
-function createBackgroundPortfolioThumb(media){
-
-  if(media.media_type === "video"){
-
-    const video = document.createElement("video");
-    video.className = "portfolio-media-thumb";
-    video.src = media.url;
-    video.muted = true;
-
-    return video;
-
-  }
-
-  const img = document.createElement("img");
-  img.className = "portfolio-media-thumb";
-  img.src = media.url;
-
-  return img;
 
 }
 
@@ -2233,11 +1938,6 @@ async function loadPortfolioItems(){
 
 
 function renderPortfolioItems(){
-
-  // Keeps "Фони -> Фон з файлів портфоліо" in sync with the portfolio
-  // list itself (load, add, delete, media add/delete all funnel
-  // through here already).
-  renderPortfolioCoverPicker();
 
   portfolioItemsContainer.innerHTML = "";
 

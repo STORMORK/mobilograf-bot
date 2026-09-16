@@ -561,38 +561,23 @@ function getFlatContentSchema() {
 /* =====================================================================
    MEDIA BLOCKS
 
-   The real, existing visual sections of index.html that a background
-   image/gif/video can be attached to - not every CONTENT_GROUPS entry
-   qualifies: "booking" is a modal, not a page section, and "ui" is a
-   floating button, so neither is a background candidate. "footer" has
-   no text group of its own but is a real section, so it's added here.
+   Two site-wide default backgrounds (Фони), independent of each other:
+
+   - heroBg replaces the default Hero video, Hero-only.
+   - restBg replaces the default background shown behind every other
+     block, the portfolio work cards' own frames, and the "Замовити
+     зйомку" modal - ONE shared file for all three, never a separate
+     setting per place. See BACKGROUNDS in index.html and admin.html's
+     "Фони" section for how it's applied/consumed.
 
    Media is language-independent (one upload serves UA/RU/EN) and is
    stored separately from text, at content_i18n.media.blocks.<id>, kept
-   in sync by api/media-commit.js. Adding a 7th block later is one entry
-   here, same pattern as CONTENT_SCHEMA.
+   in sync by api/media-commit.js.
 ===================================================================== */
 
 var MEDIA_BLOCKS = [
-  { id: "hero", label: "🏠 Головний екран" },
-  { id: "about", label: "👤 Про нас" },
-  { id: "services", label: "🎬 Послуги" },
-  { id: "portfolio", label: "📸 Портфоліо" },
-  { id: "contact", label: "📞 Контакти" },
-  { id: "footer", label: "🔻 Footer" },
-  /* Site-wide default backgrounds (Фони) - a different concept from
-     the per-section overlays above: heroBg/restBg replace the base
-     kraska.mp4/Fon.png backgrounds themselves, not an accent layered
-     on top of one section. Reuses the exact same upload/storage
-     pipeline (media-upload-url.js/media-commit.js only check
-     membership in this array), just rendered/consumed separately -
-     see BACKGROUNDS in index.html and admin.html's "Фони" section. */
   { id: "heroBg", label: "🎬 Фон першого блоку (Hero)" },
-  { id: "restBg", label: "🌌 Фон інших блоків" },
-  /* ONE shared background for every "card"-style tile (service cards,
-     the contact card) and the booking modal - never a per-card
-     setting. See applyCardsBackground() in index.html. */
-  { id: "cardsBg", label: "🗂 Фон плашок" }
+  { id: "restBg", label: "🌌 Фон інших блоків" }
 ];
 
 
