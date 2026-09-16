@@ -998,8 +998,28 @@
       background: url("Fon.png") center center / cover no-repeat;
     }
 
-    .portfolio-modal-media-item {
+    .portfolio-modal-viewer {
+      position: relative;
+      overflow: hidden;
+
+      border-radius: 14px;
+
       margin-bottom: 14px;
+
+      touch-action: pan-y;
+    }
+
+    .portfolio-modal-track {
+      display: flex;
+
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
+    }
+
+    .portfolio-modal-media-item {
+      flex: 0 0 100%;
+      min-width: 0;
+      margin-bottom: 0;
     }
 
     .portfolio-modal-media-item img,
@@ -1013,6 +1033,65 @@
       border-radius: 14px;
 
       background: url("Fon.png") center center / cover no-repeat;
+    }
+
+    .portfolio-modal-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+
+      width: 38px;
+      height: 38px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 50%;
+
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(10px);
+      color: #fff;
+
+      font-size: 22px;
+      line-height: 1;
+
+      cursor: pointer;
+    }
+
+    .portfolio-modal-nav:hover {
+      background: rgba(0, 0, 0, 0.65);
+    }
+
+    .portfolio-modal-nav[hidden] {
+      display: none;
+    }
+
+    .portfolio-modal-nav-prev {
+      left: 10px;
+    }
+
+    .portfolio-modal-nav-next {
+      right: 10px;
+    }
+
+    .portfolio-modal-counter {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+
+      padding: 4px 12px;
+
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 50px;
+
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(10px);
+      color: #fff;
+
+      font-size: 12px;
     }
 
     /* =========================
@@ -1271,7 +1350,35 @@
         style="margin-bottom:20px;">
       </p>
 
-      <div id="portfolioModalMedia"></div>
+      <div id="portfolioModalViewer" class="portfolio-modal-viewer">
+
+        <div id="portfolioModalTrack" class="portfolio-modal-track"></div>
+
+        <button
+          id="portfolioModalPrev"
+          class="portfolio-modal-nav portfolio-modal-nav-prev"
+          type="button"
+          aria-label="Previous"
+          hidden>
+          ‹
+        </button>
+
+        <button
+          id="portfolioModalNext"
+          class="portfolio-modal-nav portfolio-modal-nav-next"
+          type="button"
+          aria-label="Next"
+          hidden>
+          ›
+        </button>
+
+        <div
+          id="portfolioModalCounter"
+          class="portfolio-modal-counter"
+          hidden>
+        </div>
+
+      </div>
 
     </div>
 
@@ -2923,6 +3030,203 @@
   }
 
 
+  /* =====================================
+     PORTFOLIO ITEM MODAL - MEDIA VIEWER
+
+     One work can have several photos/videos. All of them are built as
+     equal-width slides in a flex track; switching slides only moves
+     the track with a CSS transform transition (goToModalMedia), so
+     nothing is added/removed/reloaded on navigation - that's what
+     makes it a smooth slide instead of a hard cut. With exactly one
+     media item the arrows/counter stay hidden and the track never
+     moves, so it looks and behaves exactly like a single static item.
+  ===================================== */
+
+  const portfolioModalTrack =
+    document.getElementById("portfolioModalTrack");
+
+  const portfolioModalPrev =
+    document.getElementById("portfolioModalPrev");
+
+  const portfolioModalNext =
+    document.getElementById("portfolioModalNext");
+
+  const portfolioModalCounter =
+    document.getElementById("portfolioModalCounter");
+
+  const portfolioModalViewer =
+    document.getElementById("portfolioModalViewer");
+
+  let portfolioModalMediaCount = 0;
+  let portfolioModalIndex = 0;
+
+
+  function updatePortfolioModalSlide() {
+
+    portfolioModalTrack.style.transform =
+      "translateX(-" + (portfolioModalIndex * 100) + "%)";
+
+    const hasMultiple = portfolioModalMediaCount > 1;
+
+    portfolioModalPrev.hidden = !hasMultiple;
+    portfolioModalNext.hidden = !hasMultiple;
+    portfolioModalCounter.hidden = !hasMultiple;
+
+    if (hasMultiple) {
+
+      portfolioModalCounter.textContent =
+        (portfolioModalIndex + 1) + " / " + portfolioModalMediaCount;
+
+    }
+
+    /* Only the active slide's video plays - the rest pause so they
+       don't keep running silently off-screen. Indexed by slide
+       position (not by position among <video> elements alone), so a
+       video is correctly matched to its own place in the media list
+       even when photos are mixed in before it. */
+    Array.from(
+      portfolioModalTrack.children
+    ).forEach(function (slide, index) {
+
+      const video = slide.querySelector("video");
+
+      if (!video) {
+        return;
+      }
+
+      if (index === portfolioModalIndex) {
+        video.play().catch(function () {});
+      } else {
+        video.pause();
+      }
+
+    });
+
+  }
+
+
+  function goToPortfolioModalMedia(newIndex) {
+
+    if (newIndex < 0 || newIndex >= portfolioModalMediaCount) {
+      /* first/last item - swiping or clicking past the edge is a
+         no-op, nothing breaks */
+      return;
+    }
+
+    portfolioModalIndex = newIndex;
+
+    updatePortfolioModalSlide();
+
+  }
+
+
+  portfolioModalPrev.addEventListener("click", function () {
+    goToPortfolioModalMedia(portfolioModalIndex - 1);
+  });
+
+  portfolioModalNext.addEventListener("click", function () {
+    goToPortfolioModalMedia(portfolioModalIndex + 1);
+  });
+
+  document.addEventListener("keydown", function (event) {
+
+    if (!portfolioItemModal.classList.contains("show")) {
+      return;
+    }
+
+    if (event.key === "ArrowLeft") {
+      goToPortfolioModalMedia(portfolioModalIndex - 1);
+    } else if (event.key === "ArrowRight") {
+      goToPortfolioModalMedia(portfolioModalIndex + 1);
+    }
+
+  });
+
+
+  /* Swipe: only a horizontal-dominant drag is treated as a swipe, so
+     it never fights with the modal box's own vertical scrolling. */
+  let portfolioSwipeStartX = null;
+  let portfolioSwipeStartY = null;
+  let portfolioSwipeIsHorizontal = false;
+
+  portfolioModalViewer.addEventListener(
+    "touchstart",
+    function (event) {
+
+      const touch = event.touches[0];
+
+      portfolioSwipeStartX = touch.clientX;
+      portfolioSwipeStartY = touch.clientY;
+      portfolioSwipeIsHorizontal = false;
+
+    },
+    { passive: true }
+  );
+
+  portfolioModalViewer.addEventListener(
+    "touchmove",
+    function (event) {
+
+      if (portfolioSwipeStartX === null) {
+        return;
+      }
+
+      const touch = event.touches[0];
+
+      const deltaX = touch.clientX - portfolioSwipeStartX;
+      const deltaY = touch.clientY - portfolioSwipeStartY;
+
+      if (
+        !portfolioSwipeIsHorizontal &&
+        Math.abs(deltaX) > Math.abs(deltaY) &&
+        Math.abs(deltaX) > 8
+      ) {
+        portfolioSwipeIsHorizontal = true;
+      }
+
+      /* Once it's clearly a horizontal swipe, stop the page/modal
+         from also scrolling vertically underneath the gesture. */
+      if (portfolioSwipeIsHorizontal && event.cancelable) {
+        event.preventDefault();
+      }
+
+    },
+    { passive: false }
+  );
+
+  portfolioModalViewer.addEventListener(
+    "touchend",
+    function (event) {
+
+      if (portfolioSwipeStartX === null) {
+        return;
+      }
+
+      if (portfolioSwipeIsHorizontal) {
+
+        const touch = event.changedTouches[0];
+        const deltaX = touch.clientX - portfolioSwipeStartX;
+        const swipeThreshold = 40;
+
+        if (deltaX <= -swipeThreshold) {
+          // swipe left -> next
+          goToPortfolioModalMedia(portfolioModalIndex + 1);
+        } else if (deltaX >= swipeThreshold) {
+          // swipe right -> previous
+          goToPortfolioModalMedia(portfolioModalIndex - 1);
+        }
+
+      }
+
+      portfolioSwipeStartX = null;
+      portfolioSwipeStartY = null;
+      portfolioSwipeIsHorizontal = false;
+
+    },
+    { passive: true }
+  );
+
+
   function openPortfolioModal(item) {
 
     const workTitle = portfolioText(item, "title");
@@ -2933,12 +3237,11 @@
     document.getElementById("portfolioModalDescription").textContent =
       portfolioText(item, "description");
 
-    const mediaContainer =
-      document.getElementById("portfolioModalMedia");
+    portfolioModalTrack.innerHTML = "";
 
-    mediaContainer.innerHTML = "";
+    const mediaList = item.portfolio_media || [];
 
-    (item.portfolio_media || []).forEach(function (media) {
+    mediaList.forEach(function (media) {
 
       const wrap = document.createElement("div");
       wrap.className = "portfolio-modal-media-item";
@@ -2966,9 +3269,16 @@
       el.src = media.url;
 
       wrap.appendChild(el);
-      mediaContainer.appendChild(wrap);
+      portfolioModalTrack.appendChild(wrap);
 
     });
+
+    portfolioModalMediaCount = mediaList.length;
+    // Opens on the item that was actually clicked - the card's own
+    // cover thumbnail is always the first media, so this matches it.
+    portfolioModalIndex = 0;
+
+    updatePortfolioModalSlide();
 
     portfolioItemModal.classList.add("show");
 
@@ -2980,7 +3290,15 @@
     portfolioItemModal.classList.remove("show");
 
     /* stop any playing video instead of just hiding it */
-    document.getElementById("portfolioModalMedia").innerHTML = "";
+    portfolioModalTrack.innerHTML = "";
+
+    portfolioModalTrack.style.transform = "translateX(0)";
+    portfolioModalMediaCount = 0;
+    portfolioModalIndex = 0;
+
+    portfolioModalPrev.hidden = true;
+    portfolioModalNext.hidden = true;
+    portfolioModalCounter.hidden = true;
 
   }
 
