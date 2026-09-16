@@ -3,8 +3,7 @@ const {
   getSiteContentRow,
   patchSiteContent,
   publicUrlFor,
-  deleteStorageObjects,
-  pgRequest
+  deleteStorageObjects
 } = require("./_lib/supabase");
 const { MIME_TO_KIND } = require("./_lib/mediaValidation");
 const { MEDIA_BLOCKS } = require("../content-schema.js");
@@ -110,65 +109,6 @@ export default async function handler(req, res){
         await patchSiteContent({ media: { blocks: newBlocks } });
 
       if(previous && previous.path && previous.path !== path){
-        await deleteStorageObjects([previous.path]);
-      }
-
-      return res.status(200).json({ success: true, data: data });
-
-    }
-
-
-    if(action === "save-from-portfolio"){
-
-      /* Adopts an already-uploaded portfolio file as this block's
-         media, with no re-upload and no new Storage object - looked
-         up server-side by id (never trusting a client-supplied path)
-         so this can't be used to point a block at an arbitrary
-         Storage path. Deliberately has no "path" of its own: the
-         portfolio file is shared, not moved, so neither replacing nor
-         deleting this block's media should ever delete it - the
-         existing cleanup below only ever acts on previous.path, which
-         a borrowed entry never has. */
-
-      const portfolioMediaId = body.portfolioMediaId;
-
-      if(typeof portfolioMediaId !== "string" || portfolioMediaId.length === 0){
-        return res.status(400).json({ error: "Missing portfolioMediaId" });
-      }
-
-      const rows =
-        await pgRequest("portfolio_media", {
-          method: "GET",
-          query:
-            "id=eq." + encodeURIComponent(portfolioMediaId) +
-            "&select=url,media_type,mime_type,file_name,file_size"
-        });
-
-      if(!rows || rows.length === 0){
-        return res.status(404).json({ error: "Portfolio media not found" });
-      }
-
-      const source = rows[0];
-
-      const previous = existingBlocks[blockId];
-
-      const newEntry = {
-        url: source.url,
-        type: source.media_type,
-        mime: source.mime_type,
-        fileName: source.file_name || "",
-        fileSize: typeof source.file_size === "number" ? source.file_size : null,
-        borrowedFromPortfolio: true,
-        updatedAt: new Date().toISOString()
-      };
-
-      const newBlocks =
-        Object.assign({}, existingBlocks, { [blockId]: newEntry });
-
-      const data =
-        await patchSiteContent({ media: { blocks: newBlocks } });
-
-      if(previous && previous.path){
         await deleteStorageObjects([previous.path]);
       }
 
