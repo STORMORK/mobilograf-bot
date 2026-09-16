@@ -2874,7 +2874,18 @@
         thumb.src = cover.url;
 
         if (cover.media_type === "video") {
+
+          // Plays right in the card, no click needed - same attributes
+          // as the Hero background video: muted+playsInline is what
+          // lets autoplay work on mobile (Android/iOS) without
+          // fullscreen takeover, and preload="auto" means a real frame
+          // is showing (not a black box) as soon as it can be.
           thumb.muted = true;
+          thumb.autoplay = true;
+          thumb.loop = true;
+          thumb.playsInline = true;
+          thumb.preload = "auto";
+
         } else {
           // Real portfolio work, not a decorative background - use its
           // own title as alt text instead of leaving it empty/missing.
@@ -2882,6 +2893,13 @@
         }
 
         card.appendChild(thumb);
+
+        if (cover.media_type === "video") {
+          // Autoplay isn't guaranteed to kick in from attributes alone
+          // on every mobile browser - nudge it explicitly, same as the
+          // Hero background video does.
+          thumb.play().catch(function () {});
+        }
 
       }
 
