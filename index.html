@@ -1833,6 +1833,35 @@
 
   let currentLang = "ua";
 
+
+  /* =====================================
+     ANALYTICS (📊 Статистика, admin.html)
+
+     Fire-and-forget: never awaited by any other code path, and a
+     failed/slow request here must never block or break the Mini App
+     itself (see the .catch below). The server
+     (api/analytics.js) does its own Telegram initData
+     verification and silently discards events from either
+     administrator - the client never decides who's an admin, it only
+     reports what happened, the same (tg && tg.initData) || "" header
+     the booking form already sends to api/send-message.js. */
+  function trackEvent(eventType) {
+
+    fetch("/api/analytics.js", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-telegram-init-data": (tg && tg.initData) || ""
+      },
+      body: JSON.stringify({
+        event_type: eventType,
+        lang: currentLang
+      })
+    }).catch(function () {});
+
+  }
+
+
   /* All editable UI text (buttons, labels, placeholders, messages, and the
      legacy Supabase-linked hero/about fields) now lives in the shared
      CONTENT_SCHEMA manifest (content-schema.js), loaded above. That file
@@ -2246,6 +2275,8 @@
 
             renderSite();
 
+            trackEvent("language_change");
+
           }
         );
 
@@ -2632,6 +2663,8 @@
         "show"
       );
 
+      trackEvent("order_open");
+
     }
   );
 
@@ -2803,6 +2836,8 @@
 
         formMessage.textContent =
           t("form_success");
+
+        trackEvent("order_submit");
 
 
         bookingForm.reset();
@@ -3154,6 +3189,8 @@
         block: "start"
       });
 
+      trackEvent("portfolio_open");
+
     }
 
   }
@@ -3395,6 +3432,8 @@
     portfolioModalIndex = newIndex;
 
     updatePortfolioModalSlide(settleDurationMs);
+
+    trackEvent("portfolio_material_view");
 
   }
 
@@ -3666,6 +3705,12 @@
 
     portfolioItemModal.classList.add("show");
 
+    trackEvent("portfolio_item_open");
+
+    if (mediaList.length > 0) {
+      trackEvent("portfolio_material_view");
+    }
+
   }
 
 
@@ -3760,6 +3805,8 @@
   /* =====================================
      START
   ===================================== */
+
+  trackEvent("app_open");
 
   loadSiteContent();
 
