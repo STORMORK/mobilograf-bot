@@ -20,6 +20,18 @@ const RATE_LIMIT_STORE_MAX_ENTRIES = 5000; // cap memory use of the in-process m
 
 const TELEGRAM_TIMEOUT_MS = 8000;
 
+/* Bot conversation text/config - see TELEGRAM BOT WEBHOOK below. */
+const MINI_APP_URL = "https://mobilograf-bot.vercel.app/";
+
+const OPEN_APP_BUTTON_TEXT = "📱 Відкрити застосунок";
+
+const START_MESSAGE_TEXT =
+`Вітаю! 👋
+
+Тут ви можете переглянути мої роботи, ознайомитися з послугами та обрати зручну дату для зйомки.
+
+Натискайте кнопку нижче та заходьте 👇`;
+
 
 /* =====================================
    RATE LIMITING (best-effort, in-memory)
@@ -217,6 +229,115 @@ function buildTelegramReplyMarkup(telegramUser) {
 
 
 /* =====================================
+   TELEGRAM BOT WEBHOOK (/start + persistent menu button)
+
+   Handled in this same file/function - not a separate api/*.js - to
+   stay within this project's existing Vercel serverless function count
+   (this repo already sits at that limit; a standalone endpoint here
+   failed to deploy). This is the only code in the whole repo that
+   receives incoming Telegram updates, entirely independent from the
+   booking pipeline below: routed out in handler() before any of its
+   rate limiting/content-type/size checks, since those exist for
+   arbitrary browser clients, not Telegram's own servers calling in -
+   sharing that limiter would throttle every user's /start once a few
+   arrive from Telegram's IPs within the same minute.
+===================================== */
+
+async function callTelegramApi(token, method, payload) {
+
+  const response =
+    await fetch(
+      `https://api.telegram.org/bot${token}/${method}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      }
+    );
+
+  return response.json().catch(function () { return null; });
+
+}
+
+
+function isStartCommand(text) {
+  return typeof text === "string" && text.indexOf("/start") === 0;
+}
+
+
+async function handleTelegramWebhook(req, res) {
+
+  const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+
+  if (
+    expectedSecret &&
+    req.headers["x-telegram-bot-api-secret-token"] !== expectedSecret
+  ) {
+    return res.status(401).json({ error: "Invalid secret token" });
+  }
+
+  const token = process.env.BOT_TOKEN;
+
+  if (!token) {
+
+    console.error("telegram webhook: BOT_TOKEN is not configured");
+
+    // Telegram only cares about a 2xx response - anything else makes it
+    // retry the same update repeatedly, so this always answers 200.
+    return res.status(200).json({ ok: true });
+
+  }
+
+  try {
+
+    const message = req.body.message;
+    const chatId = message && message.chat && message.chat.id;
+
+    if (chatId && isStartCommand(message.text)) {
+
+      await callTelegramApi(token, "sendMessage", {
+
+        chat_id: chatId,
+
+        text: START_MESSAGE_TEXT,
+
+        reply_markup: {
+          inline_keyboard: [[
+            {
+              text: OPEN_APP_BUTTON_TEXT,
+              web_app: { url: MINI_APP_URL }
+            }
+          ]]
+        }
+
+      });
+
+      /* No chat_id here on purpose - sets the DEFAULT menu button (the
+         one shown next to the message box) for every user, not just
+         this chat. Safe/idempotent to repeat on every /start - keeps
+         it self-healing if it's ever reset from outside this code. */
+      await callTelegramApi(token, "setChatMenuButton", {
+        menu_button: {
+          type: "web_app",
+          text: OPEN_APP_BUTTON_TEXT,
+          web_app: { url: MINI_APP_URL }
+        }
+      });
+
+    }
+
+  } catch (error) {
+
+    console.error("telegram webhook error:", error);
+
+  }
+
+  return res.status(200).json({ ok: true });
+
+}
+
+
+/* =====================================
    HANDLER
 ===================================== */
 
@@ -226,6 +347,14 @@ export default async function handler(req, res) {
     return res.status(405).json({
       error: "Method not allowed"
     });
+  }
+
+  /* Every Update Telegram's webhook sends carries a top-level update_id,
+     which the booking payload below (name/phone/date/service/comment)
+     never does - see TELEGRAM BOT WEBHOOK above for why this is handled
+     here instead of a separate endpoint. */
+  if (req.body && req.body.update_id !== undefined) {
+    return handleTelegramWebhook(req, res);
   }
 
   const clientIp = getClientIp(req);
