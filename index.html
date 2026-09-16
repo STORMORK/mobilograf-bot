@@ -1012,7 +1012,13 @@
     .portfolio-modal-track {
       display: flex;
 
-      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      /* Base/fallback duration - actual releases override just the
+         duration inline (see endPortfolioDrag) so a release that's
+         already most of the way to its target settles quickly while
+         a small correction still reads as a deliberate motion. The
+         curve itself (fast start, gentle no-overshoot landing) is
+         what gives the "physical" feel without any bounce. */
+      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
       will-change: transform;
     }
 
@@ -3012,9 +3018,20 @@
   }
 
 
-  function updatePortfolioModalSlide() {
+  function updatePortfolioModalSlide(settleDurationMs) {
 
+    /* Clears any inline "none"/duration override left by an
+       in-progress drag first, then - only for a drag-driven settle -
+       reapplies just the duration on top of the CSS class's own
+       transition-property/timing-function. Order matters: setting
+       style.transition also resets style.transitionDuration, so the
+       override has to come after. */
     portfolioModalTrack.style.transition = "";
+
+    if (settleDurationMs) {
+      portfolioModalTrack.style.transitionDuration = settleDurationMs + "ms";
+    }
+
     setTrackTransform(0);
 
     const hasMultiple = portfolioModalMediaCount > 1;
@@ -3054,18 +3071,18 @@
   }
 
 
-  function goToPortfolioModalMedia(newIndex) {
+  function goToPortfolioModalMedia(newIndex, settleDurationMs) {
 
     if (newIndex < 0 || newIndex >= portfolioModalMediaCount) {
       /* first/last item - dragging past the edge is a no-op, just
          snap back to where we already are */
-      updatePortfolioModalSlide();
+      updatePortfolioModalSlide(settleDurationMs);
       return;
     }
 
     portfolioModalIndex = newIndex;
 
-    updatePortfolioModalSlide();
+    updatePortfolioModalSlide(settleDurationMs);
 
   }
 
@@ -3080,6 +3097,8 @@
   let dragDeltaX = 0;
   let dragAxisLocked = false;
   let dragIsHorizontal = false;
+  let dragViewerWidth = 1;
+  let dragRafId = null;
 
   function onPortfolioDragStart(event) {
 
@@ -3098,6 +3117,11 @@
     dragDeltaX = 0;
     dragAxisLocked = false;
     dragIsHorizontal = false;
+
+    /* Measured once per gesture (not on every move) since it can't
+       change mid-drag - avoids a layout read on every pointermove. */
+    dragViewerWidth =
+      portfolioModalViewer.getBoundingClientRect().width || 1;
 
     portfolioModalTrack.style.transition = "none";
 
@@ -3162,8 +3186,18 @@
     /* The neighboring slide is already laid out right next to the
        current one in the flex track, so moving the track by the raw
        drag distance is what makes it visibly slide in *during* the
-       gesture instead of only appearing after release. */
-    setTrackTransform(adjustedDelta);
+       gesture instead of only appearing after release. Applied on the
+       next animation frame (coalescing any extra pointermove events
+       that land in the same frame) so the finger and the slide never
+       drift out of sync, even on a flood of touch events. */
+    if (dragRafId === null) {
+
+      dragRafId = requestAnimationFrame(function () {
+        dragRafId = null;
+        setTrackTransform(dragDeltaX);
+      });
+
+    }
 
   }
 
@@ -3177,7 +3211,31 @@
 
   }
 
+  /* A release that's already most of the way to its target should
+     settle quickly; one that barely moved needs a touch longer to
+     read as an intentional motion rather than a twitch. Both ends are
+     still fast enough to feel immediate, never sluggish. */
+  const SETTLE_MIN_DURATION_MS = 180;
+  const SETTLE_MAX_DURATION_MS = 380;
+
+  function computeSettleDuration(remainingRatio) {
+
+    const clamped = Math.max(0, Math.min(1, remainingRatio));
+
+    return Math.round(
+      SETTLE_MIN_DURATION_MS +
+      clamped * (SETTLE_MAX_DURATION_MS - SETTLE_MIN_DURATION_MS)
+    );
+
+  }
+
+
   function endPortfolioDrag(shouldResolve) {
+
+    if (dragRafId !== null) {
+      cancelAnimationFrame(dragRafId);
+      dragRafId = null;
+    }
 
     const wasHorizontal = dragIsHorizontal;
     const finalDelta = dragDeltaX;
@@ -3188,17 +3246,12 @@
     dragIsHorizontal = false;
     dragDeltaX = 0;
 
-    portfolioModalTrack.style.transition = "";
-
     if (!shouldResolve || !wasHorizontal) {
       updatePortfolioModalSlide();
       return;
     }
 
-    const viewerWidth =
-      portfolioModalViewer.getBoundingClientRect().width || 1;
-
-    const distanceRatio = Math.abs(finalDelta) / viewerWidth;
+    const distanceRatio = Math.abs(finalDelta) / dragViewerWidth;
     const velocity = elapsed > 0 ? Math.abs(finalDelta) / elapsed : 0;
 
     /* Either dragged far enough (>20% of the viewer width) or flicked
@@ -3207,11 +3260,23 @@
       distanceRatio > 0.2 || (velocity > 0.5 && Math.abs(finalDelta) > 20);
 
     if (passedThreshold && finalDelta < 0) {
-      goToPortfolioModalMedia(portfolioModalIndex + 1);
+
+      goToPortfolioModalMedia(
+        portfolioModalIndex + 1,
+        computeSettleDuration(1 - distanceRatio)
+      );
+
     } else if (passedThreshold && finalDelta > 0) {
-      goToPortfolioModalMedia(portfolioModalIndex - 1);
+
+      goToPortfolioModalMedia(
+        portfolioModalIndex - 1,
+        computeSettleDuration(1 - distanceRatio)
+      );
+
     } else {
-      updatePortfolioModalSlide();
+
+      updatePortfolioModalSlide(computeSettleDuration(distanceRatio));
+
     }
 
   }
@@ -3305,6 +3370,11 @@
     portfolioModalIndex = 0;
 
     /* in case the modal gets closed mid-drag */
+    if (dragRafId !== null) {
+      cancelAnimationFrame(dragRafId);
+      dragRafId = null;
+    }
+
     dragPointerId = null;
     dragAxisLocked = false;
     dragIsHorizontal = false;
