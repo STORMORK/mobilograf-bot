@@ -701,6 +701,54 @@ style="margin:0;"
 </div>
 
 
+<div id="backgroundsMainSection" class="main-section">
+
+<button type="button" class="main-section-toggle">
+<span>🌄 Фони</span>
+<span class="main-section-arrow">▸</span>
+</button>
+
+<div class="main-section-body-wrap">
+<div class="main-section-body">
+
+<p class="media-hint" style="margin-top:0;">
+Фон першого блоку (Hero) і фон усіх інших блоків сайту налаштовуються
+окремо. Другий пункт — це ОДИН спільний фон для всіх блоків, крім
+Hero, а не окремий фон для кожного з них.
+</p>
+
+<div id="backgroundHeroContainer"></div>
+
+<div id="backgroundRestContainer"></div>
+
+<div id="backgroundPortfolioPicker" class="sub-section">
+
+<button type="button" class="sub-section-toggle">
+<span>🗂 Фон з файлів портфоліо</span>
+<span class="sub-section-arrow">▸</span>
+</button>
+
+<div class="sub-section-body-wrap">
+<div class="sub-section-body">
+
+<p class="media-hint" style="margin-top:0;">
+Обрати вже завантажений файл з робіт портфоліо як фон — без повторного
+завантаження.
+</p>
+
+<div id="backgroundPortfolioList"></div>
+
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+
+
 <div id="calendarMainSection" class="main-section">
 
 <button type="button" class="main-section-toggle">
@@ -794,6 +842,15 @@ document.getElementById("portfolioItems");
 
 const addPortfolioItemButton =
 document.getElementById("addPortfolioItemButton");
+
+const backgroundHeroContainer =
+document.getElementById("backgroundHeroContainer");
+
+const backgroundRestContainer =
+document.getElementById("backgroundRestContainer");
+
+const backgroundPortfolioListContainer =
+document.getElementById("backgroundPortfolioList");
 
 const calendarSection =
 document.getElementById("calendarSection");
@@ -994,6 +1051,10 @@ result.content
 );
 
 renderMediaBlocks(
+result.content
+);
+
+renderBackgroundBlocks(
 result.content
 );
 
@@ -1571,7 +1632,12 @@ function createMediaPreviewElement(mediaEntry){
 let openMediaBlockId = null;
 
 
-function createMediaBlockCard(block, mediaEntry){
+function createMediaBlockCard(block, mediaEntry, options){
+
+  const onSaved = (options && options.onSaved) || renderMediaBlocks;
+  const onToggle = (options && options.onToggle) || function(isOpen){
+    openMediaBlockId = isOpen ? block.id : null;
+  };
 
   const card = document.createElement("div");
   card.className = "sub-section";
@@ -1605,6 +1671,21 @@ function createMediaBlockCard(block, mediaEntry){
   typeLine.className = "media-type-line";
   typeLine.textContent = "Тип: Фон";
   body.appendChild(typeLine);
+
+  if(options && options.defaultLabel){
+
+    const currentLine = document.createElement("div");
+    currentLine.className = "media-file-info";
+    currentLine.textContent =
+      "Поточний фон: " +
+      (
+        mediaEntry
+          ? "власний файл — " + (mediaEntry.fileName || mediaEntry.type)
+          : options.defaultLabel
+      );
+    body.appendChild(currentLine);
+
+  }
 
   const hint = document.createElement("p");
   hint.className = "media-hint";
@@ -1714,7 +1795,7 @@ function createMediaBlockCard(block, mediaEntry){
 
       statusMsg.textContent = "✅ Медіа застосовано";
 
-      renderMediaBlocks(updatedContent);
+      onSaved(updatedContent);
 
     }catch(error){
 
@@ -1749,7 +1830,7 @@ function createMediaBlockCard(block, mediaEntry){
         throw new Error(buildErrorMessage(data, "Помилка видалення"));
       }
 
-      renderMediaBlocks(data.data);
+      onSaved(data.data);
 
     }catch(error){
 
@@ -1771,9 +1852,9 @@ function createMediaBlockCard(block, mediaEntry){
 
   toggleBtn.addEventListener("click", function(){
     // Tracks which block (if any) is left open so a rebuild after an
-    // upload/delete (renderMediaBlocks) can restore it instead of
-    // always snapping every block closed again.
-    openMediaBlockId = card.classList.contains("open") ? block.id : null;
+    // upload/delete (onSaved) can restore it instead of always
+    // snapping every block closed again.
+    onToggle(card.classList.contains("open"));
   });
 
   return card;
@@ -1783,10 +1864,12 @@ function createMediaBlockCard(block, mediaEntry){
 
 /* "services" (Послуги) is intentionally not editable here - the site's
    Photo/Video/Content cards in that section don't use a block
-   background, so it's hidden from this admin list only. It stays in
+   background, so it's hidden from this admin list only. heroBg/restBg
+   are also hidden here - they live in the separate "Фони" section
+   (renderBackgroundBlocks below), not "Медіа сайту". All three stay in
    content-schema.js's MEDIA_BLOCKS so index.html's rendering and
    media-commit.js's validation are unaffected. */
-const HIDDEN_MEDIA_BLOCK_IDS = ["services"];
+const HIDDEN_MEDIA_BLOCK_IDS = ["services", "heroBg", "restBg"];
 
 function renderMediaBlocks(content){
 
@@ -1823,6 +1906,219 @@ function renderMediaBlocks(content){
     }
 
   }
+
+}
+
+
+/* =====================================
+   BACKGROUNDS (🌄 Фони)
+
+   Two site-wide default backgrounds, independent of each other and of
+   the per-section MEDIA_BLOCKS overlays above: "heroBg" replaces
+   kraska.mp4 on the Hero block only, "restBg" replaces Fon.png behind
+   every other block (ONE shared file, not one per block - see
+   BACKGROUNDS in index.html for how the public page consumes these).
+   Same createMediaBlockCard() UI as the other media blocks, just
+   rendered into their own containers with their own onSaved/onToggle
+   so re-rendering the "Медіа сайту" list never touches these, and
+   vice versa.
+===================================== */
+
+let openBackgroundBlockId = null;
+
+
+function renderBackgroundBlocks(content){
+
+  backgroundHeroContainer.innerHTML = "";
+  backgroundRestContainer.innerHTML = "";
+
+  const heroBlock = getMediaBlockById("heroBg");
+  const restBlock = getMediaBlockById("restBg");
+
+  backgroundHeroContainer.appendChild(
+    createMediaBlockCard(
+      heroBlock,
+      resolveBlockMedia(content, "heroBg"),
+      {
+        onSaved: renderBackgroundBlocks,
+        onToggle: function(isOpen){
+          openBackgroundBlockId = isOpen ? "heroBg" : null;
+        },
+        defaultLabel: "стандартне відео kraska.mp4"
+      }
+    )
+  );
+
+  backgroundRestContainer.appendChild(
+    createMediaBlockCard(
+      restBlock,
+      resolveBlockMedia(content, "restBg"),
+      {
+        onSaved: renderBackgroundBlocks,
+        onToggle: function(isOpen){
+          openBackgroundBlockId = isOpen ? "restBg" : null;
+        },
+        defaultLabel: "стандартний синій (Fon.png)"
+      }
+    )
+  );
+
+  if(openBackgroundBlockId){
+
+    const container =
+      openBackgroundBlockId === "heroBg"
+        ? backgroundHeroContainer
+        : backgroundRestContainer;
+
+    const reopen = container.querySelector(".sub-section");
+
+    if(reopen){
+
+      const bodyWrap = reopen.querySelector(".sub-section-body-wrap");
+
+      reopen.classList.add("open");
+      bodyWrap.style.maxHeight = "none";
+
+    }
+
+  }
+
+  renderBackgroundPortfolioPicker();
+
+}
+
+
+function createBackgroundPortfolioThumb(media){
+
+  if(media.media_type === "video"){
+
+    const video = document.createElement("video");
+    video.className = "portfolio-media-thumb";
+    video.src = media.url;
+    video.muted = true;
+
+    return video;
+
+  }
+
+  const img = document.createElement("img");
+  img.className = "portfolio-media-thumb";
+  img.src = media.url;
+
+  return img;
+
+}
+
+
+async function useMediaAsBackground(blockId, media, statusEl){
+
+  statusEl.textContent = "Застосовуємо...";
+
+  try{
+
+    const response =
+      await fetch("/api/media-commit.js", {
+        method: "POST",
+        headers: adminJsonHeaders(),
+        body: JSON.stringify({
+          action: "save-from-portfolio",
+          blockId: blockId,
+          portfolioMediaId: media.id
+        })
+      });
+
+    const data = await response.json();
+
+    if(!response.ok){
+      throw new Error(buildErrorMessage(data, "Не вдалося застосувати фон"));
+    }
+
+    renderBackgroundBlocks(data.data);
+
+    statusEl.textContent =
+      "✅ Застосовано як " +
+      (blockId === "heroBg" ? "фон першого блоку" : "фон інших блоків");
+
+  }catch(error){
+
+    statusEl.textContent = "❌ " + error.message;
+
+  }
+
+}
+
+
+function renderBackgroundPortfolioPicker(){
+
+  backgroundPortfolioListContainer.innerHTML = "";
+
+  const allMedia = [];
+
+  portfolioItems.forEach(function(item){
+
+    (item.portfolio_media || []).forEach(function(media){
+      allMedia.push({ item: item, media: media });
+    });
+
+  });
+
+  if(allMedia.length === 0){
+
+    const p = document.createElement("p");
+    p.className = "media-empty";
+    p.textContent = "У портфоліо ще немає завантажених файлів.";
+    backgroundPortfolioListContainer.appendChild(p);
+
+    return;
+
+  }
+
+  allMedia.forEach(function(entry){
+
+    const row = document.createElement("div");
+    row.className = "portfolio-media-row";
+
+    row.appendChild(createBackgroundPortfolioThumb(entry.media));
+
+    const info = document.createElement("div");
+    info.className = "portfolio-media-info";
+    info.textContent =
+      (entry.media.file_name || "") + " · " +
+      entry.media.media_type + " · " +
+      formatFileSize(entry.media.file_size);
+    row.appendChild(info);
+
+    const controls = document.createElement("div");
+    controls.className = "portfolio-media-controls";
+
+    const statusEl = document.createElement("div");
+    statusEl.className = "media-status";
+    statusEl.style.width = "100%";
+
+    const heroBtn = document.createElement("button");
+    heroBtn.type = "button";
+    heroBtn.className = "media-btn";
+    heroBtn.textContent = "→ Перший блок";
+    heroBtn.addEventListener("click", function(){
+      useMediaAsBackground("heroBg", entry.media, statusEl);
+    });
+
+    const restBtn = document.createElement("button");
+    restBtn.type = "button";
+    restBtn.className = "media-btn";
+    restBtn.textContent = "→ Інші блоки";
+    restBtn.addEventListener("click", function(){
+      useMediaAsBackground("restBg", entry.media, statusEl);
+    });
+
+    controls.appendChild(heroBtn);
+    controls.appendChild(restBtn);
+    row.appendChild(controls);
+    row.appendChild(statusEl);
+
+    backgroundPortfolioListContainer.appendChild(row);
+
+  });
 
 }
 
@@ -1892,6 +2188,11 @@ async function loadPortfolioItems(){
 
 
 function renderPortfolioItems(){
+
+  // Keeps "Фони -> Фон з файлів портфоліо" in sync with the portfolio
+  // list itself (load, add, delete, media add/delete all funnel
+  // through here already).
+  renderBackgroundPortfolioPicker();
 
   portfolioItemsContainer.innerHTML = "";
 

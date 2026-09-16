@@ -911,6 +911,36 @@
       background-color: #111111;
     }
 
+    /* Admin-set Hero background (Фони -> Фон першого блоку) when it's
+       an image/GIF rather than a video - applied via inline
+       background-image by applyHeroBackground(), this class only
+       supplies the sizing. A custom *video* background instead reuses
+       #heroBackgroundVideo itself (see applyHeroBackground). */
+    #heroBlock.hero-custom-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+
+    /* Admin-set shared background for every non-Hero block (Фони ->
+       Фон інших блоків) when it's a video - mirrors .site-background-image
+       below (same fixed full-viewport layer), just for the one case a
+       CSS background-image can't handle. Hidden by default; shown only
+       when applySiteBackground() finds a custom video entry. */
+    .site-background-video {
+      position: fixed;
+      inset: 0;
+
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+
+      z-index: -1;
+
+      pointer-events: none;
+
+      display: none;
+    }
+
     /* =========================
        SITE BACKGROUND IMAGE
 
@@ -1113,6 +1143,13 @@
        naturally only ever shows through About/Services/Portfolio/
        Contact/Footer without any extra scoping logic. -->
   <div class="site-background-image"></div>
+  <video
+    class="site-background-video"
+    muted
+    loop
+    playsinline
+    preload="auto">
+  </video>
   <div class="site-background-overlay"></div>
 
 
@@ -1747,9 +1784,111 @@
 
     renderContactInfo();
 
+    applyHeroBackground(siteContent);
+
+    applySiteBackground(siteContent);
+
     applyBlockMedia(siteContent);
 
     renderPortfolioGallery();
+
+  }
+
+
+  /* =====================================
+     BACKGROUNDS (admin "Фони" section)
+
+     heroBg/restBg are plain MEDIA_BLOCKS entries (see
+     content-schema.js) storing the *base* background itself, not an
+     accent layered on top of one section the way applyBlockMedia's
+     per-section overlays work. Applied here, after site content
+     loads, on top of whatever the default kraska.mp4/Fon.png IIFEs
+     below already started - same "admin content arrives slightly
+     after first paint" timing every other admin-set media on this
+     page already uses. Absent/deleted -> both functions leave the
+     existing default completely alone.
+  ===================================== */
+
+  function applyHeroBackground(content) {
+
+    const heroBlock =
+      document.getElementById("heroBlock");
+
+    const heroBgVideo =
+      document.getElementById("heroBackgroundVideo");
+
+    const customEntry =
+      resolveBlockMedia(content, "heroBg");
+
+    if (!customEntry) {
+      return;
+    }
+
+    heroBlock.classList.remove("hero-bg-video-unavailable");
+
+    if (customEntry.type === "video") {
+
+      heroBlock.classList.remove("hero-custom-bg");
+      heroBlock.style.backgroundImage = "";
+
+      heroBgVideo.style.display = "";
+      heroBgVideo.src = customEntry.url;
+      heroBgVideo.play().catch(function () {});
+
+    } else {
+
+      // image or gif - the video layer is Hero-video-specific, so a
+      // static custom background instead goes straight on #heroBlock,
+      // same as the existing prefers-reduced-motion/unavailable cases.
+      heroBgVideo.pause();
+      heroBgVideo.removeAttribute("src");
+      heroBgVideo.load();
+      heroBgVideo.style.display = "none";
+
+      heroBlock.classList.add("hero-custom-bg");
+      heroBlock.style.backgroundImage =
+        "url(\"" + customEntry.url + "\")";
+
+    }
+
+  }
+
+
+  function applySiteBackground(content) {
+
+    const bgImageEl =
+      document.querySelector(".site-background-image");
+
+    const bgVideoEl =
+      document.querySelector(".site-background-video");
+
+    const customEntry =
+      resolveBlockMedia(content, "restBg");
+
+    if (!customEntry) {
+      return;
+    }
+
+    if (customEntry.type === "video") {
+
+      bgImageEl.style.display = "none";
+
+      bgVideoEl.style.display = "block";
+      bgVideoEl.src = customEntry.url;
+      bgVideoEl.play().catch(function () {});
+
+    } else {
+
+      bgVideoEl.pause();
+      bgVideoEl.removeAttribute("src");
+      bgVideoEl.load();
+      bgVideoEl.style.display = "none";
+
+      bgImageEl.style.display = "";
+      bgImageEl.style.backgroundImage =
+        "url(\"" + customEntry.url + "\")";
+
+    }
 
   }
 

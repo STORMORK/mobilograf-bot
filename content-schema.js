@@ -579,7 +579,16 @@ var MEDIA_BLOCKS = [
   { id: "services", label: "🎬 Послуги" },
   { id: "portfolio", label: "📸 Портфоліо" },
   { id: "contact", label: "📞 Контакти" },
-  { id: "footer", label: "🔻 Footer" }
+  { id: "footer", label: "🔻 Footer" },
+  /* Site-wide default backgrounds (Фони) - a different concept from
+     the per-section overlays above: heroBg/restBg replace the base
+     kraska.mp4/Fon.png backgrounds themselves, not an accent layered
+     on top of one section. Reuses the exact same upload/storage
+     pipeline (media-upload-url.js/media-commit.js only check
+     membership in this array), just rendered/consumed separately -
+     see BACKGROUNDS in index.html and admin.html's "Фони" section. */
+  { id: "heroBg", label: "🎬 Фон першого блоку (Hero)" },
+  { id: "restBg", label: "🌌 Фон інших блоків" }
 ];
 
 
