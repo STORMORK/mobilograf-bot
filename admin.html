@@ -2822,13 +2822,14 @@ calendarNextMonthButton.addEventListener("click", function(){
 /* =====================================
    STATISTICS (📊 Статистика)
 
-   Reads api/analytics-stats.js - admin-only (same requireAdmin() check
-   as every other admin endpoint here), real server-side aggregation
-   of analytics_events. Both administrators are excluded at write time
-   by api/analytics-collect.js itself (never written in the first
-   place), so nothing here needs to filter them out again. Loaded once
-   when the panel opens, same as loadPortfolioItems()/loadCalendar()
-   above - no polling, no extra requests.
+   GET api/analytics.js - admin-only (same requireAdmin() check as
+   every other admin endpoint here), real server-side aggregation of
+   analytics_events. The same file's POST branch (used by index.html's
+   trackEvent()) excludes both administrators at write time - never
+   written in the first place, so nothing here needs to filter them
+   out again. Loaded once when the panel opens, same as
+   loadPortfolioItems()/loadCalendar() above - no polling, no extra
+   requests.
 ===================================== */
 
 function statTile(value, label){
@@ -2946,7 +2947,7 @@ async function loadStats(){
   try{
 
     const response =
-      await fetch("/api/analytics-stats.js", {
+      await fetch("/api/analytics.js", {
         method: "GET",
         headers: { "x-telegram-init-data": telegramInitData },
         cache: "no-store"

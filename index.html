@@ -1840,14 +1840,14 @@
      Fire-and-forget: never awaited by any other code path, and a
      failed/slow request here must never block or break the Mini App
      itself (see the .catch below). The server
-     (api/analytics-collect.js) does its own Telegram initData
+     (api/analytics.js) does its own Telegram initData
      verification and silently discards events from either
      administrator - the client never decides who's an admin, it only
      reports what happened, the same (tg && tg.initData) || "" header
      the booking form already sends to api/send-message.js. */
   function trackEvent(eventType) {
 
-    fetch("/api/analytics-collect.js", {
+    fetch("/api/analytics.js", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
