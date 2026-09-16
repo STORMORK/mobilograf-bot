@@ -565,9 +565,10 @@ function getFlatContentSchema() {
 
    - heroBg replaces the default Hero video, Hero-only.
    - restBg replaces the default background shown behind every other
-     block, the portfolio work cards' own frames, and the "Замовити
-     зйомку" modal - ONE shared file for all three, never a separate
-     setting per place. See BACKGROUNDS in index.html and admin.html's
+     block and the "Замовити зйомку" modal - ONE shared file for both,
+     never a separate setting per place. Portfolio work cards and the
+     portfolio viewer have their own fixed dark-glass CSS and never
+     read restBg. See BACKGROUNDS in index.html and admin.html's
      "Фони" section for how it's applied/consumed.
 
    Media is language-independent (one upload serves UA/RU/EN) and is

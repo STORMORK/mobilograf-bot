@@ -575,8 +575,7 @@
       overflow-y: auto;
     }
 
-    /* "Замовити зйомку" only - the portfolio item modal keeps this
-       plain .modal-box background untouched. position:relative lets
+    /* "Замовити зйомку" only. position:relative lets
        applyBookingModalBackground() insert the same restBg
        (.block-media-layer/.block-media-gradient) pattern used for the
        rest of the site, plus a blurred .block-media-glass overlay so
@@ -591,10 +590,22 @@
       background: transparent;
     }
 
-    .portfolio-card > *:not(.block-media-layer):not(.block-media-gradient),
     .booking-modal-box > *:not(.block-media-layer):not(.block-media-gradient):not(.block-media-glass) {
       position: relative;
       z-index: 2;
+    }
+
+    /* Portfolio item viewer only - fixed dark-glass frame, same visual
+       idea as .portfolio-card, entirely independent of restBg/any
+       admin-set background (this modal never reads restBg). The
+       photo/video inside stays sharp - backdrop-filter only blurs
+       what shows through the translucent box from behind it. */
+    .portfolio-modal-box {
+      background: rgba(10, 10, 14, 0.45);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
     }
 
     .modal-top {
@@ -1030,15 +1041,23 @@
       gap: 15px;
     }
 
+    /* Fixed dark-glass look, independent of any admin-set background -
+       Фони -> Фон інших блоків (restBg) never reaches these cards (see
+       renderPortfolioGallery). backdrop-filter only blurs whatever
+       shows through this translucent box from behind it; the opaque
+       thumb/title content painted inside the box is never blurred by
+       it. */
     .portfolio-card {
-      position: relative;
       cursor: pointer;
 
       border-radius: 16px;
       overflow: hidden;
 
-      border: 1px solid #292929;
-      background: #111;
+      background: rgba(10, 10, 14, 0.45);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
 
       transition: transform 0.2s ease;
     }
@@ -1057,13 +1076,8 @@
       background: #0a0a0a;
     }
 
-    /* Transparent by default (falls through to .portfolio-card's own
-       #111) - Фони -> Фон інших блоків (restBg) is inserted as this
-       card's own .block-media-layer/.block-media-gradient (see
-       applyRestBgLayer in renderPortfolioGallery) and only ever shows
-       through here, never through the opaque thumb above it. Its own
-       position:relative/z-index come from the shared child-promotion
-       rule next to .modal-box above. */
+    /* Transparent so the card's own dark-glass background (above)
+       shows through here, uniformly with the rest of the card. */
     .portfolio-card-title {
       padding: 12px 14px;
 
@@ -1377,7 +1391,7 @@
     id="portfolioItemModal"
     class="modal">
 
-    <div class="modal-box">
+    <div class="modal-box portfolio-modal-box">
 
       <div class="modal-top">
 
@@ -1846,17 +1860,18 @@
 
      heroBg/restBg are plain MEDIA_BLOCKS entries (see content-schema.js)
      storing the *base* background itself. heroBg replaces the default
-     Hero video, Hero-only. restBg is ONE shared source applied to
-     three places at once: applySiteBackground() (every other block),
-     applyBookingModalBackground() (the "Замовити зйомку" modal) and
-     renderPortfolioGallery()'s own per-card call to applyRestBgLayer()
-     (each portfolio work card's frame) - all three read the exact same
-     content_i18n.media.blocks.restBg entry, so replacing one file
-     changes all of them together. Applied here, after site content
-     loads, on top of whatever the default video/gradient already
-     started - same "admin content arrives slightly after first paint"
-     timing every other admin-set media on this page already uses.
-     Absent/deleted -> every one of these leaves its existing default
+     Hero video, Hero-only. restBg is ONE shared source applied to two
+     places at once: applySiteBackground() (every other block) and
+     applyBookingModalBackground() (the "Замовити зйомку" modal) - both
+     read the exact same content_i18n.media.blocks.restBg entry, so
+     replacing one file changes both together. Portfolio work cards and
+     the portfolio viewer never read restBg - they have their own fixed
+     dark-glass CSS (.portfolio-card / .portfolio-modal-box) regardless
+     of what restBg is set to. Applied here, after site content loads,
+     on top of whatever the default video/gradient already started -
+     same "admin content arrives slightly after first paint" timing
+     every other admin-set media on this page already uses. Absent/
+     deleted -> every one of these leaves its existing default
      completely alone.
   ===================================== */
 
@@ -1874,6 +1889,23 @@
     if (!customEntry) {
       return;
     }
+
+    /* renderSite() (and therefore this function) reruns on every
+       language switch, not just when heroBg actually changes.
+       Reassigning a <video>'s .src - even to the exact same URL -
+       makes the browser abort playback and reload it from scratch,
+       which is what made the Hero video/image visibly disappear for a
+       moment on every UA/RU/EN click. Skipping the reapplication when
+       the resolved entry hasn't changed keeps the existing
+       video/image element (and its playback) completely untouched
+       across a language switch, with no timeout involved. */
+    const appliedKey = customEntry.type + ":" + customEntry.url;
+
+    if (heroBlock.dataset.appliedHeroBg === appliedKey) {
+      return;
+    }
+
+    heroBlock.dataset.appliedHeroBg = appliedKey;
 
     heroBlock.classList.remove("hero-bg-video-unavailable");
 
@@ -1944,16 +1976,17 @@
   }
 
 
-  /* Shared by applyBookingModalBackground() below and by
-     renderPortfolioGallery()'s per-card call further down - inserts
-     Фони -> Фон інших блоків (restBg) into an arbitrary element via
-     the same .block-media-layer/.block-media-gradient pattern used
-     for the site-wide background, clearing any previous layer first
-     so re-applying (e.g. after an admin change) never stacks up old
+  /* Used by applyBookingModalBackground() below - inserts Фони -> Фон
+     інших блоків (restBg) into an arbitrary element via the same
+     .block-media-layer/.block-media-gradient pattern used for the
+     site-wide background, clearing any previous layer first so
+     re-applying (e.g. after an admin change) never stacks up old
      ones. options.glass additionally inserts .block-media-glass (a
      blurred readability overlay) and only ever toggles "has-rest-bg"
      on the target itself; it never touches any element other than
-     `el`. */
+     `el`. Portfolio cards/viewer never call this - they use their own
+     fixed dark-glass CSS instead (see .portfolio-card /
+     .portfolio-modal-box). */
   function applyRestBgLayer(el, customEntry, options) {
 
     options = options || {};
@@ -3150,12 +3183,6 @@
       titleEl.className = "portfolio-card-title";
       titleEl.textContent = workTitle || "—";
       card.appendChild(titleEl);
-
-      // Фони -> Фон інших блоків (restBg) - same source as the
-      // site-wide background and the booking modal, inserted as this
-      // card's own first child (behind the opaque thumb, visible only
-      // through the transparent title strip). See applyRestBgLayer.
-      applyRestBgLayer(card, resolveBlockMedia(siteContent, "restBg"));
 
       card.addEventListener("click", function () {
         openPortfolioModal(item);
