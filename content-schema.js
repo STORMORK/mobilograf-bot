@@ -112,7 +112,7 @@ var CONTENT_SCHEMA = [
     group: "services",
     label: "Послуга 1 — заголовок",
     type: "text",
-    defaults: { ua: "📸 Фото", ru: "📸 Фото", en: "📸 Photo" }
+    defaults: { ua: "📸🎥 Фото + Відео", ru: "📸🎥 Фото + Видео", en: "📸🎥 Photo + Video" }
   },
 
   {
@@ -121,29 +121,9 @@ var CONTENT_SCHEMA = [
     label: "Послуга 1 — опис",
     type: "textarea",
     defaults: {
-      ua: "Предметна, lifestyle та мобільна зйомка для вашого бренду.",
-      ru: "Предметная, lifestyle и мобильная съёмка для вашего бренда.",
-      en: "Product, lifestyle and mobile photography for your brand."
-    }
-  },
-
-  {
-    key: "service2_title",
-    group: "services",
-    label: "Послуга 2 — заголовок",
-    type: "text",
-    defaults: { ua: "🎥 Відео", ru: "🎥 Видео", en: "🎥 Video" }
-  },
-
-  {
-    key: "service2_text",
-    group: "services",
-    label: "Послуга 2 — опис",
-    type: "textarea",
-    defaults: {
-      ua: "Короткі відео та Reels, які привертають увагу.",
-      ru: "Короткие видео и Reels, которые привлекают внимание.",
-      en: "Short videos and Reels that grab attention."
+      ua: "Предметна, lifestyle зйомка та короткі відео і Reels для вашого бренду.",
+      ru: "Предметная, lifestyle съёмка и короткие видео и Reels для вашего бренда.",
+      en: "Product, lifestyle photography and short videos and Reels for your brand."
     }
   },
 
@@ -152,7 +132,7 @@ var CONTENT_SCHEMA = [
     group: "services",
     label: "Послуга 3 — заголовок",
     type: "text",
-    defaults: { ua: "📱 Контент", ru: "📱 Контент", en: "📱 Content" }
+    defaults: { ua: "📱 Контент для соцмереж", ru: "📱 Контент для соцсетей", en: "📱 Social media content" }
   },
 
   {
@@ -351,22 +331,6 @@ var CONTENT_SCHEMA = [
     label: "Підпис поля «Послуга»",
     type: "text",
     defaults: { ua: "Послуга", ru: "Услуга", en: "Service" }
-  },
-
-  {
-    key: "form_option_photo",
-    group: "booking",
-    label: "Опція «Фото»",
-    type: "text",
-    defaults: { ua: "Фото", ru: "Фото", en: "Photo" }
-  },
-
-  {
-    key: "form_option_video",
-    group: "booking",
-    label: "Опція «Відео»",
-    type: "text",
-    defaults: { ua: "Відео", ru: "Видео", en: "Video" }
   },
 
   {
