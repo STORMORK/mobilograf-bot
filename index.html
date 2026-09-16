@@ -1035,52 +1035,11 @@
       background: url("Fon.png") center center / cover no-repeat;
     }
 
-    .portfolio-modal-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-
-      width: 38px;
-      height: 38px;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      border-radius: 50%;
-
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(10px);
-      color: #fff;
-
-      font-size: 22px;
-      line-height: 1;
-
-      cursor: pointer;
-    }
-
-    .portfolio-modal-nav:hover {
-      background: rgba(0, 0, 0, 0.65);
-    }
-
-    .portfolio-modal-nav[hidden] {
-      display: none;
-    }
-
-    .portfolio-modal-nav-prev {
-      left: 10px;
-    }
-
-    .portfolio-modal-nav-next {
-      right: 10px;
-    }
-
+    /* Its own pill below the viewer, not overlaid on the media
+       itself. */
     .portfolio-modal-counter {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+      width: fit-content;
+      margin: 10px auto 0;
 
       padding: 4px 12px;
 
@@ -1354,30 +1313,12 @@
 
         <div id="portfolioModalTrack" class="portfolio-modal-track"></div>
 
-        <button
-          id="portfolioModalPrev"
-          class="portfolio-modal-nav portfolio-modal-nav-prev"
-          type="button"
-          aria-label="Previous"
-          hidden>
-          ‹
-        </button>
+      </div>
 
-        <button
-          id="portfolioModalNext"
-          class="portfolio-modal-nav portfolio-modal-nav-next"
-          type="button"
-          aria-label="Next"
-          hidden>
-          ›
-        </button>
-
-        <div
-          id="portfolioModalCounter"
-          class="portfolio-modal-counter"
-          hidden>
-        </div>
-
+      <div
+        id="portfolioModalCounter"
+        class="portfolio-modal-counter"
+        hidden>
       </div>
 
     </div>
@@ -3033,23 +2974,21 @@
   /* =====================================
      PORTFOLIO ITEM MODAL - MEDIA VIEWER
 
-     One work can have several photos/videos. All of them are built as
-     equal-width slides in a flex track; switching slides only moves
-     the track with a CSS transform transition (goToModalMedia), so
-     nothing is added/removed/reloaded on navigation - that's what
-     makes it a smooth slide instead of a hard cut. With exactly one
-     media item the arrows/counter stay hidden and the track never
-     moves, so it looks and behaves exactly like a single static item.
+     One work can have several photos/videos (1 to 50, no cap). All of
+     them are built as equal-width slides in a flex track. Navigation
+     is drag-only: the track follows the pointer 1:1 in real time
+     (setTrackTransform), so the next/previous slide is already
+     visible sliding in *during* the gesture, not just after release -
+     that's the whole point versus a plain swipe-then-snap. Releasing
+     either commits to the neighboring slide or springs back, both via
+     the same CSS transition used for the drag's finishing animation.
+     With exactly one media item there's nothing to commit to (see the
+     edge clamping in onPointerMove/settleDrag), so it behaves like a
+     single static item with just a gentle rubber-band wobble.
   ===================================== */
 
   const portfolioModalTrack =
     document.getElementById("portfolioModalTrack");
-
-  const portfolioModalPrev =
-    document.getElementById("portfolioModalPrev");
-
-  const portfolioModalNext =
-    document.getElementById("portfolioModalNext");
 
   const portfolioModalCounter =
     document.getElementById("portfolioModalCounter");
@@ -3061,15 +3000,25 @@
   let portfolioModalIndex = 0;
 
 
-  function updatePortfolioModalSlide() {
+  function setTrackTransform(dragPx) {
 
     portfolioModalTrack.style.transform =
-      "translateX(-" + (portfolioModalIndex * 100) + "%)";
+      "translateX(calc(-" +
+      (portfolioModalIndex * 100) +
+      "% + " +
+      (dragPx || 0) +
+      "px))";
+
+  }
+
+
+  function updatePortfolioModalSlide() {
+
+    portfolioModalTrack.style.transition = "";
+    setTrackTransform(0);
 
     const hasMultiple = portfolioModalMediaCount > 1;
 
-    portfolioModalPrev.hidden = !hasMultiple;
-    portfolioModalNext.hidden = !hasMultiple;
     portfolioModalCounter.hidden = !hasMultiple;
 
     if (hasMultiple) {
@@ -3108,8 +3057,9 @@
   function goToPortfolioModalMedia(newIndex) {
 
     if (newIndex < 0 || newIndex >= portfolioModalMediaCount) {
-      /* first/last item - swiping or clicking past the edge is a
-         no-op, nothing breaks */
+      /* first/last item - dragging past the edge is a no-op, just
+         snap back to where we already are */
+      updatePortfolioModalSlide();
       return;
     }
 
@@ -3120,110 +3070,167 @@
   }
 
 
-  portfolioModalPrev.addEventListener("click", function () {
-    goToPortfolioModalMedia(portfolioModalIndex - 1);
-  });
+  /* Drag-to-swipe, via Pointer Events so the exact same code drives a
+     finger on a phone and a mouse drag on desktop (no arrows needed
+     either way). */
+  let dragPointerId = null;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragStartTime = 0;
+  let dragDeltaX = 0;
+  let dragAxisLocked = false;
+  let dragIsHorizontal = false;
 
-  portfolioModalNext.addEventListener("click", function () {
-    goToPortfolioModalMedia(portfolioModalIndex + 1);
-  });
+  function onPortfolioDragStart(event) {
 
-  document.addEventListener("keydown", function (event) {
-
-    if (!portfolioItemModal.classList.contains("show")) {
+    if (portfolioModalMediaCount === 0 || dragPointerId !== null) {
       return;
     }
 
-    if (event.key === "ArrowLeft") {
-      goToPortfolioModalMedia(portfolioModalIndex - 1);
-    } else if (event.key === "ArrowRight") {
-      goToPortfolioModalMedia(portfolioModalIndex + 1);
+    if (event.pointerType === "mouse" && event.button !== 0) {
+      return;
     }
 
-  });
+    dragPointerId = event.pointerId;
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
+    dragStartTime = Date.now();
+    dragDeltaX = 0;
+    dragAxisLocked = false;
+    dragIsHorizontal = false;
 
+    portfolioModalTrack.style.transition = "none";
 
-  /* Swipe: only a horizontal-dominant drag is treated as a swipe, so
-     it never fights with the modal box's own vertical scrolling. */
-  let portfolioSwipeStartX = null;
-  let portfolioSwipeStartY = null;
-  let portfolioSwipeIsHorizontal = false;
+    if (portfolioModalViewer.setPointerCapture) {
 
-  portfolioModalViewer.addEventListener(
-    "touchstart",
-    function (event) {
+      try {
+        portfolioModalViewer.setPointerCapture(event.pointerId);
+      } catch (error) {}
 
-      const touch = event.touches[0];
+    }
 
-      portfolioSwipeStartX = touch.clientX;
-      portfolioSwipeStartY = touch.clientY;
-      portfolioSwipeIsHorizontal = false;
+  }
 
-    },
-    { passive: true }
-  );
+  function onPortfolioDragMove(event) {
 
-  portfolioModalViewer.addEventListener(
-    "touchmove",
-    function (event) {
+    if (event.pointerId !== dragPointerId) {
+      return;
+    }
 
-      if (portfolioSwipeStartX === null) {
+    const deltaX = event.clientX - dragStartX;
+    const deltaY = event.clientY - dragStartY;
+
+    if (!dragAxisLocked) {
+
+      if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) {
         return;
       }
 
-      const touch = event.touches[0];
+      dragAxisLocked = true;
+      dragIsHorizontal = Math.abs(deltaX) > Math.abs(deltaY);
 
-      const deltaX = touch.clientX - portfolioSwipeStartX;
-      const deltaY = touch.clientY - portfolioSwipeStartY;
-
-      if (
-        !portfolioSwipeIsHorizontal &&
-        Math.abs(deltaX) > Math.abs(deltaY) &&
-        Math.abs(deltaX) > 8
-      ) {
-        portfolioSwipeIsHorizontal = true;
-      }
-
-      /* Once it's clearly a horizontal swipe, stop the page/modal
-         from also scrolling vertically underneath the gesture. */
-      if (portfolioSwipeIsHorizontal && event.cancelable) {
-        event.preventDefault();
-      }
-
-    },
-    { passive: false }
-  );
-
-  portfolioModalViewer.addEventListener(
-    "touchend",
-    function (event) {
-
-      if (portfolioSwipeStartX === null) {
+      if (!dragIsHorizontal) {
+        /* vertical intent - let the page/modal scroll normally,
+           don't touch the track at all */
+        endPortfolioDrag(false);
         return;
       }
 
-      if (portfolioSwipeIsHorizontal) {
+    }
 
-        const touch = event.changedTouches[0];
-        const deltaX = touch.clientX - portfolioSwipeStartX;
-        const swipeThreshold = 40;
+    if (!dragIsHorizontal) {
+      return;
+    }
 
-        if (deltaX <= -swipeThreshold) {
-          // swipe left -> next
-          goToPortfolioModalMedia(portfolioModalIndex + 1);
-        } else if (deltaX >= swipeThreshold) {
-          // swipe right -> previous
-          goToPortfolioModalMedia(portfolioModalIndex - 1);
-        }
+    if (event.cancelable) {
+      event.preventDefault();
+    }
 
-      }
+    const atFirst = portfolioModalIndex === 0;
+    const atLast = portfolioModalIndex === portfolioModalMediaCount - 1;
 
-      portfolioSwipeStartX = null;
-      portfolioSwipeStartY = null;
-      portfolioSwipeIsHorizontal = false;
+    let adjustedDelta = deltaX;
 
-    },
-    { passive: true }
+    if ((atFirst && deltaX > 0) || (atLast && deltaX < 0)) {
+      /* rubber-band resistance past the first/last item - it still
+         moves with the finger, just less, and always springs back */
+      adjustedDelta = deltaX * 0.35;
+    }
+
+    dragDeltaX = adjustedDelta;
+
+    /* The neighboring slide is already laid out right next to the
+       current one in the flex track, so moving the track by the raw
+       drag distance is what makes it visibly slide in *during* the
+       gesture instead of only appearing after release. */
+    setTrackTransform(adjustedDelta);
+
+  }
+
+  function onPortfolioDragEnd(event) {
+
+    if (event.pointerId !== dragPointerId) {
+      return;
+    }
+
+    endPortfolioDrag(true);
+
+  }
+
+  function endPortfolioDrag(shouldResolve) {
+
+    const wasHorizontal = dragIsHorizontal;
+    const finalDelta = dragDeltaX;
+    const elapsed = Date.now() - dragStartTime;
+
+    dragPointerId = null;
+    dragAxisLocked = false;
+    dragIsHorizontal = false;
+    dragDeltaX = 0;
+
+    portfolioModalTrack.style.transition = "";
+
+    if (!shouldResolve || !wasHorizontal) {
+      updatePortfolioModalSlide();
+      return;
+    }
+
+    const viewerWidth =
+      portfolioModalViewer.getBoundingClientRect().width || 1;
+
+    const distanceRatio = Math.abs(finalDelta) / viewerWidth;
+    const velocity = elapsed > 0 ? Math.abs(finalDelta) / elapsed : 0;
+
+    /* Either dragged far enough (>20% of the viewer width) or flicked
+       fast enough, in either direction - otherwise spring back. */
+    const passedThreshold =
+      distanceRatio > 0.2 || (velocity > 0.5 && Math.abs(finalDelta) > 20);
+
+    if (passedThreshold && finalDelta < 0) {
+      goToPortfolioModalMedia(portfolioModalIndex + 1);
+    } else if (passedThreshold && finalDelta > 0) {
+      goToPortfolioModalMedia(portfolioModalIndex - 1);
+    } else {
+      updatePortfolioModalSlide();
+    }
+
+  }
+
+  portfolioModalViewer.addEventListener(
+    "pointerdown",
+    onPortfolioDragStart
+  );
+
+  portfolioModalViewer.addEventListener(
+    "pointermove",
+    onPortfolioDragMove
+  );
+
+  portfolioModalViewer.addEventListener("pointerup", onPortfolioDragEnd);
+
+  portfolioModalViewer.addEventListener(
+    "pointercancel",
+    onPortfolioDragEnd
   );
 
 
@@ -3292,12 +3299,17 @@
     /* stop any playing video instead of just hiding it */
     portfolioModalTrack.innerHTML = "";
 
+    portfolioModalTrack.style.transition = "";
     portfolioModalTrack.style.transform = "translateX(0)";
     portfolioModalMediaCount = 0;
     portfolioModalIndex = 0;
 
-    portfolioModalPrev.hidden = true;
-    portfolioModalNext.hidden = true;
+    /* in case the modal gets closed mid-drag */
+    dragPointerId = null;
+    dragAxisLocked = false;
+    dragIsHorizontal = false;
+    dragDeltaX = 0;
+
     portfolioModalCounter.hidden = true;
 
   }
