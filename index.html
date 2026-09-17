@@ -3040,14 +3040,13 @@
   let bookingWeatherByDate = {};
   let bookingWeatherLoading = false;
 
-  /* WMO weather codes, as returned by Open-Meteo's "weathercode" daily
-     field (https://open-meteo.com/en/docs) - one representative emoji
-     per group, no text label. Codes 45/48 (fog/mist/haze) are
-     deliberately absent - there's no icon in the approved set that
-     honestly represents fog, and showing ☁️/☀️ instead would just be a
-     wrong weather state. bookingWeatherIcon() returning null for those
-     codes is exactly what the day-cell rendering below uses to fall
-     back to temperature-only. */
+  /* WMO weather codes, as returned by Open-Meteo's "weather_code" daily
+     field (https://open-meteo.com/en/docs, confirmed against the
+     project's own OpenAPI spec at github.com/open-meteo/open-meteo,
+     openapi/forecast.yml) - one representative emoji per group, no text
+     label. Codes 45/48 (fog/mist/haze) are deliberately absent from
+     this direct table - see bookingWeatherIcon() below for why they
+     can't just map to one fixed icon. */
   const BOOKING_WEATHER_ICONS = {
     0: "☀️",
     1: "🌤️", 2: "🌤️",
@@ -3062,8 +3061,54 @@
     95: "⛈️", 96: "⛈️", 99: "⛈️"
   };
 
-  function bookingWeatherIcon(code) {
-    return BOOKING_WEATHER_ICONS[code] || null;
+  const BOOKING_FOG_CODES = [45, 48];
+
+  /* Fog/mist (WMO 45/48) describes near-surface visibility, not a sky
+     condition - it never by itself says whether it also rained/snowed
+     that day, or how cloudy it otherwise was. Open-Meteo reports one
+     representative weather_code per day, so a day actually dominated by
+     a thunderstorm would already be coded 95/96/99, never 45/48 - there
+     is no separate "hidden thunderstorm" signal to check for a fog day,
+     so that state genuinely can't occur here and isn't faked.
+
+     What CAN be true on a foggy day - precipitation, snow, and general
+     cloudiness - comes from precipitation_sum/snowfall_sum (daily) and
+     cloud_cover (hourly, averaged per date in loadBookingWeather() into
+     entry.cloudCoverMean) requested specifically to resolve this case.
+     Priority: snow, then any precipitation, then cloud cover; genuinely
+     no data at all falls back to temperature-only (never a guess). */
+  function bookingWeatherIcon(entry) {
+
+    const code = entry.code;
+
+    if (BOOKING_FOG_CODES.indexOf(code) === -1) {
+      return BOOKING_WEATHER_ICONS[code] || null;
+    }
+
+    if (typeof entry.snowfallSum === "number" && entry.snowfallSum > 0) {
+      return "❄️";
+    }
+
+    if (typeof entry.precipitationSum === "number" && entry.precipitationSum > 0) {
+      return "🌧️";
+    }
+
+    if (typeof entry.cloudCoverMean === "number") {
+
+      if (entry.cloudCoverMean < 20) {
+        return "☀️";
+      }
+
+      if (entry.cloudCoverMean < 60) {
+        return "🌤️";
+      }
+
+      return "☁️";
+
+    }
+
+    return null;
+
   }
 
   function formatBookingTemp(value) {
@@ -3147,12 +3192,20 @@
 
     try {
 
+      /* Single request, both blocks: "daily" gives one weather_code +
+         temperature_2m_max + precipitation_sum + snowfall_sum per date;
+         "hourly" cloud_cover has no daily equivalent in Open-Meteo's API
+         (confirmed against its OpenAPI spec), so it's requested here and
+         averaged into a per-date mean below - purely a secondary signal
+         for resolving fog/mist (45/48) in bookingWeatherIcon() above,
+         every other code already resolves from weather_code alone. */
       const response =
         await fetch(
           "https://api.open-meteo.com/v1/forecast" +
           "?latitude=" + BOOKING_WEATHER_LAT +
           "&longitude=" + BOOKING_WEATHER_LON +
-          "&daily=weathercode,temperature_2m_max" +
+          "&daily=weather_code,temperature_2m_max,precipitation_sum,snowfall_sum" +
+          "&hourly=cloud_cover" +
           "&timezone=Europe%2FKyiv" +
           "&temperature_unit=celsius" +
           "&forecast_days=16"
@@ -3163,6 +3216,34 @@
       }
 
       const data = await response.json();
+
+      const cloudCoverByDate = {};
+
+      if (data && data.hourly && Array.isArray(data.hourly.time) && Array.isArray(data.hourly.cloud_cover)) {
+
+        const sums = {};
+        const counts = {};
+
+        data.hourly.time.forEach(function (timestamp, index) {
+
+          const value = data.hourly.cloud_cover[index];
+
+          if (typeof value !== "number") {
+            return;
+          }
+
+          const dateStr = timestamp.slice(0, 10);
+
+          sums[dateStr] = (sums[dateStr] || 0) + value;
+          counts[dateStr] = (counts[dateStr] || 0) + 1;
+
+        });
+
+        Object.keys(sums).forEach(function (dateStr) {
+          cloudCoverByDate[dateStr] = sums[dateStr] / counts[dateStr];
+        });
+
+      }
 
       const days = {};
 
@@ -3175,8 +3256,14 @@
           if (typeof tempMax === "number") {
 
             days[dateStr] = {
-              code: data.daily.weathercode[index],
-              tempMax: tempMax
+              code: data.daily.weather_code[index],
+              tempMax: tempMax,
+              precipitationSum:
+                data.daily.precipitation_sum ? data.daily.precipitation_sum[index] : null,
+              snowfallSum:
+                data.daily.snowfall_sum ? data.daily.snowfall_sum[index] : null,
+              cloudCoverMean:
+                cloudCoverByDate[dateStr] !== undefined ? cloudCoverByDate[dateStr] : null
             };
 
           }
@@ -3336,10 +3423,11 @@
 
       if (weatherEntry) {
 
-        /* Fog/mist/haze (WMO 45/48) has no icon in bookingWeatherIcon()'s
-           map on purpose - null here just means "temperature only, no
-           symbol" instead of a wrong one (☁️/☀️ would misrepresent fog). */
-        const icon = bookingWeatherIcon(weatherEntry.code);
+        /* Resolves fog/mist (45/48) from precipitation/snow/cloud data
+           instead of one fixed icon - see bookingWeatherIcon() above.
+           A null result (no usable data at all for that case) means
+           "temperature only, no symbol" rather than a guessed icon. */
+        const icon = bookingWeatherIcon(weatherEntry);
         const tempText = formatBookingTemp(weatherEntry.tempMax);
 
         const weatherEl = document.createElement("span");
