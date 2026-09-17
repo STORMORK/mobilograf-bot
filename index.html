@@ -770,11 +770,13 @@
     }
 
     .date-calendar-day {
-      aspect-ratio: 1;
+      aspect-ratio: 0.82;
 
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 1px;
 
       border: 1px solid #292929;
       border-radius: 8px;
@@ -785,6 +787,21 @@
       padding: 0;
 
       cursor: pointer;
+    }
+
+    .date-calendar-day-number {
+      line-height: 1;
+    }
+
+    /* Open-Meteo forecast (see BOOKING DATE WEATHER in the script below) -
+       icon + temperature only, no text label, kept small enough that a
+       date cell only grows slightly taller (aspect-ratio 0.82 vs the
+       plain 1:1 it used to be) instead of needing a second row/card. */
+    .date-calendar-day-weather {
+      font-size: 9px;
+      line-height: 1;
+      opacity: 0.85;
+      white-space: nowrap;
     }
 
     .date-calendar-day:disabled {
@@ -2986,6 +3003,195 @@
   }
 
 
+  /* =====================================
+     BOOKING DATE WEATHER (Open-Meteo, no API key)
+
+     Kharkiv coordinates - the city named first everywhere the site
+     already states where shoots happen (this file's JSON-LD
+     "areaServed", and the hero/about/contact text "Харків та Валки").
+     There's no existing coordinate/location setting anywhere in this
+     project to reuse, so these are derived directly from that existing
+     text rather than invented from scratch.
+
+     Open-Meteo's free forecast endpoint needs no API key and allows
+     browser-side CORS requests, so this is called directly from here -
+     no new serverless function, no new environment variable, and no
+     change to Vercel's function count. One request covers up to 16
+     days at once (forecast_days=16 below); calendar dates further out
+     simply never get an entry in bookingWeatherByDate, and the day-cell
+     loop in renderDateCalendar() shows those dates exactly as before -
+     number only, no symbol - rather than guessing.
+  ===================================== */
+
+  const BOOKING_WEATHER_LAT = 49.9935;
+  const BOOKING_WEATHER_LON = 36.2304;
+
+  const BOOKING_WEATHER_CACHE_KEY = "mobilograf_booking_weather_v1";
+  const BOOKING_WEATHER_CACHE_MAX_AGE_MS = 3 * 60 * 60 * 1000; // 3h
+
+  let bookingWeatherByDate = {};
+  let bookingWeatherLoading = false;
+
+  /* WMO weather codes, as returned by Open-Meteo's "weathercode" daily
+     field (https://open-meteo.com/en/docs) - one representative emoji
+     per group, no text label, matching every code Open-Meteo documents. */
+  const BOOKING_WEATHER_ICONS = {
+    0: "☀️",
+    1: "🌤️", 2: "🌤️",
+    3: "☁️",
+    45: "🌫️", 48: "🌫️",
+    51: "🌧️", 53: "🌧️", 55: "🌧️",
+    56: "🌧️", 57: "🌧️",
+    61: "🌧️", 63: "🌧️", 65: "🌧️",
+    66: "🌧️", 67: "🌧️",
+    71: "❄️", 73: "❄️", 75: "❄️", 77: "❄️",
+    80: "🌧️", 81: "🌧️", 82: "🌧️",
+    85: "❄️", 86: "❄️",
+    95: "⛈️", 96: "⛈️", 99: "⛈️"
+  };
+
+  function bookingWeatherIcon(code) {
+    return BOOKING_WEATHER_ICONS[code] || null;
+  }
+
+  function formatBookingTemp(value) {
+    const rounded = Math.round(value);
+    return (rounded > 0 ? "+" : "") + rounded + "°";
+  }
+
+  function bookingWeatherMaxKey() {
+    const d = new Date();
+    d.setDate(d.getDate() + 15); // forecast_days=16 -> today .. today+15
+    return dateCalendarKey(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  function readBookingWeatherCache() {
+
+    try {
+
+      const raw = window.localStorage.getItem(BOOKING_WEATHER_CACHE_KEY);
+
+      if (!raw) {
+        return null;
+      }
+
+      const parsed = JSON.parse(raw);
+
+      if (
+        !parsed ||
+        typeof parsed.fetchedAt !== "number" ||
+        Date.now() - parsed.fetchedAt > BOOKING_WEATHER_CACHE_MAX_AGE_MS ||
+        !parsed.days
+      ) {
+        return null;
+      }
+
+      return parsed.days;
+
+    } catch (error) {
+      return null;
+    }
+
+  }
+
+  function writeBookingWeatherCache(days) {
+
+    try {
+
+      window.localStorage.setItem(
+        BOOKING_WEATHER_CACHE_KEY,
+        JSON.stringify({ fetchedAt: Date.now(), days: days })
+      );
+
+    } catch (error) {
+      // Storage unavailable/full/private mode - weather just refetches
+      // next time the calendar opens instead of persisting across loads.
+    }
+
+  }
+
+
+  /* Fire-and-forget, same as trackEvent() - never throws, never blocks
+     the calendar. Skips the network entirely once already loaded
+     (either from a previous call this session or from a fresh-enough
+     cache), so opening/closing the booking form repeatedly never
+     re-requests the same forecast. */
+  async function loadBookingWeather() {
+
+    if (bookingWeatherLoading || Object.keys(bookingWeatherByDate).length > 0) {
+      return;
+    }
+
+    const cached = readBookingWeatherCache();
+
+    if (cached) {
+      bookingWeatherByDate = cached;
+      renderDateCalendar();
+      return;
+    }
+
+    bookingWeatherLoading = true;
+    renderDateCalendar(); // lets forecastable dates show "…" while this is in flight
+
+    try {
+
+      const response =
+        await fetch(
+          "https://api.open-meteo.com/v1/forecast" +
+          "?latitude=" + BOOKING_WEATHER_LAT +
+          "&longitude=" + BOOKING_WEATHER_LON +
+          "&daily=weathercode,temperature_2m_max" +
+          "&timezone=Europe%2FKyiv" +
+          "&temperature_unit=celsius" +
+          "&forecast_days=16"
+        );
+
+      if (!response.ok) {
+        throw new Error("Weather API error: HTTP " + response.status);
+      }
+
+      const data = await response.json();
+
+      const days = {};
+
+      if (data && data.daily && Array.isArray(data.daily.time)) {
+
+        data.daily.time.forEach(function (dateStr, index) {
+
+          const tempMax = data.daily.temperature_2m_max[index];
+
+          if (typeof tempMax === "number") {
+
+            days[dateStr] = {
+              code: data.daily.weathercode[index],
+              tempMax: tempMax
+            };
+
+          }
+
+        });
+
+      }
+
+      bookingWeatherByDate = days;
+      writeBookingWeatherCache(days);
+
+    } catch (error) {
+
+      // No weather today - the calendar still works exactly as before,
+      // just without a symbol/temperature next to any date.
+      console.error("Booking weather error:", error);
+
+    } finally {
+
+      bookingWeatherLoading = false;
+      renderDateCalendar();
+
+    }
+
+  }
+
+
   async function loadBookingBusyDates() {
 
     try {
@@ -3099,6 +3305,7 @@
     }
 
     const todayKey = dateCalendarTodayKey();
+    const weatherMaxKey = bookingWeatherMaxKey();
 
     for (let day = 1; day <= daysInMonth; day++) {
 
@@ -3107,7 +3314,34 @@
       const cell = document.createElement("button");
       cell.type = "button";
       cell.className = "date-calendar-day";
-      cell.textContent = String(day);
+
+      const numberEl = document.createElement("span");
+      numberEl.className = "date-calendar-day-number";
+      numberEl.textContent = String(day);
+      cell.appendChild(numberEl);
+
+      const weatherEntry = bookingWeatherByDate[key];
+      const weatherIcon = weatherEntry ? bookingWeatherIcon(weatherEntry.code) : null;
+
+      if (weatherEntry && weatherIcon) {
+
+        const weatherEl = document.createElement("span");
+        weatherEl.className = "date-calendar-day-weather";
+        weatherEl.textContent = weatherIcon + " " + formatBookingTemp(weatherEntry.tempMax);
+        cell.appendChild(weatherEl);
+
+      } else if (
+        bookingWeatherLoading &&
+        key >= todayKey &&
+        key <= weatherMaxKey
+      ) {
+
+        const weatherEl = document.createElement("span");
+        weatherEl.className = "date-calendar-day-weather";
+        weatherEl.textContent = "…";
+        cell.appendChild(weatherEl);
+
+      }
 
       const isPast = key < todayKey;
       const isBusy = bookingBusyDates.has(key);
@@ -3154,7 +3388,10 @@
 
   orderButton.addEventListener(
     "click",
-    loadBookingBusyDates
+    function () {
+      loadBookingBusyDates();
+      loadBookingWeather();
+    }
   );
 
 
