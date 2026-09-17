@@ -3006,25 +3006,33 @@
   /* =====================================
      BOOKING DATE WEATHER (Open-Meteo, no API key)
 
-     Kharkiv coordinates - the city named first everywhere the site
-     already states where shoots happen (this file's JSON-LD
-     "areaServed", and the hero/about/contact text "Харків та Валки").
-     There's no existing coordinate/location setting anywhere in this
-     project to reuse, so these are derived directly from that existing
-     text rather than invented from scratch.
+     Valky, Kharkiv Oblast (Богодухівський район) - the actual shoot
+     location confirmed by the site owner, not derived from page text.
+     Coordinates cross-checked against Wikipedia, Wikidata (Q1104747)
+     and GeoNames (id 690509), all agreeing on 49°50'N 35°37'E
+     (49.8333, 35.6167). There's no coordinate/location setting anywhere
+     else in this project to reuse.
 
      Open-Meteo's free forecast endpoint needs no API key and allows
      browser-side CORS requests, so this is called directly from here -
      no new serverless function, no new environment variable, and no
-     change to Vercel's function count. One request covers up to 16
-     days at once (forecast_days=16 below); calendar dates further out
-     simply never get an entry in bookingWeatherByDate, and the day-cell
-     loop in renderDateCalendar() shows those dates exactly as before -
-     number only, no symbol - rather than guessing.
+     change to Vercel's function count. It resolves real numerical
+     weather-model grids (ECMWF IFS, DWD ICON, GFS, etc.), not a fixed
+     city list, so Valky is fully covered like any other coordinate -
+     switching provider was considered and rejected: every alternative
+     with better name-recognition for small Ukrainian towns (OpenWeatherMap,
+     WeatherAPI, Tomorrow.io) requires an API key, which would mean either
+     committing a secret or adding a proxy endpoint this project doesn't
+     otherwise need; Ukraine's own meteo.gov.ua has no official API, only
+     a website, and scraping it was explicitly ruled out. One request
+     covers up to 16 days at once (forecast_days=16 below); calendar
+     dates further out simply never get an entry in bookingWeatherByDate,
+     and the day-cell loop in renderDateCalendar() shows those dates
+     exactly as before - number only, no symbol - rather than guessing.
   ===================================== */
 
-  const BOOKING_WEATHER_LAT = 49.9935;
-  const BOOKING_WEATHER_LON = 36.2304;
+  const BOOKING_WEATHER_LAT = 49.8333;
+  const BOOKING_WEATHER_LON = 35.6167;
 
   const BOOKING_WEATHER_CACHE_KEY = "mobilograf_booking_weather_v1";
   const BOOKING_WEATHER_CACHE_MAX_AGE_MS = 3 * 60 * 60 * 1000; // 3h
@@ -3034,12 +3042,16 @@
 
   /* WMO weather codes, as returned by Open-Meteo's "weathercode" daily
      field (https://open-meteo.com/en/docs) - one representative emoji
-     per group, no text label, matching every code Open-Meteo documents. */
+     per group, no text label. Codes 45/48 (fog/mist/haze) are
+     deliberately absent - there's no icon in the approved set that
+     honestly represents fog, and showing ☁️/☀️ instead would just be a
+     wrong weather state. bookingWeatherIcon() returning null for those
+     codes is exactly what the day-cell rendering below uses to fall
+     back to temperature-only. */
   const BOOKING_WEATHER_ICONS = {
     0: "☀️",
     1: "🌤️", 2: "🌤️",
     3: "☁️",
-    45: "🌫️", 48: "🌫️",
     51: "🌧️", 53: "🌧️", 55: "🌧️",
     56: "🌧️", 57: "🌧️",
     61: "🌧️", 63: "🌧️", 65: "🌧️",
@@ -3321,13 +3333,18 @@
       cell.appendChild(numberEl);
 
       const weatherEntry = bookingWeatherByDate[key];
-      const weatherIcon = weatherEntry ? bookingWeatherIcon(weatherEntry.code) : null;
 
-      if (weatherEntry && weatherIcon) {
+      if (weatherEntry) {
+
+        /* Fog/mist/haze (WMO 45/48) has no icon in bookingWeatherIcon()'s
+           map on purpose - null here just means "temperature only, no
+           symbol" instead of a wrong one (☁️/☀️ would misrepresent fog). */
+        const icon = bookingWeatherIcon(weatherEntry.code);
+        const tempText = formatBookingTemp(weatherEntry.tempMax);
 
         const weatherEl = document.createElement("span");
         weatherEl.className = "date-calendar-day-weather";
-        weatherEl.textContent = weatherIcon + " " + formatBookingTemp(weatherEntry.tempMax);
+        weatherEl.textContent = icon ? (icon + " " + tempText) : tempText;
         cell.appendChild(weatherEl);
 
       } else if (
