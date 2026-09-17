@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="google-site-verification" content="HrMA0tQuicMk3w1NP5qcnV5lkY2OoPQsdou1a3CW8Fo" />
 
+  <!-- telegram-web-app.js below is a render-blocking classic script
+       (no async/defer - the inline script further down reads
+       window.Telegram synchronously, right after it, and depends on
+       that exact order) - it can't be made non-blocking without risking
+       tg/initData being unavailable when the rest of the page expects
+       it. This just lets the browser open the connection to
+       telegram.org in parallel with everything else in head, so the
+       DNS/TLS handshake is already done by the time the parser reaches
+       that script tag instead of adding to its blocking time. -->
+  <link rel="preconnect" href="https://telegram.org">
+  <link rel="dns-prefetch" href="https://telegram.org">
+
   <script>
     /* Kicks off the site-content request (which carries Фони ->
        heroBg/restBg) as the very first thing on the page - before
@@ -3189,6 +3201,21 @@
         block: "start"
       });
 
+      /* Starts each cover video's actual download+playback exactly once,
+         the first time the gallery becomes visible - see the data-src
+         reasoning in renderPortfolioGallery() above. Checking for
+         data-src (removed once started) is what makes this a no-op on
+         every later open/close. */
+      portfolioGallery
+        .querySelectorAll("video.portfolio-card-thumb[data-src]")
+        .forEach(function (video) {
+
+          video.src = video.dataset.src;
+          delete video.dataset.src;
+          video.play().catch(function () {});
+
+        });
+
       trackEvent("portfolio_open");
 
     }
@@ -3329,35 +3356,38 @@
             : document.createElement("img");
 
         thumb.className = "portfolio-card-thumb";
-        thumb.src = cover.url;
 
         if (cover.media_type === "video") {
 
-          // Plays right in the card, no click needed - same attributes
-          // as the Hero background video: muted+playsInline is what
-          // lets autoplay work on mobile (Android/iOS) without
-          // fullscreen takeover, and preload="auto" means a real frame
-          // is showing (not a black box) as soon as it can be.
+          // Plays right in the card, no click needed - muted+playsInline
+          // is what lets autoplay work on mobile (Android/iOS) without
+          // fullscreen takeover. The gallery itself starts hidden
+          // (#portfolioContent has no .show class until "Показати
+          // роботи" is clicked) - leaving .src unset here (kept in
+          // data-src instead) means the browser has nothing to fetch at
+          // all while nobody can see it, regardless of preload/autoplay
+          // hints; togglePortfolio() below assigns the real .src and
+          // calls play() exactly once, the first time the gallery is
+          // actually opened.
+          thumb.dataset.src = cover.url;
           thumb.muted = true;
           thumb.autoplay = true;
           thumb.loop = true;
           thumb.playsInline = true;
-          thumb.preload = "auto";
 
         } else {
           // Real portfolio work, not a decorative background - use its
           // own title as alt text instead of leaving it empty/missing.
+          thumb.src = cover.url;
           thumb.alt = workTitle;
+
+          // Same "don't fetch what's still behind display:none" reasoning
+          // as the video branch above, via the native lazy-loading hint
+          // instead - harmless no-op on browsers that ignore it.
+          thumb.loading = "lazy";
         }
 
         card.appendChild(thumb);
-
-        if (cover.media_type === "video") {
-          // Autoplay isn't guaranteed to kick in from attributes alone
-          // on every mobile browser - nudge it explicitly, same as the
-          // Hero background video does.
-          thumb.play().catch(function () {});
-        }
 
       }
 
